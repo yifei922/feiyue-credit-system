@@ -90,6 +90,19 @@ router.post('/import', authMiddleware, requireRole('ADMIN', 'TEACHER'), (req, re
   ok(res, { imported, total: list.length, rows: importedRows });
 });
 
+// 重置学生登录密码（管理员/老师/课代表）；不传 password 则重置为 123456
+router.post('/:id/reset-password', authMiddleware, requireRole('ADMIN', 'TEACHER', 'REP'), (req, res) => {
+  const student = db.prepare('SELECT * FROM student WHERE id=?').get(req.params.id);
+  if (!student) return fail(res, 404, '学生不存在');
+  const user = db.prepare("SELECT * FROM sys_user WHERE role='STUDENT' AND student_id=?").get(student.id);
+  if (!user) return fail(res, 404, '该学生尚无登录账号');
+  const newPwd = String(req.body?.password || '').trim() || '123456';
+  if (newPwd.length < 4) return fail(res, 400, '密码至少 4 位');
+  db.prepare('UPDATE sys_user SET password=? WHERE id=?').run(hashPassword(newPwd), user.id);
+  recordLog(req.user, 'UPDATE', 'sys_user', user.id, { username: user.username }, { action: 'reset-password' });
+  ok(res, { ok: true, username: user.username, password: newPwd });
+});
+
 // 新增单个学生（管理员/老师）
 router.post('/', authMiddleware, requireRole('ADMIN', 'TEACHER'), (req, res) => {
   const { name, studentNo } = req.body || {};

@@ -40,12 +40,18 @@
         <span class="section-sub">共 {{ students.length }} 人</span>
       </div>
       <el-table :data="students" stripe border class="tbl">
-        <el-table-column prop="studentNo" label="学号" width="140" />
-        <el-table-column prop="name" label="姓名" width="140" />
+        <el-table-column prop="studentNo" label="学号" width="130" />
+        <el-table-column prop="name" label="姓名" width="120" />
         <el-table-column prop="className" label="班级" />
-        <el-table-column prop="totalCredits" label="总学分" width="120" align="center">
+        <el-table-column prop="totalCredits" label="总学分" width="100" align="center">
           <template #default="{ row }">
             <el-tag :type="row.totalCredits > 0 ? 'success' : 'info'" effect="light">{{ row.totalCredits || 0 }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="220" fixed="right">
+          <template #default="{ row }">
+            <el-button link type="primary" @click="openAdjust(row)">学分增减</el-button>
+            <el-button link type="warning" @click="doResetPwd(row)">重置密码</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -72,6 +78,26 @@
       </el-table>
     </div>
 
+    <!-- 学分增减弹窗 -->
+    <el-dialog v-model="adjustVisible" :title="`学分增减 · ${adjustForm.name}`" width="420px">
+      <el-form label-width="90px">
+        <el-form-item label="当前学分">
+          <el-tag type="success" effect="light">{{ adjustForm.current }}</el-tag>
+        </el-form-item>
+        <el-form-item label="调整分值">
+          <el-input-number v-model="adjustForm.amount" :step="1" style="width: 100%" />
+          <div class="tip-inline">正数为加分，负数为扣分（不能为 0）</div>
+        </el-form-item>
+        <el-form-item label="原因">
+          <el-input v-model="adjustForm.reason" type="textarea" :rows="2" placeholder="如：课堂表现优秀 / 违纪扣分" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="adjustVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitAdjust">确认调整</el-button>
+      </template>
+    </el-dialog>
+
     <!-- 格式说明 -->
     <div class="card hint">
       <div class="hint-title">导入格式说明</div>
@@ -83,9 +109,10 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
-import { listStudents, importStudents, exportStudents } from '@/api/student'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { listStudents, importStudents, exportStudents, resetStudentPassword } from '@/api/student'
 import { listCompletions, importCompletions, exportCompletions } from '@/api/completion'
+import { adjustCredit } from '@/api/creditFlow'
 import { downloadBlob } from '@/utils/download'
 import { statusLabel } from '@/utils/credit'
 
@@ -94,6 +121,8 @@ const completions = ref([])
 const importResult = ref(null)
 const rosterFile = ref(null)
 const scoreFile = ref(null)
+const adjustVisible = ref(false)
+const adjustForm = ref({ studentId: null, name: '', current: 0, amount: 1, reason: '' })
 
 function statusTag(status) {
   return { DONE_ONTIME: 'success', DONE_OVERDUE: 'warning', UNFINISHED: 'info', FAILED: 'danger' }[status] || 'info'
@@ -103,7 +132,7 @@ async function loadAll() {
   try {
     const [s, c] = await Promise.all([listStudents(), listCompletions()])
     students.value = (s.data || s || []).map((r) => ({
-      studentNo: r.studentNo, name: r.name, className: r.className, totalCredits: r.totalCredits
+      id: r.id, studentNo: r.studentNo, name: r.name, className: r.className, totalCredits: r.totalCredits
     }))
     completions.value = (c.data || c || []).map((r) => ({
       studentNo: r.studentNo, studentName: r.studentName, taskTitle: r.taskTitle,
@@ -162,6 +191,37 @@ async function doExportScore() {
   } catch (e) { /* 拦截器已提示 */ }
 }
 
+// 重置学生密码
+async function doResetPwd(row) {
+  try {
+    const { value } = await ElMessageBox.prompt(
+      `将重置「${row.name}」的登录密码。留空则重置为默认密码 123456。`,
+      '重置密码',
+      { confirmButtonText: '确认重置', cancelButtonText: '取消', inputPlaceholder: '新密码（留空=123456）' }
+    )
+    const res = await resetStudentPassword(row.id, value)
+    const d = res.data ?? res
+    ElMessageBox.alert(`账号：${d.username}\n新密码：${d.password}`, '重置成功', { confirmButtonText: '知道了' })
+  } catch (e) { /* 取消或拦截器已提示 */ }
+}
+
+// 打开学分调整
+function openAdjust(row) {
+  adjustForm.value = { studentId: row.id, name: row.name, current: row.totalCredits || 0, amount: 1, reason: '' }
+  adjustVisible.value = true
+}
+async function submitAdjust() {
+  const f = adjustForm.value
+  if (!f.amount || f.amount === 0) return ElMessage.warning('调整分值不能为 0')
+  try {
+    const res = await adjustCredit(f.studentId, f.amount, f.reason)
+    const d = res.data ?? res
+    ElMessage.success(`已调整，${f.name} 当前总学分：${d.total}`)
+    adjustVisible.value = false
+    await loadAll()
+  } catch (e) { /* 拦截器已提示 */ }
+}
+
 onMounted(loadAll)
 </script>
 
@@ -183,4 +243,5 @@ onMounted(loadAll)
 .hint { font-size: 13px; color: #5b6573; line-height: 1.9; }
 .hint-title { font-weight: 600; margin-bottom: 4px; color: #2b3242; }
 .hint code { background: #f1f3f7; padding: 1px 6px; border-radius: 5px; color: #2563eb; }
+.tip-inline { font-size: 12px; color: #8a94a6; margin-top: 4px; }
 </style>

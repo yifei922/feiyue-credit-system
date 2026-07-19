@@ -15,6 +15,33 @@
     </el-card>
 
     <el-tabs v-model="tab" class="tabs">
+      <el-tab-pane name="notice">
+        <template #label>
+          我的提醒
+          <el-badge v-if="isStudent && pendingNotices" :value="pendingNotices" class="tab-badge" />
+        </template>
+        <el-alert
+          v-if="!notices.length"
+          title="暂无新的提醒 ✅"
+          type="success" :closable="false" show-icon
+        />
+        <div v-for="n in notices" :key="n.id" class="notice-item" :class="{ resolved: n.status === 'RESOLVED' }">
+          <el-icon class="notice-ico"><Bell /></el-icon>
+          <div class="notice-body">
+            <div class="notice-msg">{{ n.reason }}</div>
+            <div class="notice-meta">
+              <el-tag size="small" :type="n.status === 'PENDING' ? 'warning' : 'info'" effect="plain">
+                {{ n.typeText }}
+              </el-tag>
+              <span class="notice-time">{{ n.createTime }}</span>
+              <el-button v-if="isStudent && n.status === 'PENDING'" link type="primary" size="small" @click="markRead(n)">
+                知道了
+              </el-button>
+            </div>
+          </div>
+        </div>
+      </el-tab-pane>
+
       <el-tab-pane label="积分流水" name="flow">
         <el-table :data="flows" stripe max-height="420">
           <el-table-column prop="createTime" label="时间" width="160" />
@@ -58,11 +85,12 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Download } from '@element-plus/icons-vue'
+import { Download, Bell } from '@element-plus/icons-vue'
 import { listStudents } from '@/api/student'
 import { listCreditFlow } from '@/api/creditFlow'
 import { recommendTasks } from '@/api/recommend'
 import { exportCompletions } from '@/api/completion'
+import { listAlerts, resolveAlert } from '@/api/alert'
 import { downloadBlob } from '@/utils/download'
 import { flowTypeText } from '@/api/mock'
 import { useAuthStore } from '@/stores/auth'
@@ -74,13 +102,28 @@ const students = ref([])
 const studentId = ref(null)
 const flows = ref([])
 const recs = ref([])
-const tab = ref('flow')
+const notices = ref([])
+const tab = ref('notice')
+
+const pendingNotices = computed(() => notices.value.filter((n) => n.status === 'PENDING').length)
 
 const currentTotal = computed(() => students.value.find((s) => s.id === studentId.value)?.totalCredits ?? '—')
 
 async function loadAll() {
   await loadFlow()
   await loadRec()
+  await loadNotices()
+}
+async function loadNotices() {
+  const r = await listAlerts()
+  const list = r.data ?? r
+  // 学生端后端已按本人过滤；教师/管理员查看所选学生的提醒
+  notices.value = isStudent.value ? list : list.filter((a) => a.studentId === studentId.value)
+}
+async function markRead(n) {
+  await resolveAlert(n.id)
+  ElMessage.success('已标记为已读')
+  await loadNotices()
 }
 async function loadFlow() {
   const r = await listCreditFlow({ userId: studentId.value })
@@ -125,4 +168,12 @@ onMounted(async () => {
 .rec-title { font-weight: 600; margin-bottom: 8px; }
 .rec-meta { display: flex; gap: 6px; margin-bottom: 8px; }
 .rec-reason { color: var(--text-soft); font-size: 12px; }
+.tab-badge { margin-left: 4px; }
+.notice-item { display: flex; gap: 10px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; background: #fffdf5; }
+.notice-item.resolved { background: #fafafa; opacity: 0.7; }
+.notice-ico { color: #f59e0b; font-size: 18px; margin-top: 2px; }
+.notice-body { flex: 1; }
+.notice-msg { font-size: 14px; color: #2b3242; line-height: 1.5; }
+.notice-meta { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+.notice-time { font-size: 12px; color: var(--text-soft); }
 </style>

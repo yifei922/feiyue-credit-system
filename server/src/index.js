@@ -10,6 +10,7 @@ const alertsRouter = require('./routes/alerts');
 const recommendRouter = require('./routes/recommend');
 const dashboardRouter = require('./routes/dashboard');
 const operateLogRouter = require('./routes/operateLog');
+const usersRouter = require('./routes/users');
 const authMiddleware = require('./middleware/auth');
 
 const app = express();
@@ -30,6 +31,7 @@ api.use('/alerts', alertsRouter);
 api.use('/recommend', recommendRouter);
 api.use('/dashboard', dashboardRouter);
 api.use('/operate-logs', operateLogRouter);
+api.use('/users', usersRouter);
 app.use('/api', api);
 
 // 同源托管前端（单进程全栈，部署到免费平台只需这一个服务）

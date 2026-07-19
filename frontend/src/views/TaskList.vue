@@ -9,8 +9,7 @@
           <el-icon><Files /></el-icon> 从模板创建
         </el-button>
         <el-select v-model="filterSubject" placeholder="全部科目" clearable style="width: 150px" @change="load">
-          <el-option label="语文" :value="1" />
-          <el-option label="数学" :value="2" />
+          <el-option v-for="s in subjects" :key="s.id" :label="s.name" :value="s.id" />
         </el-select>
       </div>
       <div class="right">共 {{ tasks.length }} 个任务</div>
@@ -40,8 +39,7 @@
         <el-form-item label="标题"><el-input v-model="form.title" /></el-form-item>
         <el-form-item label="科目">
           <el-select v-model="form.subjectId" style="width: 100%">
-            <el-option label="语文" :value="1" />
-            <el-option label="数学" :value="2" />
+            <el-option v-for="s in subjects" :key="s.id" :label="s.name" :value="s.id" />
           </el-select>
         </el-form-item>
         <el-form-item label="类型">
@@ -79,8 +77,10 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { Plus, Files } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { listTasks, createTask, saveAsTemplate, createFromTemplate, listTemplates } from '@/api/task'
+import { listSubjects } from '@/api/subject'
 
 const tasks = ref([])
+const subjects = ref([])
 const templates = ref([])
 const filterSubject = ref('')
 const createVisible = ref(false)
@@ -132,8 +132,17 @@ function fmt(d) {
   return `${dt.getFullYear()}-${p(dt.getMonth() + 1)}-${p(dt.getDate())} ${p(dt.getHours())}:${p(dt.getMinutes())}`
 }
 
+async function loadSubjects() {
+  const r = await listSubjects()
+  subjects.value = r.data ?? r
+  if (subjects.value.length && !subjects.value.find((s) => s.id === form.value.subjectId)) {
+    form.value.subjectId = subjects.value[0].id
+  }
+}
+
 onMounted(() => {
   load()
+  loadSubjects()
   window.addEventListener('app:save', onSave)
 })
 onBeforeUnmount(() => window.removeEventListener('app:save', onSave))

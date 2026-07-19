@@ -29,7 +29,8 @@ const TYPE_LABEL = { HOMEWORK: '作业', BACKING: '背书', EXAM: '测验' };
 const ALERT_TYPE_LABEL = {
   CONSECUTIVE_MISS: '连续未完成',
   OVERDUE_SOON: '临近截止未完成',
-  LOW_CREDIT: '学分偏低'
+  LOW_CREDIT: '学分偏低',
+  REMIND: '任务提醒'
 };
 
 module.exports = { calcCredit, STATUS_LABEL, FLOW_TYPE_LABEL, TYPE_LABEL, ALERT_TYPE_LABEL };

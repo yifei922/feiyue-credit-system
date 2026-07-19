@@ -16,3 +16,8 @@ export function importStudents(payload) {
 export function exportStudents(format = 'csv') {
   return request.get('/api/students/export', { params: { format }, responseType: 'blob' })
 }
+
+// 重置学生登录密码（不传 password 则重置为 123456）
+export function resetStudentPassword(studentId, password) {
+  return request.post(`/api/students/${studentId}/reset-password`, password ? { password } : {})
+}

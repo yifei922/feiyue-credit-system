@@ -231,4 +231,38 @@ function seed() {
 
 seed();
 
+// ── 幂等迁移：每次启动都执行，用于给「已存在的库」补齐新功能所需的数据 ──
+// 不受 seed() 的空库守卫限制，保证线上老库/新库都能获得：初中全科科目 + 超级管理员
+function migrate() {
+  const CLASS_ID = 1;
+
+  // 确保存在班级（极端情况下空库场景）
+  const hasClass = db.prepare('SELECT id FROM clazz WHERE id=?').get(CLASS_ID);
+  if (!hasClass) db.prepare('INSERT INTO clazz(id, name) VALUES(?,?)').run(CLASS_ID, '斐越十班');
+
+  // 1) 超级管理员（单独给管理者本人的最高权限账号）
+  const SUPER_USER = 'superadmin';
+  const existSuper = db.prepare('SELECT id FROM sys_user WHERE username=?').get(SUPER_USER);
+  if (!existSuper) {
+    db.prepare('INSERT INTO sys_user(username, password, name, role, class_id, student_id) VALUES(?,?,?,?,?,?)')
+      .run(SUPER_USER, hashPassword('Feiyue@2026'), '超级管理员', 'ADMIN', CLASS_ID, null);
+    console.log('[migrate] 超级管理员账号已创建: superadmin / Feiyue@2026');
+  }
+
+  // 2) 初中全科科目补齐（缺哪科补哪科，默认挂王老师 teacher_id=2）
+  const FULL_SUBJECTS = [
+    '语文', '数学', '英语', '物理', '化学', '生物',
+    '道德与法治', '历史', '地理', '体育与健康', '音乐', '美术', '信息科技'
+  ];
+  const teacher = db.prepare("SELECT id FROM sys_user WHERE role='TEACHER' ORDER BY id LIMIT 1").get();
+  const teacherId = teacher ? teacher.id : null;
+  const insSubj = db.prepare('INSERT INTO subject(name, class_id, teacher_id) VALUES(?,?,?)');
+  FULL_SUBJECTS.forEach((name) => {
+    const exist = db.prepare('SELECT id FROM subject WHERE name=? AND class_id=?').get(name, CLASS_ID);
+    if (!exist) insSubj.run(name, CLASS_ID, teacherId);
+  });
+}
+
+migrate();
+
 module.exports = { db };

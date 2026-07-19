@@ -69,6 +69,55 @@ router.post('/scan', requireRole('ADMIN', 'TEACHER', 'REP'), (req, res) => {
   ok(res, { ok: true, count });
 });
 
+// 一键提醒所有「未完成」学生（管理员/老师/课代表，REP 限本科目范围）
+// 为每位有未完成任务的学生生成一条 REMIND 提醒，学生端可在「我的提醒」看到
+router.post('/remind-unfinished', requireRole('ADMIN', 'TEACHER', 'REP'), (req, res) => {
+  const managed = req.user.role === 'REP' ? getManagedSubjectIds(req.user) : null;
+  if (managed && managed.length === 0) return ok(res, { ok: true, count: 0 });
+
+  // 查未完成记录（带任务标题、科目），按学生聚合
+  let sql = `SELECT cr.student_id, t.title, t.subject_id
+             FROM completion_record cr JOIN task t ON cr.task_id=t.id
+             WHERE cr.status='UNFINISHED'`;
+  const params = [];
+  if (managed) {
+    sql += ` AND t.subject_id IN (${managed.map(() => '?').join(',')})`;
+    params.push(...managed);
+  }
+  const rows = db.prepare(sql).all(...params);
+
+  const byStudent = new Map();
+  rows.forEach((r) => {
+    if (!byStudent.has(r.student_id)) byStudent.set(r.student_id, []);
+    byStudent.get(r.student_id).push(r.title);
+  });
+
+  let count = 0;
+  const insAlert = db.prepare('INSERT INTO alert(student_id,type,level,message) VALUES(?,?,?,?)');
+  for (const [studentId, titles] of byStudent.entries()) {
+    // 先清掉该生旧的待处理提醒，避免堆积重复
+    db.prepare("UPDATE alert SET status='RESOLVED' WHERE student_id=? AND type='REMIND' AND status='PENDING'").run(studentId);
+    const list = titles.slice(0, 5).join('、') + (titles.length > 5 ? ` 等${titles.length}项` : '');
+    insAlert.run(studentId, 'REMIND', 'WARN', `你还有 ${titles.length} 项任务未完成：${list}，请尽快完成！`);
+    count++;
+  }
+  recordLog(req.user, 'REMIND', 'alert', null, null, { count });
+  ok(res, { ok: true, count });
+});
+
+// 给单个学生发送自定义提醒（管理员/老师/课代表）
+router.post('/notify', requireRole('ADMIN', 'TEACHER', 'REP'), (req, res) => {
+  const studentId = Number(req.body?.studentId);
+  const message = String(req.body?.message || '').trim();
+  if (!studentId || !message) return fail(res, 400, '请指定学生和提醒内容');
+  const stu = db.prepare('SELECT id FROM student WHERE id=?').get(studentId);
+  if (!stu) return fail(res, 404, '学生不存在');
+  db.prepare('INSERT INTO alert(student_id,type,level,message) VALUES(?,?,?,?)')
+    .run(studentId, 'REMIND', 'INFO', message);
+  recordLog(req.user, 'REMIND', 'alert', studentId, null, { message });
+  ok(res, { ok: true });
+});
+
 // 解决
 router.put('/:id/resolve', requireRole('ADMIN', 'TEACHER', 'REP'), (req, res) => {
   const before = db.prepare('SELECT * FROM alert WHERE id=?').get(req.params.id);

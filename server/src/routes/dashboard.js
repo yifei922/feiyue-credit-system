@@ -62,6 +62,51 @@ router.get('/overview', (req, res) => {
   ok(res, { subjectCompletionRate, statusDistribution, summary });
 });
 
+// 完成情况小计总览：整体完成/未完成人数、各任务完成小计、未完成学生清单
+// REP 仅统计自己负责的科目范围
+router.get('/completion-summary', (req, res) => {
+  const managed = req.user.role === 'REP' ? getManagedSubjectIds(req.user) : null;
+  if (managed && managed.length === 0) {
+    return ok(res, { totalStudents: 0, doneStudents: 0, unfinishedStudents: 0, byTask: [], unfinishedList: [] });
+  }
+
+  // 范围内的任务
+  let taskSql = 'SELECT t.*, s.name AS subjectName FROM task t LEFT JOIN subject s ON t.subject_id=s.id WHERE 1=1';
+  const tParams = [];
+  if (managed) { taskSql += ` AND t.subject_id IN (${managed.map(() => '?').join(',')})`; tParams.push(...managed); }
+  const tasks = db.prepare(taskSql).all(...tParams);
+
+  // 各任务完成小计
+  const byTask = tasks.map((t) => {
+    const recs = db.prepare('SELECT status FROM completion_record WHERE task_id=?').all(t.id);
+    const done = recs.filter((r) => r.status === 'DONE_ONTIME' || r.status === 'DONE_OVERDUE').length;
+    const unfinished = recs.filter((r) => r.status === 'UNFINISHED').length;
+    return { taskId: t.id, title: t.title, subjectName: t.subjectName, done, unfinished, total: recs.length };
+  });
+
+  // 未完成学生聚合（含待完成任务标题）
+  let unfSql = `SELECT cr.student_id, s.name AS studentName, s.student_no AS studentNo, t.title
+                FROM completion_record cr
+                JOIN task t ON cr.task_id=t.id
+                LEFT JOIN student s ON cr.student_id=s.id
+                WHERE cr.status='UNFINISHED'`;
+  const uParams = [];
+  if (managed) { unfSql += ` AND t.subject_id IN (${managed.map(() => '?').join(',')})`; uParams.push(...managed); }
+  const unfRows = db.prepare(unfSql).all(...uParams);
+  const map = new Map();
+  unfRows.forEach((r) => {
+    if (!map.has(r.student_id)) map.set(r.student_id, { studentId: r.student_id, studentName: r.studentName, studentNo: r.studentNo, tasks: [] });
+    map.get(r.student_id).tasks.push(r.title);
+  });
+  const unfinishedList = [...map.values()].map((u) => ({ ...u, pendingCount: u.tasks.length }));
+
+  const totalStudents = db.prepare('SELECT COUNT(*) AS c FROM student').get().c;
+  const unfinishedStudents = unfinishedList.length;
+  const doneStudents = Math.max(totalStudents - unfinishedStudents, 0);
+
+  ok(res, { totalStudents, doneStudents, unfinishedStudents, byTask, unfinishedList });
+});
+
 // 学分趋势（按流水累计）
 router.get('/credit-trend', (req, res) => {
   let studentId = Number(req.query.studentId);

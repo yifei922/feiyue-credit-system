@@ -5,7 +5,7 @@
 const { db } = require('../db');
 const { fail } = require('../util');
 
-const ROLE_LABEL = { ADMIN: '管理员', REP: '课代表', STUDENT: '学生' };
+const ROLE_LABEL = { ADMIN: '管理员', TEACHER: '老师', REP: '课代表', STUDENT: '学生' };
 
 // 角色检查中间件工厂
 function requireRole(...roles) {
