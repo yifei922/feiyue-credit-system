@@ -8,11 +8,16 @@ services:
     name: feiyue-credit
     runtime: node
     plan: free
-    buildCommand: cd frontend && npm install && npm run build:server && cd ../server && npm install
-    startCommand: cd server && npm start
-    healthCheckPath: /
+    # node:sqlite 内置模块需要 Node >= 22.5.0
+    # Render 默认可能用旧版本，必须显式指定
     envVars:
+      - key: NODE_VERSION
+        value: "22"
       - key: NODE_ENV
         value: production
       - key: JWT_SECRET
         generateValue: true
+    buildCommand: |
+      cd frontend && npm install && npm run build:server && cd ../server && npm install
+    startCommand: cd server && npm start
+    healthCheckPath: /
