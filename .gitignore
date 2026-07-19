@@ -1,0 +1,19 @@
+# 依赖
+node_modules/
+
+# 前端构建产物（部署时由 CI 重新构建）
+frontend/dist/
+
+# 本地数据库（运行时生成，含种子数据；部署后由新环境自动初始化）
+server/data/
+
+# 日志
+*.log
+
+# 本地环境变量（保留 .env.example / .env.server / .env.cloud 等构建配置）
+.env
+.env.local
+
+# 测试覆盖率报告
+coverage/
+**/coverage/

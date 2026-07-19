@@ -1,0 +1,74 @@
+# 斐越十班班级作业学分管理系统 V2.0 —— 生产一键编排
+# 用法：
+#   1) 生成环境变量（首次）： ./deploy.sh 会自动创建根 .env（含随机 JWT_SECRET 与数据库密码）
+#      或手动： cp .env.example .env  并填写
+#   2) 启动： docker compose up -d --build
+#   3) 访问： http://<服务器IP>:8080
+#      建议前置 Nginx / Cloudflare 绑定域名并启用 HTTPS（见 DEPLOY.md）
+#
+# 说明：docker compose 会自动读取本目录下的 .env 文件，作为 ${VAR} 的取值来源。
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: credit-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: credit_db
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD:-root}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    networks:
+      - credit-net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: credit-backend
+    environment:
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      DB_NAME: credit_db
+      DB_USERNAME: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      JWT_SECRET: ${JWT_SECRET:-change-me-to-a-long-random-secret-at-least-32-chars}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080}
+    # 后端仅通过前端 Nginx 反向代理（/api）在容器网络内访问，不占用宿主机 8080 端口
+    # 如需本地直接调试后端 API，可改为：- "8081:8080"
+    expose:
+      - "8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - credit-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: credit-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - credit-net
+
+volumes:
+  mysql-data:
+
+networks:
+  credit-net:
+    driver: bridge

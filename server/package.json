@@ -1,0 +1,19 @@
+{
+  "name": "credit-system-server",
+  "version": "2.0.0",
+  "private": true,
+  "description": "斐越十班班级作业学分管理系统 - Node 后端（node:sqlite + Express）",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
