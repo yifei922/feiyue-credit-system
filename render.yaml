@@ -1,5 +1,4 @@
-# Render 免费层一键部署
-# 用法: Render 控制台 -> New -> Blueprint -> 连 GitHub 仓库 -> Deploy Blueprint
+# Render 免费层一键部署（Blueprint 模式）
 services:
   - type: web
     name: feiyue-credit
@@ -10,8 +9,8 @@ services:
         value: production
       - key: JWT_SECRET
         generateValue: true
-    # 构建前端 + 安装后端依赖（单行命令，兼容所有 YAML 解析器）
-    buildCommand: cd frontend && npm install && npm run build:server && cd ../server && npm install
-    # 启动 Node 服务（单进程托管前端 dist + /api）
-    startCommand: cd server && npm start
+    # 从仓库根目录执行：构建前端 + 安装后端依赖
+    buildCommand: cd frontend && npm install && npx vite build --mode server && cd ../server && npm install
+    # 启动服务（从仓库根目录，进入 server 目录）
+    startCommand: cd server && node src/index.js
     healthCheckPath: /
