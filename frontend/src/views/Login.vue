@@ -126,4 +126,13 @@ async function onSubmit() {
   color: var(--text-soft);
   font-size: 12px;
 }
+
+/* 手机端：登录卡片满宽、内边距收紧 */
+@media (max-width: 768px) {
+  .login-card {
+    width: 90vw;
+    max-width: 380px;
+    padding: 28px 20px;
+  }
+}
 </style>

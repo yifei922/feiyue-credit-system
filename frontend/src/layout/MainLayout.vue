@@ -1,6 +1,7 @@
 <template>
   <el-container class="layout">
-    <el-aside width="220px" class="aside">
+    <div class="backdrop" v-if="menuOpen" @click="menuOpen = false"></div>
+    <el-aside width="220px" class="aside" :class="{ open: menuOpen }">
       <div class="logo">
         <span class="logo-mark">斐</span>
         <span class="logo-text">斐越十班</span>
@@ -15,6 +16,7 @@
 
     <el-container>
       <el-header class="header">
+        <el-icon class="hamburger" @click="menuOpen = !menuOpen"><Menu /></el-icon>
         <el-breadcrumb separator="/" class="crumb">
           <el-breadcrumb-item :to="{ path: '/dashboard' }">首页</el-breadcrumb-item>
           <el-breadcrumb-item>{{ currentTitle }}</el-breadcrumb-item>
@@ -47,15 +49,26 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { ElMessage } from 'element-plus'
-import { DataLine, ArrowDown, Files, EditPen, User, UserFilled, Bell, Setting } from '@element-plus/icons-vue'
+import { DataLine, ArrowDown, Files, EditPen, User, UserFilled, Bell, Setting, Menu } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
+
+// 手机端抽屉菜单状态
+const menuOpen = ref(false)
+function onMenuSelect() {
+  menuOpen.value = false
+}
+function onResize() {
+  if (window.innerWidth > 768 && menuOpen.value) menuOpen.value = false
+}
+onMounted(() => window.addEventListener('resize', onResize))
+onUnmounted(() => window.removeEventListener('resize', onResize))
 
 // 角色化菜单：学生仅可见「学生端 / 数据看板」，教师/科代/管理员可见全部管理模块
 const ALL_MENUS = [
@@ -165,5 +178,55 @@ function onCommand(cmd) {
 .fade-leave-to {
   opacity: 0;
   transform: translateY(-6px);
+}
+
+/* 汉堡按钮默认隐藏（桌面端） */
+.hamburger {
+  display: none;
+}
+
+/* 小屏（手机 / iPad 竖屏）：侧边栏变抽屉 + 适配刘海安全区 */
+@media (max-width: 768px) {
+  .hamburger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    cursor: pointer;
+    margin-right: 10px;
+    color: var(--text);
+  }
+  .aside {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 2001;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.12);
+  }
+  .aside.open {
+    transform: translateX(0);
+  }
+  .main {
+    padding: 12px;
+    padding-top: calc(12px + env(safe-area-inset-top));
+  }
+  .header {
+    padding: 0 12px;
+    padding-top: env(safe-area-inset-top);
+  }
+  .crumb {
+    display: none;
+  }
+}
+
+/* 抽屉遮罩 */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 2000;
 }
 </style>
