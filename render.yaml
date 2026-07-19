@@ -1,23 +1,17 @@
-# Render 免费层一键部署（无需自有服务器 / 无需域名，自动分配 *.onrender.com 子域名）
-# 步骤：
-#   1) 把本仓库推送到你的 GitHub
-#   2) Render 控制台 -> New -> Web Service -> 关联仓库 -> 选 "Use render.yaml"
-#   3) 免费层会自动构建前端 + 启动 Node 后端，分配公网网址
+# Render 免费层一键部署
+# 用法: Render 控制台 -> New -> Blueprint -> 连 GitHub 仓库 -> Deploy Blueprint
 services:
   - type: web
     name: feiyue-credit
     runtime: node
     plan: free
-    # node:sqlite 内置模块需要 Node >= 22.5.0
-    # Render 默认可能用旧版本，必须显式指定
     envVars:
-      - key: NODE_VERSION
-        value: "22"
       - key: NODE_ENV
         value: production
       - key: JWT_SECRET
         generateValue: true
-    buildCommand: |
-      cd frontend && npm install && npm run build:server && cd ../server && npm install
+    # 构建前端 + 安装后端依赖（单行命令，兼容所有 YAML 解析器）
+    buildCommand: cd frontend && npm install && npm run build:server && cd ../server && npm install
+    # 启动 Node 服务（单进程托管前端 dist + /api）
     startCommand: cd server && npm start
     healthCheckPath: /
