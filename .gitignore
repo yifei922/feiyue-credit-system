@@ -20,3 +20,6 @@ coverage/
 
 # WorkBuddy 内部工作数据（记忆/配置，非项目源码，不应入库）
 .workbuddy/
+# 例外：项目工作记忆随仓库带走（全新克隆不会被覆盖，仅补充本项目笔记）
+!.workbuddy/memory/
+!.workbuddy/memory/**

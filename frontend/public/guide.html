@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>斐越十班 · 班级作业学分管理系统 使用指南</title>
+<style>
+  :root{
+    --brand:#4f46e5; --blue:#2f6bff; --amber:#f59e0b; --green:#22c55e;
+    --red:#ef4444; --bg:#f5f7fb; --card:#fff; --text:#1f2937; --soft:#6b7280;
+    --border:#e5e7eb;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--bg); color:var(--text); line-height:1.8; -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--blue);text-decoration:none;}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 16px 80px;}
+
+  /* 封面 */
+  .hero{
+    background:linear-gradient(135deg,#4f46e5,#2f6bff);
+    color:#fff;border-radius:0 0 28px 28px;padding:54px 24px 46px;text-align:center;
+  }
+  .hero .badge{
+    display:inline-block;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);
+    padding:6px 16px;border-radius:999px;font-size:13px;margin-bottom:14px;
+  }
+  .hero h1{font-size:30px;margin:6px 0 10px;font-weight:700;}
+  .hero p{margin:0;opacity:.92;font-size:15px;}
+  .hero .meta{margin-top:18px;font-size:13px;opacity:.85;}
+
+  /* 目录 */
+  .toc{
+    background:var(--card);border:1px solid var(--border);border-radius:16px;
+    padding:18px 20px;margin:24px 0;display:flex;flex-wrap:wrap;gap:10px;
+  }
+  .toc a{
+    background:#eef2ff;color:var(--brand);padding:8px 14px;border-radius:10px;font-size:14px;font-weight:600;
+  }
+  .toc a:hover{background:var(--brand);color:#fff;}
+
+  section{
+    background:var(--card);border:1px solid var(--border);border-radius:16px;
+    padding:24px 22px;margin:22px 0;scroll-margin-top:16px;
+  }
+  section h2{font-size:21px;margin:0 0 6px;display:flex;align-items:center;gap:10px;}
+  .num{
+    width:30px;height:30px;flex:0 0 30px;border-radius:9px;background:var(--brand);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;
+  }
+  section > p.lead{color:var(--soft);margin:6px 0 16px;font-size:14.5px;}
+
+  /* 配图 */
+  .figure{background:#fbfcfe;border:1px dashed #d7dded;border-radius:12px;padding:12px;margin:8px 0 18px;}
+  .figure svg{width:100%;height:auto;display:block;border-radius:8px;}
+
+  /* 步骤 */
+  .steps{counter-reset:s;list-style:none;padding:0;margin:0;}
+  .steps li{
+    position:relative;padding:10px 14px 10px 46px;border:1px solid var(--border);border-radius:12px;
+    margin-bottom:10px;background:#fbfcfe;font-size:15px;
+  }
+  .steps li::before{
+    counter-increment:s;content:counter(s);position:absolute;left:12px;top:50%;transform:translateY(-50%);
+    width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;font-size:13px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .steps b{color:var(--brand);}
+
+  /* 提示框 */
+  .tip{
+    border-left:4px solid var(--amber);background:#fffbeb;border-radius:0 10px 10px 0;
+    padding:12px 16px;margin:14px 0;font-size:14px;color:#7c5a00;
+  }
+  .tip.blue{border-left-color:var(--blue);background:#eef4ff;color:#1e40af;}
+
+  /* 角色卡 */
+  .roles{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+  .role{border:1px solid var(--border);border-radius:14px;padding:14px;background:#fbfcfe;}
+  .role .tag{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;color:#fff;margin-bottom:8px;}
+  .role ul{margin:6px 0 0;padding-left:18px;font-size:13.5px;color:var(--text);}
+  .role.a .tag{background:#ef4444;} .role.t .tag{background:#f59e0b;}
+  .role.r .tag{background:#2f6bff;} .role.s .tag{background:#22c55e;}
+
+  footer{text-align:center;color:var(--soft);font-size:13px;margin-top:30px;}
+
+  @media (max-width:680px){
+    .hero h1{font-size:24px;}
+    .roles{grid-template-columns:1fr;}
+    section{padding:18px 14px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="badge">斐越十班 · 班级作业学分管理系统</div>
+  <h1>系统使用指南</h1>
+  <p>一本给老师、课代表和同学们看的小手册 —— 看图就会用</p>
+  <div class="meta">适用角色：管理员 / 老师 / 课代表 / 学生　|　最后更新：2026-07-19</div>
+</div>
+
+<div class="wrap">
+
+  <div class="toc">
+    <a href="#s1">1 系统能做什么</a>
+    <a href="#s2">2 怎么登录</a>
+    <a href="#s3">3 四种身份</a>
+    <a href="#s4">4 设课代表</a>
+    <a href="#s5">5 改密码/角色</a>
+    <a href="#s6">6 发任务</a>
+    <a href="#s7">7 登记完成</a>
+    <a href="#s8">8 看板+提醒</a>
+    <a href="#s9">9 课代表操作</a>
+    <a href="#s10">10 学生端</a>
+    <a href="#s11">11 预警中心</a>
+    <a href="#s12">12 常见问题</a>
+  </div>
+
+  <!-- 1 -->
+  <section id="s1">
+    <h2><span class="num">1</span>这个系统能做什么？</h2>
+    <p class="lead">简单说：它是一个"班级作业和学分"的小管家。</p>
+    <div class="figure">
+      <svg viewBox="0 0 640 300" xmlns="http://www.w3.org/2000/svg">
+        <rect x="8" y="8" width="624" height="284" rx="14" fill="#ffffff" stroke="#e5e7eb"/>
+        <text x="32" y="50" font-size="18" font-weight="700" fill="#1f2937">它帮我们做四件事：</text>
+        <g font-size="14" fill="#374151">
+          <rect x="32" y="74" width="270" height="64" rx="12" fill="#eef2ff"/>
+          <text x="50" y="104" font-weight="700" fill="#4f46e5">① 发布学习任务</text>
+          <text x="50" y="126">老师/课代表布置作业、考试</text>
+          <rect x="338" y="74" width="270" height="64" rx="12" fill="#ecfdf5"/>
+          <text x="356" y="104" font-weight="700" fill="#059669">② 登记完成情况</text>
+          <text x="356" y="126">谁完成了、谁没完成</text>
+          <rect x="32" y="158" width="270" height="64" rx="12" fill="#fff7ed"/>
+          <text x="50" y="188" font-weight="700" fill="#d97706">③ 计算学分</text>
+          <text x="50" y="210">完成得学分，老师可加/扣</text>
+          <rect x="338" y="158" width="270" height="64" rx="12" fill="#fef2f2"/>
+          <text x="356" y="188" font-weight="700" fill="#dc2626">④ 提醒与预警</text>
+          <text x="356" y="210">一键提醒没做完的同学</text>
+        </g>
+        <text x="32" y="262" font-size="13" fill="#6b7280">一句话：让班级作业清清楚楚，谁做没做、有多少学分，一眼就知道。</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section id="s2">
+    <h2><span class="num">2</span>怎么登录？</h2>
+    <p class="lead">打开网页，输入账号和密码，点"登录"就好。</p>
+    <div class="figure">
+      <svg viewBox="0 0 640 320" xmlns="http://www.w3.org/2000/svg">
+        <rect x="8" y="8" width="624" height="304" rx="14" fill="#ffffff" stroke="#e5e7eb"/>
+        <rect x="190" y="44" width="260" height="232" rx="16" fill="#ffffff" stroke="#e5e7eb"/>
+        <rect x="214" y="64" width="48" height="48" rx="12" fill="#4f46e5"/>
+        <text x="238" y="96" font-size="22" font-weight="700" fill="#fff" text-anchor="middle">斐</text>
+        <text x="320" y="100" font-size="17" font-weight="700" fill="#1f2937" text-anchor="middle">斐越十班</text>
+        <text x="320" y="120" font-size="11" fill="#6b7280" text-anchor="middle">班级作业学分管理系统</text>
+        <rect x="214" y="138" width="212" height="34" rx="8" fill="#f3f4f6" stroke="#e5e7eb"/>
+        <text x="226" y="160" font-size="13" fill="#9ca3af">用户名</text>
+        <rect x="214" y="180" width="212" height="34" rx="8" fill="#f3f4f6" stroke="#e5e7eb"/>
+        <text x="226" y="202" font-size="13" fill="#9ca3af">密码</text>
+        <rect x="214" y="226" width="212" height="36" rx="8" fill="#2f6bff"/>
+        <text x="320" y="250" font-size="15" font-weight="700" fill="#fff" text-anchor="middle">登 录</text>
+      </svg>
+    </div>
+    <ol class="steps">
+      <li>在浏览器打开系统网址（老师会发给你）。</li>
+      <li>在"用户名"框输入你的账号，在"密码"框输入密码。</li>
+      <li>点蓝色的 <b>登录</b> 按钮。</li>
+      <li>系统会<b>自动认出你的身份</b>：学生是同学界面，老师/课代表/管理员是管理界面。</li>
+    </ol>
+    <div class="tip">初始密码都是 <b>123456</b>。第一次登录后，建议找老师帮你改密码（见第 5 节）。超级管理员账号另设，不在此列。</div>
+  </section>
+
+  <!-- 3 -->
+  <section id="s3">
+    <h2><span class="num">3</span>四种身份，各能做什么？</h2>
+    <p class="lead">登录后看到的菜单不一样，因为大家的"权限"不同。下面一张图看懂：</p>
+    <div class="figure">
+      <svg viewBox="0 0 640 120" xmlns="http://www.w3.org/2000/svg">
+        <g font-size="12" text-anchor="middle">
+          <rect x="8" y="20" width="150" height="80" rx="12" fill="#fef2f2"/>
+          <text x="83" y="48" font-weight="700" fill="#dc2626">管理员</text>
+          <text x="83" y="72">全部功能</text>
+          <rect x="170" y="20" width="150" height="80" rx="12" fill="#fff7ed"/>
+          <text x="245" y="48" font-weight="700" fill="#d97706">老师</text>
+          <text x="245" y="72">管理+发布</text>
+          <rect x="332" y="20" width="150" height="80" rx="12" fill="#eff6ff"/>
+          <text x="407" y="48" font-weight="700" fill="#2f6bff">课代表</text>
+          <text x="407" y="72">本科目管理</text>
+          <rect x="494" y="20" width="138" height="80" rx="12" fill="#ecfdf5"/>
+          <text x="563" y="48" font-weight="700" fill="#059669">学生</text>
+          <text x="563" y="72">只看自己</text>
+        </g>
+      </svg>
+    </div>
+    <div class="roles">
+      <div class="role a"><span class="tag">管理员</span><ul><li>设课代表、改任何人密码/角色</li><li>发布任务、登记、看全部数据</li><li>看操作日志</li></ul></div>
+      <div class="role t"><span class="tag">老师</span><ul><li>设课代表、重置账号密码</li><li>发布任务、登记完成</li><li>看数据看板、一键提醒</li></ul></div>
+      <div class="role r"><span class="tag">课代表</span><ul><li>只管自己负责的科目</li><li>重置本科目学生密码</li><li>给学生加/扣学分、发提醒</li></ul></div>
+      <div class="role s"><span class="tag">学生</span><ul><li>看自己的学分和流水</li><li>导出我的成绩单</li><li>收老师的提醒</li></ul></div>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section id="s4">
+    <h2><span class="num">4</span>老师/管理员：设置课代表</h2>
+    <p class="lead">把某个同学设为某门课的课代表，他就能帮忙管理这门课。</p>
+    <div class="figure">
+      <svg viewBox="0 0 640 320" xmlns="http://www.w3.org/2000/svg">
+        <rect x="8" y="8" width="624" height="304" rx="14" fill="#fff" stroke="#e5e7eb"/>
+        <rect x="8" y="8" width="150" height="304" rx="14" fill="#f5f7fb"/>
+        <text x="83" y="40" font-size="13" font-weight="700" fill="#4f46e5" text-anchor="middle">菜单</text>
+        <g font-size="12" fill="#374151" text-anchor="middle">
+          <rect x="20" y="60" width="126" height="26" rx="7" fill="#fff" stroke="#e5e7eb"/><text x="83" y="77">数据看板</text>
+          <rect x="20" y="94" width="126" height="26" rx="7" fill="#fff" stroke="#e5e7eb"/><text x="83" y="111">任务管理</text>
+          <rect x="20" y="128" width="126" height="26" rx="7" fill="#fff" stroke="#e5e7eb"/><text x="83" y="145">学生管理</text>
+          <rect x="20" y="162" width="126" height="26" rx="7" fill="#4f46e5"/><text x="83" y="179" fill="#fff">系统设置 ✓</text>
+        </g>
+        <text x="180" y="42" font-size="15" font-weight="700" fill="#1f2937">系统设置 → 课代表任命</text>
+        <rect x="180" y="58" width="440" height="200" rx="10" fill="#fbfcfe" stroke="#e5e7eb"/>
+        <g font-size="12" fill="#374151">
+          <rect x="196" y="74" width="110" height="26" rx="6" fill="#fff" stroke="#e5e7eb"/><text x="251" y="91" text-anchor="middle">科目</text>
+          <rect x="316" y="74" width="180" height="26" rx="6" fill="#fff" stroke="#e5e7eb"/><text x="406" y="91" text-anchor="middle">当前课代表</text>
+          <rect x="506" y="74" width="100" height="26" rx="6" fill="#fff" stroke="#e5e7eb"/><text x="556" y="91" text-anchor="middle">操作</text>
+          <rect x="196" y="110" width="110" height="26" rx="6" fill="#f3f4f6"/><text x="251" y="127" text-anchor="middle">数学</text>
+          <rect x="506" y="110" width="100" height="26" rx="6" fill="#eff6ff" stroke="#2f6bff"/><text x="556" y="127" text-anchor="middle" fill="#2f6bff">设置课代表</text>
+        </g>
+        <rect x="196" y="200" width="190" height="44" rx="10" fill="#fff7ed" stroke="#f59e0b"/>
+        <text x="291" y="227" font-size="12" text-anchor="middle" fill="#d97706">① 点"设置课代表" → 选同学 → 保存</text>
+      </svg>
+    </div>
+    <ol class="steps">
+      <li>左侧菜单点 <b>系统设置</b>。</li>
+      <li>在上方标签栏点 <b>课代表任命</b>。</li>
+      <li>在某一门课那一行的"操作"列，点 <b>设置课代表</b>。</li>
+      <li>在弹出的框里，勾选要设为课代表的同学，点 <b>保存</b>。</li>
+    </ol>
+    <div class="tip blue">小提示：要先在"账号管理"里把某位同学的角色改成"课代表"，他才会出现在候选名单里哦。</div>
+  </section>
+
+  <!-- 5 -->
+  <section id="s5">
+    <h2><span class="num">5</span>老师/管理员：重置密码、改角色</h2>
+    <p class="lead">同学忘了密码？在这里一键重置。也能把同学设为课代表或改回学生。</p>
+    <div class="figure">
+      <svg viewBox="0 0 640 300" xmlns="http://www.w3.org/2000/svg">
+        <rect x="8" y="8" width="624" height="284" rx="14" fill="#fff" stroke="#e5e7eb"/>
+        <text x="24" y="40" font-size="15" font-weight="700" fill="#1f2937">系统设置 → 账号管理</text>
+        <rect x="24" y="54" width="592" height="210" rx="10" fill="#fbfcfe" stroke="#e5e7eb"/>
+        <g font-size="12" fill="#374151">
+          <rect x="40" y="70" width="100" height="24" rx="6" fill="#fff" stroke="#e5e7eb"/><text x="90" y="86" text-anchor="middle">登录账号</text>
+          <rect x="150" y="70" width="90" height="24" rx="6" fill="#fff" stroke="#e5e7eb"/><text x="195" y="86" text-anchor="middle">姓名</text>
+          <rect x="250" y="70" width="80" height="24" rx="6" fill="#fff" stroke="#e5e7eb"/><text x="290" y="86" text-anchor="middle">角色</text>
+          <rect x="470" y="70" width="130" height="24" rx="6" fill="#fff" stroke="#e5e7eb"/><text x="535" y="86" text-anchor="middle">操作</text>
+          <rect x="40" y="106" width="100" height="26" rx="6" fill="#f3f4f6"/><text x="90" y="123" text-anchor="middle">stu03</text>
+          <rect x="250" y="106" width="80" height="26" rx="6" fill="#dcfce7"/><text x="290" y="123" text-anchor="middle" fill="#059669">学生</text>
+          <rect x="470" y="106" width="62" height="26" rx="6" fill="#fff7ed" stroke="#f59e0b"/><text x="501" y="123" text-anchor="middle" fill="#d97706">重置密码</text>
+          <rect x="538" y="106" width="62" height="26" rx="6" fill="#eff6ff" stroke="#2f6bff"/><text x="569" y="123" text-anchor="middle" fill="#2f6bff">改角色</text>
+        </g>
+        <rect x="40" y="196" width="300" height="50" rx="10" fill="#fff7ed" stroke="#f59e0b"/>
+        <text x="190" y="216" font-size="12" text-anchor="middle" fill="#d97706">重置密码：留空=恢复默认 123456</text>
+        <text x="190" y="234" font-size="12" text-anchor="middle" fill="#d97706">改角色：可设为 学生/课代表/老师</text>
+      </svg>
+    </div>
+    <ol class="steps">
+      <li>菜单点 <b>系统设置 → 账号管理</b>。</li>
+      <li>找到那位同学，点 <b>重置密码</b>：弹框里可以直接设新密码，<b>留空</b>就重置成默认 123456。</li>
+      <li>点 <b>改角色</b>：在弹框里选"课代表/学生/老师/管理员"，如果是课代表还要选负责的科目，点保存。</li>
+    </ol>
+    <div class="tip">注意：超级管理员（superadmin）的角色不能改，请保管好它的密码。</div>
+  </section>
+
+  <!-- 6 -->
+  <section id="s6">
+    <h2><span class="num">6</span>老师/课代表：发布学习任务</h2>
+    <p class="lead">布置一项作业或考试，选好科目、截止时间和学分。</p>
+    <div class="figure">
+      <svg viewBox="0 0 640 300" xmlns="http://www.w3.org/2000/svg">
+        <rect x="8" y="8" width="624" height="284" rx="14" fill="#fff" stroke="#e5e7eb"/>
+        <text x="24" y="40" font-size="15" font-weight="700" fill="#1f2937">任务管理</text>
+        <rect x="430" y="24" width="120" height="34" rx="8" fill="#2f6bff"/>
+        <text x="490" y="46" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">+ 新建任务</text>
+        <rect x="24" y="64" width="592" height="200" rx="10" fill="#fbfcfe" stroke="#e5e7eb"/>
+        <g font-size="12" fill="#374151">
+          <rect x="44" y="84" width="200" height="28" rx="6" fill="#fff" stroke="#e5e7eb"/><text x="54" y="102">任务名称（如：第三章习题）</text>
+          <rect x="260" y="84" width="120" height="28" rx="6" fill="#fff" stroke="#e5e7eb"/><text x="270" y="102">科目 ▾</text>
+          <rect x="396" y="84" width="120" height="28" rx="6" fill="#fff" stroke="#e5e7eb"/><text x="406" y="102">截止时间 ▾</text>
+          <rect x="528" y="84" width="70" height="28" rx="6" fill="#fff" stroke="#e5e7eb"/><text x="538" y="102">学分</text>
+          <rect x="44" y="124" width="554" height="60" rx="6" fill="#f3f4f6"/><text x="54" y="146">说明：（选填）告诉同学们要做什么</text>
+          <rect x="44" y="200" width="120" height="36" rx="8" fill="#22c55e"/><text x="104" y="223" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">发布任务</text>
+        </g>
+        <rect x="200" y="232" width="280" height="40" rx="10" fill="#ecfdf5" stroke="#22c55e"/>
+        <text x="340" y="257" font-size="12" text-anchor="middle" fill="#059669">科目已自动列出初中全科，不用手填</text>
+      </svg>
+    </div>
+    <ol class="steps">
+      <li>菜单点 <b>任务管理</b>，点右上角 <b>+ 新建任务</b>。</li>
+      <li>填任务名称，选 <b>科目</b>（语文/数学/英语……全部都有）、<b>截止时间</b>、<b>学分</b>。</li>
+      <li>可写一句说明，点 <b>发布任务</b>。同学们马上就能看到这项任务。</li>
+    </ol>
+  </section>
+
+  <!-- 7 -->
+  <section id="s7">
+    <h2><span class="num">7</span>老师/课代表：登记完成情况</h2>
+    <p class="lead">同学交了作业，就在这里勾选"完成"，系统自动加学分。</p>
+    <div class="figure">
+      <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg">
+        <rect x="8" y="8" width="624" height="264" rx="14" fill="#fff" stroke="#e5e7eb"/>
+        <text x="24" y="40" font-size="15" font-weight="700" fill="#1f2937">完成登记</text>
+        <rect x="24" y="56" width="592" height="190" rx="10" fill="#fbfcfe" stroke="#e5e7eb"/>
+        <g font-size="12" fill="#374151">
+          <rect x="40" y="72" width="120" height="24" rx="6" fill="#fff" stroke="#e5e7eb"/><text x="100" y="88" text-anchor="middle">任务 ▾</text>
+          <rect x="170" y="72" width="120" height="24" rx="6" fill="#fff" stroke="#e5e7eb"/><text x="230" y="88" text-anchor="middle">科目 ▾</text>
+          <rect x="300" y="72" width="90" height="24" rx="6" fill="#fff" stroke="#e5e7eb"/><text x="345" y="88" text-anchor="middle">状态 ▾</text>
+        </g>
+        <g font-size="12" fill="#374151">
+          <rect x="40" y="110" width="120" height="26" rx="6" fill="#f3f4f6"/><text x="100" y="127" text-anchor="middle">张三</text>
+          <rect x="170" y="110" width="120" height="26" rx="6" fill="#dcfce7"/><text x="230" y="127" text-anchor="middle" fill="#059669">已完成</text>
+          <rect x="300" y="110" width="90" height="26" rx="6" fill="#fef2f2"/><text x="345" y="127" text-anchor="middle" fill="#dc2626">未完成</text>
+          <rect x="400" y="110" width="90" height="26" rx="6" fill="#f3f4f6"/><text x="445" y="127" text-anchor="middle">学分 +5</text>
+        </g>
+        <rect x="40" y="200" width="240" height="34" rx="8" fill="#2f6bff"/>
+        <text x="160" y="222" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">保存登记（自动算学分）</text>
+      </svg>
+    </div>
+    <ol class="steps">
+      <li>菜单点 <b>完成登记</b>。</li>
+      <li>用上方的"任务/科目/状态"筛选，找到要登记的同学。</li>
+      <li>把状态改成 <b>已完成</b>（或逾期完成），点 <b>保存登记</b>。学分会自动加起来。</li>
+    </ol>
+  </section>
+
+  <!-- 8 -->
+  <section id="s8">
+    <h2><span class="num">8</span>数据看板 + 一键提醒</h2>
+    <p class="lead">一眼看清：谁做完了、谁还没做；还能一键提醒没做完的同学。</p>
+    <div class="figure">
+      <svg viewBox="0 0 640 330" xmlns="http://www.w3.org/2000/svg">
+        <rect x="8" y="8" width="624" height="314" rx="14" fill="#fff" stroke="#e5e7eb"/>
+        <text x="24" y="40" font-size="15" font-weight="700" fill="#1f2937">数据看板</text>
+        <rect x="430" y="22" width="170" height="34" rx="8" fill="#f59e0b"/>
+        <text x="515" y="44" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">一键提醒未完成</text>
+        <g>
+          <rect x="24" y="60" width="186" height="70" rx="12" fill="#eef2ff"/><text x="117" y="92" font-size="22" font-weight="700" fill="#4f46e5" text-anchor="middle">42</text><text x="117" y="114" font-size="12" fill="#6b7280" text-anchor="middle">班级总人数</text>
+          <rect x="227" y="60" width="186" height="70" rx="12" fill="#ecfdf5"/><text x="320" y="92" font-size="22" font-weight="700" fill="#059669" text-anchor="middle">35</text><text x="320" y="114" font-size="12" fill="#6b7280" text-anchor="middle">已全部完成</text>
+          <rect x="430" y="60" width="186" height="70" rx="12" fill="#fef2f2"/><text x="523" y="92" font-size="22" font-weight="700" fill="#dc2626" text-anchor="middle">7</text><text x="523" y="114" font-size="12" fill="#6b7280" text-anchor="middle">尚有未完成</text>
+        </g>
+        <text x="24" y="156" font-size="13" font-weight="700" fill="#1f2937">未完成学生清单</text>
+        <rect x="24" y="166" width="592" height="120" rx="10" fill="#fbfcfe" stroke="#e5e7eb"/>
+        <g font-size="12" fill="#374151">
+          <rect x="40" y="182" width="90" height="24" rx="6" fill="#f3f4f6"/><text x="85" y="199" text-anchor="middle">李四</text>
+          <rect x="140" y="182" width="60" height="24" rx="6" fill="#fef2f2"/><text x="170" y="199" text-anchor="middle" fill="#dc2626">3 项</text>
+          <rect x="210" y="182" width="280" height="24" rx="6" fill="#fff" stroke="#e5e7eb"/><text x="220" y="199">数学练习、英语背诵、物理卷</text>
+          <rect x="500" y="182" width="90" height="24" rx="6" fill="#eff6ff" stroke="#2f6bff"/><text x="545" y="199" text-anchor="middle" fill="#2f6bff">单独提醒</text>
+        </g>
+        <rect x="24" y="262" width="420" height="46" rx="10" fill="#fffbeb" stroke="#f59e0b"/>
+        <text x="234" y="290" font-size="12" text-anchor="middle" fill="#d97706">点"一键提醒"给 7 人全发；点"单独提醒"给某个人发</text>
+      </svg>
+    </div>
+    <ol class="steps">
+      <li>菜单点 <b>数据看板</b>。</li>
+      <li>顶部三张卡片显示：总人数、已完成、未完成。</li>
+      <li>下面"各任务完成小计""未完成学生清单"列出谁还差几项。</li>
+      <li>点右上角 <b>一键提醒未完成学生</b>，系统自动给还没做完的同学发提醒；也可在清单里点 <b>单独提醒</b> 给某个人写话。</li>
+    </ol>
+  </section>
+
+  <!-- 9 -->
+  <section id="s9">
+    <h2><span class="num">9</span>课代表：给学生重置密码、加/扣学分</h2>
+    <p class="lead">课代表在"学生管理"里，能帮本科目的同学重置密码、调整学分。</p>
+    <div class="figure">
+      <svg viewBox="0 0 640 300" xmlns="http://www.w3.org/2000/svg">
+        <rect x="8" y="8" width="624" height="284" rx="14" fill="#fff" stroke="#e5e7eb"/>
+        <text x="24" y="40" font-size="15" font-weight="700" fill="#1f2937">学生管理 → 学生名单</text>
+        <rect x="24" y="56" width="592" height="210" rx="10" fill="#fbfcfe" stroke="#e5e7eb"/>
+        <g font-size="12" fill="#374151">
+          <rect x="40" y="72" width="90" height="24" rx="6" fill="#fff" stroke="#e5e7eb"/><text x="85" y="88" text-anchor="middle">学号</text>
+          <rect x="140" y="72" width="90" height="24" rx="6" fill="#fff" stroke="#e5e7eb"/><text x="185" y="88" text-anchor="middle">姓名</text>
+          <rect x="240" y="72" width="80" height="24" rx="6" fill="#fff" stroke="#e5e7eb"/><text x="280" y="88" text-anchor="middle">总学分</text>
+          <rect x="430" y="72" width="160" height="24" rx="6" fill="#fff" stroke="#e5e7eb"/><text x="510" y="88" text-anchor="middle">操作</text>
+          <rect x="40" y="108" width="90" height="26" rx="6" fill="#f3f4f6"/><text x="85" y="125" text-anchor="middle">1001</text>
+          <rect x="240" y="108" width="80" height="26" rx="6" fill="#dcfce7"/><text x="280" y="125" text-anchor="middle" fill="#059669">18</text>
+          <rect x="430" y="108" width="76" height="26" rx="6" fill="#eff6ff" stroke="#2f6bff"/><text x="468" y="125" text-anchor="middle" fill="#2f6bff">学分增减</text>
+          <rect x="514" y="108" width="76" height="26" rx="6" fill="#fff7ed" stroke="#f59e0b"/><text x="552" y="125" text-anchor="middle" fill="#d97706">重置密码</text>
+        </g>
+        <rect x="40" y="200" width="320" height="50" rx="10" fill="#fff7ed" stroke="#f59e0b"/>
+        <text x="200" y="220" font-size="12" text-anchor="middle" fill="#d97706">学分增减：正数加分，负数扣分</text>
+        <text x="200" y="238" font-size="12" text-anchor="middle" fill="#d97706">课代表只能管自己负责的科目同学</text>
+      </svg>
+    </div>
+    <ol class="steps">
+      <li>菜单点 <b>学生管理</b>，在"学生名单"里找到同学。</li>
+      <li>点 <b>学分增减</b>：填加分或扣分（比如 +2 奖励、−1 提醒），写原因，保存。</li>
+      <li>点 <b>重置密码</b>：帮同学找回登录密码（留空=重置成 123456）。</li>
+    </ol>
+    <div class="tip">权限提醒：课代表只能看到和操作<b>自己负责科目</b>相关的同学，看不到别的科目，更安全。</div>
+  </section>
+
+  <!-- 10 -->
+  <section id="s10">
+    <h2><span class="num">10</span>学生：我的界面</h2>
+    <p class="lead">同学登录后看到的是"学生端"，只关心自己：学分、流水、提醒、成绩单。</p>
+    <div class="figure">
+      <svg viewBox="0 0 640 300" xmlns="http://www.w3.org/2000/svg">
+        <rect x="8" y="8" width="624" height="284" rx="14" fill="#fff" stroke="#e5e7eb"/>
+        <rect x="8" y="8" width="150" height="284" rx="14" fill="#f5f7fb"/>
+        <text x="83" y="40" font-size="13" font-weight="700" fill="#059669" text-anchor="middle">学生端</text>
+        <g font-size="12" fill="#374151" text-anchor="middle">
+          <rect x="20" y="60" width="126" height="26" rx="7" fill="#059669"/><text x="83" y="77" fill="#fff">积分流水</text>
+          <rect x="20" y="94" width="126" height="26" rx="7" fill="#fff" stroke="#e5e7eb"/><text x="83" y="111">学习推荐</text>
+          <rect x="20" y="128" width="126" height="26" rx="7" fill="#fff" stroke="#e5e7eb"/><text x="83" y="145">我的提醒</text>
+          <rect x="20" y="162" width="126" height="26" rx="7" fill="#fff" stroke="#e5e7eb"/><text x="83" y="179">导出成绩单</text>
+        </g>
+        <rect x="180" y="56" width="200" height="90" rx="12" fill="#ecfdf5"/>
+        <text x="280" y="100" font-size="26" font-weight="700" fill="#059669" text-anchor="middle">18</text>
+        <text x="280" y="124" font-size="12" fill="#6b7280" text-anchor="middle">我的总学分</text>
+        <rect x="400" y="56" width="200" height="90" rx="12" fill="#eff6ff"/>
+        <text x="500" y="100" font-size="20" font-weight="700" fill="#2f6bff" text-anchor="middle">2 条</text>
+        <text x="500" y="124" font-size="12" fill="#6b7280" text-anchor="middle">老师发来的提醒</text>
+        <rect x="180" y="166" width="420" height="40" rx="10" fill="#f3f4f6"/>
+        <text x="390" y="191" font-size="12" text-anchor="middle" fill="#374151">点"我的提醒"看老师说了什么；点"导出成绩单"下载自己的成绩</text>
+      </svg>
+    </div>
+    <ol class="steps">
+      <li>用<b>学生账号</b>登录，自动进入"学生端"。</li>
+      <li>看 <b>积分流水</b>：自己每次得分、扣分都在这。</li>
+      <li>看 <b>我的提醒</b>：老师/课代表发来的提醒会出现在这里。</li>
+      <li>点 <b>导出成绩单</b>：把"我的成绩单"下载成文件，交给家长或自己保存。</li>
+    </ol>
+  </section>
+
+  <!-- 11 -->
+  <section id="s11">
+    <h2><span class="num">11</span>预警中心</h2>
+    <p class="lead">哪些同学连续没完成、快到期了、学分偏低？这里会自动列出来。</p>
+    <div class="figure">
+      <svg viewBox="0 0 640 260" xmlns="http://www.w3.org/2000/svg">
+        <rect x="8" y="8" width="624" height="244" rx="14" fill="#fff" stroke="#e5e7eb"/>
+        <text x="24" y="40" font-size="15" font-weight="700" fill="#1f2937">预警中心</text>
+        <rect x="24" y="56" width="592" height="170" rx="10" fill="#fbfcfe" stroke="#e5e7eb"/>
+        <g font-size="12" fill="#374151">
+          <rect x="40" y="72" width="150" height="26" rx="6" fill="#fef2f2"/><text x="115" y="89" text-anchor="middle" fill="#dc2626">⚠ 连续未完成</text>
+          <rect x="200" y="72" width="150" height="26" rx="6" fill="#fff7ed"/><text x="275" y="89" text-anchor="middle" fill="#d97706">⏰ 临近截止</text>
+          <rect x="360" y="72" width="150" height="26" rx="6" fill="#eff6ff"/><text x="435" y="89" text-anchor="middle" fill="#2f6bff">📉 学分偏低</text>
+        </g>
+        <g font-size="12" fill="#374151">
+          <rect x="40" y="112" width="180" height="26" rx="6" fill="#f3f4f6"/><text x="130" y="129" text-anchor="middle">王五 · 连续 3 次未交</text>
+          <rect x="240" y="112" width="180" height="26" rx="6" fill="#f3f4f6"/><text x="330" y="129" text-anchor="middle">赵六 · 明天就截止</text>
+          <rect x="440" y="112" width="150" height="26" rx="6" fill="#f3f4f6"/><text x="515" y="129" text-anchor="middle">孙七 · 仅 3 分</text>
+        </g>
+        <rect x="40" y="180" width="380" height="34" rx="8" fill="#2f6bff"/>
+        <text x="230" y="202" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">点"已处理"标记解决，或去提醒该同学</text>
+      </svg>
+    </div>
+    <ol class="steps">
+      <li>菜单点 <b>预警中心</b>。</li>
+      <li>系统按规则自动列出需要关注的同学（红=连续未完成，橙=快到期，蓝=学分低）。</li>
+      <li>处理完后点 <b>已处理</b>；或直接去"数据看板"一键提醒他们。</li>
+    </ol>
+  </section>
+
+  <!-- 12 -->
+  <section id="s12">
+    <h2><span class="num">12</span>常见问题</h2>
+    <div class="roles">
+      <div class="role s"><span class="tag">问</span><ul>
+        <li>登录不上？→ 检查账号密码，初始密码 123456；还不行找老师重置。</li>
+        <li>看不到某些菜单？→ 那是权限不同，学生本来就只看到自己的。</li>
+        <li>忘记密码？→ 找老师或课代表在"账号管理/学生管理"里重置。</li>
+      </ul></div>
+      <div class="role t"><span class="tag">师</span><ul>
+        <li>科目只有语数？→ 已升级为初中全科，刷新页面即可。</li>
+        <li>想换电脑用？→ 同一账号登录 WorkBuddy，历史记录自动显示。</li>
+        <li>超级管理员密码？→ 单独保管，勿在公共电脑登录。</li>
+      </ul></div>
+    </div>
+    <div class="tip blue">记住一句话：<b>老师管全局、课代表管本科、学生看自己</b>。有问题先看对应身份的菜单，找不到就问老师。</div>
+  </section>
+
+  <footer>斐越十班 · 班级作业学分管理系统　|　使用指南 v1.0　|　祝大家学习进步 🌟</footer>
+</div>
+</body>
+</html>
