@@ -10,7 +10,7 @@ services:
       - key: JWT_SECRET
         generateValue: true
     # 从仓库根目录执行：构建前端 + 安装后端依赖
-    buildCommand: cd frontend && npm install && npx vite build --mode server && cd ../server && npm install
+    buildCommand: cd frontend && npm install --include=dev && npx vite build --mode server && cd ../server && npm install
     # 启动服务（从仓库根目录，进入 server 目录）
     startCommand: cd server && node src/index.js
     healthCheckPath: /
