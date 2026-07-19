@@ -17,3 +17,6 @@ server/data/
 # 测试覆盖率报告
 coverage/
 **/coverage/
+
+# WorkBuddy 内部工作数据（记忆/配置，非项目源码，不应入库）
+.workbuddy/
