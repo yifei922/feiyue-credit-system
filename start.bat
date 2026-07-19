@@ -1,19 +1,24 @@
 @echo off
 title Feiyue Credit System (local)
+cd /d "%~dp0"
+set PORT=3001
+
+REM 优先用系统已装的 node；没有则用压缩包自带的 runtime\node.exe（便携，无需安装）
 where node >nul 2>nul
 if %errorlevel%==0 (
   set NODE=node
-  set NPM=npm
 ) else (
-  set NODE=C:\Users\40814\.workbuddy\binaries\node\versions\22.22.2\node.exe
-  set NPM=C:\Users\40814\.workbuddy\binaries\node\versions\22.22.2\node_modules\npm\bin\npm-cli.js
+  if exist "%~dp0runtime\node.exe" (
+    set NODE=%~dp0runtime\node.exe
+  ) else (
+    echo [错误] 未找到 Node.js。请确认 runtime 文件夹已随压缩包一起解压，
+    echo        或到 https://nodejs.org 安装 Node.js (LTS) 后重试。
+    pause
+    exit /b 1
+  )
 )
-set PORT=3001
+
 cd /d "%~dp0server"
-if not exist node_modules (
-  echo Installing dependencies, please wait...
-  "%NODE%" "%NPM%" install
-)
 echo.
 echo  ============================================
 echo   Feiyue Class 10 Credit System is starting

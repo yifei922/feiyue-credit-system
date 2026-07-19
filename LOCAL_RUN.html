@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>本地运行图文指南（菜鸟版）</title>
+<title>换电脑后本地运行图文指南（菜鸟版）</title>
 <style>
   * { box-sizing: border-box; }
   body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; max-width: 820px; margin: 0 auto; padding: 24px; background: #f7f8fa; color: #1f2328; line-height: 1.7; }
@@ -23,22 +23,22 @@
 </head>
 <body>
 
-<h1>💻 本地运行图文指南（菜鸟版）</h1>
-<p>不绑卡、不上云，系统<b>直接跑在你自己电脑上</b>，数据也只存在你电脑里，最安全、最稳定。</p>
+<h1>💻 换电脑后本地运行图文指南（菜鸟版）</h1>
+<p>这个压缩包是<b>便携版</b>：已经把运行所需的 Node 和运行环境都打包进来了，<b>新电脑不用装任何东西</b>，解压后双击就能用。数据只存在你电脑里，最安全、最稳定。</p>
 
-<div class="ok">✅ 你的电脑已经具备运行条件：Node 已装好、依赖已装好、启动脚本已备好。</div>
+<div class="ok">✅ 压缩包里已包含：系统程序(server/)、已经做好的网页(frontend/dist/)、一键启动脚本(start.bat)、以及自带的 Node 运行时(runtime/node.exe)。</div>
 
 <div class="step">
-  <h2><span class="num">1</span>找到项目文件夹里的 <code>start.bat</code></h2>
-  <p>打开文件夹（就是存放这个系统的目录）：</p>
-  <div class="file">C:\Users\40814\WorkBuddy\2026-07-19-17-04-34\</div>
-  <p>在里面找到这个文件，<b>双击它</b>：</p>
-  <div class="shot">📁 2026-07-19-17-04-34<br>  ├─ <span class="menu">frontend/</span><br>  ├─ <span class="menu">server/</span><br>  ├─ 🟢 <span class="highlight">start.bat</span>   ← 双击这个<br>  ├─ README.md<br>  └─ ...</div>
+  <h2><span class="num">1</span>把压缩包解压到一个<b>新文件夹</b></h2>
+  <p>例如：在桌面右键 → 新建文件夹，命名为 <code>斐越系统</code>，把 zip 解压进去。</p>
+  <div class="warn">⚠️ 一定要解压到<b>空的新文件夹</b>，不要覆盖你新电脑上已有的任何 WorkBuddy 文件，以免把记忆弄混。</div>
+  <p>解压后里面大概长这样：</p>
+  <div class="shot">📁 斐越系统/<br>  ├─ <span class="menu">frontend/</span>      ← 网页（已构建好）<br>  ├─ <span class="menu">server/</span>       ← 系统程序<br>  ├─ <span class="menu">runtime/</span>      ← 自带的 Node（不用管）<br>  ├─ 🟢 <span class="highlight">start.bat</span>   ← 双击这个<br>  ├─ README.md / LOCAL_RUN.html / RENDER_GUIDE.html<br>  └─ ...</div>
 </div>
 
 <div class="step">
-  <h2><span class="num">2</span>看到黑窗口 + 浏览器自动打开</h2>
-  <p>双击后会出现一个黑色命令行窗口（别关它），同时浏览器自动打开：</p>
+  <h2><span class="num">2</span>双击 <code>start.bat</code></h2>
+  <p>找到 <span class="highlight">start.bat</span>，<b>双击它</b>。会弹出黑色窗口（别关），浏览器自动打开：</p>
   <div class="shot">============================================<br>
    Feiyue Class 10 Credit System is starting<br>
    Open: <span class="menu">http://localhost:3001</span><br>
@@ -50,12 +50,12 @@
 
 <div class="step">
   <h2><span class="num">3</span>登录使用</h2>
-  <p>浏览器里输入账号：</p>
+  <p>浏览器里输入账号（密码都是 <code>123456</code>）：</p>
   <ul>
-    <li>管理员：<code>admin</code> / <code>123456</code></li>
-    <li>老师：<code>teacher01</code> / <code>123456</code></li>
-    <li>课代表：<code>rep01</code>(语文) · <code>rep02</code>(数学) / <code>123456</code></li>
-    <li>学生：<code>stu01</code>~<code>stu06</code> / <code>123456</code></li>
+    <li>管理员：<code>admin</code></li>
+    <li>老师：<code>teacher01</code></li>
+    <li>课代表：<code>rep01</code>(语文) · <code>rep02</code>(数学)</li>
+    <li>学生：<code>stu01</code>~<code>stu06</code></li>
   </ul>
   <p>登录后左侧菜单点 <span class="highlight">学生管理</span>，就能<b>导入/导出名单和成绩</b>。</p>
 </div>
@@ -64,17 +64,21 @@
   <h2><span class="num">4</span>怎么停止 / 怎么再开</h2>
   <p><b>停止</b>：直接关掉那个黑色窗口即可。</p>
   <p><b>再开</b>：再双击 <code>start.bat</code> 就行。</p>
-  <div class="warn">⚠️ 黑窗口开着期间系统才在运行；关机或关窗口后别人（同局域网）就访问不了。想长期给大家用，就让这台电脑一直开着并运行着 start.bat。</div>
+  <div class="warn">⚠️ 黑窗口开着期间系统才在运行；想长期给大家用，就让这台电脑一直开着并运行着 start.bat。</div>
 </div>
 
 <div class="ok">
-  📌 <b>数据存在哪里？</b> 在你电脑的 <code>server\data\credit.db</code> 文件里，关掉再开数据都在。建议定期在「学生管理」里点<b>导出名单 / 导出成绩</b>做备份（复制一份到别处）。
+  📌 <b>数据存在哪里？</b> 在你电脑的 <code>server\data\credit.db</code> 文件里。第一次双击 start.bat 会自动建好初始数据（6名学生/4门课程）。<br>
+  💡 建议定期在「学生管理」里点<b>导出名单 / 导出成绩</b>做备份（复制一份到别处）。
+</div>
+
+<div class="ok">
+  🔒 <b>关于记忆（重要）</b>：这个压缩包<b>不包含</b> WorkBuddy 的内部记忆文件，所以你新电脑上原有的记忆不会被覆盖，可以放心解压。
 </div>
 
 <h2>🌐 想让同学在自己电脑也能用？</h2>
-<p>本地运行默认只有你这台电脑能访问。如果希望同班同学用各自设备访问，需要：</p>
 <ul>
-  <li>方案 A：把项目文件发给同学，让他们也双击 <code>start.bat</code>（各用各的本地数据）；或</li>
+  <li>方案 A：把这个压缩包发给同学，让他们也解压后双击 <code>start.bat</code>（各用各的本地数据）；或</li>
   <li>方案 B：以后愿意绑卡了，再按 <code>RENDER_GUIDE.html</code> 部署到 Render，给大家一个网址。</li>
 </ul>
 
