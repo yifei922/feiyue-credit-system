@@ -3,8 +3,8 @@
     <div class="backdrop" v-if="menuOpen" @click="menuOpen = false"></div>
     <el-aside width="220px" class="aside" :class="{ open: menuOpen }">
       <div class="logo">
-        <span class="logo-mark">斐</span>
-        <span class="logo-text">斐越十班</span>
+        <img src="/logo.jpg" alt="洛一高附中" class="logo-img" />
+        <span class="logo-text">洛一高附中十班</span>
       </div>
       <el-menu :default-active="activeMenu" router class="menu">
         <el-menu-item v-for="m in menus" :key="m.index" :index="m.index">
@@ -43,6 +43,8 @@
             <component :is="Component" :key="route.path" />
           </transition>
         </router-view>
+
+        <div class="footer">斐越科技出品</div>
       </el-main>
     </el-container>
   </el-container>
@@ -88,7 +90,7 @@ const menus = computed(() => {
 })
 
 const activeMenu = computed(() => route.path)
-const currentTitle = computed(() => route.meta.title || '斐越十班')
+const currentTitle = computed(() => route.meta.title || '洛一高附中十班')
 const userInitial = computed(
   () => (auth.user?.realName || auth.user?.username || '?').charAt(0)
 )
@@ -118,16 +120,11 @@ function onCommand(cmd) {
   gap: 10px;
   padding: 18px 20px;
 }
-.logo-mark {
-  width: 34px;
-  height: 34px;
-  border-radius: 9px;
-  background: var(--brand);
-  color: #fff;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.logo-img {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  object-fit: contain;
 }
 .logo-text {
   font-size: 16px;
@@ -166,6 +163,16 @@ function onCommand(cmd) {
 .main {
   background: var(--bg);
   padding: 24px;
+  position: relative;
+}
+.footer {
+  text-align: center;
+  font-size: 11px;
+  color: #c0bfc0;
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  letter-spacing: 2px;
 }
 .fade-enter-active,
 .fade-leave-active {

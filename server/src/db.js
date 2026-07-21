@@ -124,7 +124,7 @@ function seed() {
   if (cnt > 0) return;
 
   const CLASS_ID = 1;
-  db.prepare('INSERT INTO clazz(name) VALUES(?)').run('斐越十班');
+  db.prepare('INSERT INTO clazz(name) VALUES(?)').run('洛一高附中十班');
 
   // 科目（teacher_id 指向王老师）
   const insSubj = db.prepare('INSERT INTO subject(name, class_id, teacher_id) VALUES(?,?,?)');
@@ -238,7 +238,7 @@ function migrate() {
 
   // 确保存在班级（极端情况下空库场景）
   const hasClass = db.prepare('SELECT id FROM clazz WHERE id=?').get(CLASS_ID);
-  if (!hasClass) db.prepare('INSERT INTO clazz(id, name) VALUES(?,?)').run(CLASS_ID, '斐越十班');
+  if (!hasClass) db.prepare('INSERT INTO clazz(id, name) VALUES(?,?)').run(CLASS_ID, '洛一高附中十班');
 
   // 1) 超级管理员（单独给管理者本人的最高权限账号）
   const SUPER_USER = 'superadmin';
@@ -252,7 +252,8 @@ function migrate() {
   // 2) 初中全科科目补齐（缺哪科补哪科，默认挂王老师 teacher_id=2）
   const FULL_SUBJECTS = [
     '语文', '数学', '英语', '物理', '化学', '生物',
-    '道德与法治', '历史', '地理', '体育与健康', '音乐', '美术', '信息科技'
+    '道德与法治', '历史', '地理', '体育与健康', '音乐', '美术', '信息科技',
+    '其他'   // 自定义任务分类（用户可自由创建各类非学科任务）
   ];
   const teacher = db.prepare("SELECT id FROM sys_user WHERE role='TEACHER' ORDER BY id LIMIT 1").get();
   const teacherId = teacher ? teacher.id : null;

@@ -34,19 +34,23 @@
     </el-card>
 
     <!-- 新建任务 -->
-    <el-dialog v-model="createVisible" title="新建任务" width="480px">
+    <el-dialog v-model="createVisible" title="新建任务" width="500px">
       <el-form :model="form" label-width="80px">
-        <el-form-item label="标题"><el-input v-model="form.title" /></el-form-item>
+        <el-form-item label="标题"><el-input v-model="form.title" placeholder="如：黑板报设计、卫生值日、班级活动等" /></el-form-item>
         <el-form-item label="科目">
-          <el-select v-model="form.subjectId" style="width: 100%">
+          <el-select v-model="form.subjectId" style="width: 100%" @change="onSubjectChange">
             <el-option v-for="s in subjects" :key="s.id" :label="s.name" :value="s.id" />
           </el-select>
+        </el-form-item>
+        <el-form-item v-if="isCustomCategory" label="自定义类别">
+          <el-input v-model="form.customCategory" placeholder="输入自定义类别名称（如：劳动实践、班级事务）" />
         </el-form-item>
         <el-form-item label="类型">
           <el-select v-model="form.type" style="width: 100%">
             <el-option label="作业" value="HOMEWORK" />
             <el-option label="背书" value="BACKING" />
             <el-option label="测验" value="EXAM" />
+            <el-option label="其他" value="OTHER" />
           </el-select>
         </el-form-item>
         <el-form-item label="学分"><el-input-number v-model="form.creditValue" :min="0" /></el-form-item>
@@ -86,8 +90,19 @@ const filterSubject = ref('')
 const createVisible = ref(false)
 const tplVisible = ref(false)
 const selectedTpl = ref(null)
-const typeText = { HOMEWORK: '作业', BACKING: '背书', EXAM: '测验' }
-const form = ref({ title: '', subjectId: 1, type: 'HOMEWORK', creditValue: 3, deadline: '', description: '' })
+const typeText = { HOMEWORK: '作业', BACKING: '背书', EXAM: '测验', OTHER: '其他' }
+const form = ref({ title: '', subjectId: 1, type: 'HOMEWORK', creditValue: 3, deadline: '', description: '', customCategory: '' })
+
+// 是否选中"其他"科目（显示自定义类别输入框）
+const isCustomCategory = computed(() => {
+  const hit = subjects.value.find((s) => s.id === form.value.subjectId)
+  return hit?.name === '其他'
+})
+
+function onSubjectChange() {
+  // 切换到"其他"时清空自定义类别
+  if (!isCustomCategory.value) form.value.customCategory = ''
+}
 
 const filteredTasks = computed(() =>
   filterSubject.value ? tasks.value.filter((t) => t.subjectId === filterSubject.value) : tasks.value
@@ -99,7 +114,12 @@ async function load() {
 }
 async function openCreate() { createVisible.value = true }
 async function submitCreate() {
-  await createTask({ ...form.value, deadline: fmt(form.value.deadline) })
+  const payload = { ...form.value, deadline: fmt(form.value.deadline) }
+  // 自定义类别名称拼接到说明中，便于识别
+  if (form.value.customCategory) {
+    payload.description = `[${form.value.customCategory}] ${payload.description || ''}`
+  }
+  await createTask(payload)
   ElMessage.success('任务已创建')
   createVisible.value = false
   await load()

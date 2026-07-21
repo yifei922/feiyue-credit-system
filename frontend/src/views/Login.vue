@@ -2,12 +2,14 @@
   <div class="login-page">
     <div class="login-card">
       <div class="brand">
-        <div class="logo">斐</div>
+        <img src="/logo.jpg" alt="洛一高附中" class="logo-img" />
         <div>
-          <h1>斐越十班</h1>
+          <h1>洛一高附中十班</h1>
           <p>班级作业学分管理系统</p>
         </div>
       </div>
+
+      <div class="powered-by">斐越科技出品</div>
 
       <el-form :model="form" :rules="rules" ref="formRef" @submit.prevent="onSubmit">
         <el-form-item prop="username">
@@ -95,17 +97,11 @@ async function onSubmit() {
   gap: 14px;
   margin-bottom: 28px;
 }
-.logo {
-  width: 48px;
-  height: 48px;
+.logo-img {
+  width: 52px;
+  height: 52px;
   border-radius: 12px;
-  background: var(--brand);
-  color: #fff;
-  font-size: 22px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  object-fit: contain;
 }
 .brand h1 {
   font-size: 20px;
@@ -125,6 +121,13 @@ async function onSubmit() {
   text-align: center;
   color: var(--text-soft);
   font-size: 12px;
+}
+.powered-by {
+  text-align: center;
+  font-size: 11px;
+  color: #c0bfc0;
+  margin-top: 12px;
+  letter-spacing: 1px;
 }
 
 /* 手机端：登录卡片满宽、内边距收紧 */
