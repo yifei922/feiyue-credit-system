@@ -16,6 +16,11 @@ const authMiddleware = require('./middleware/auth');
 const app = express();
 app.use(express.json());
 
+// ── 健康检查（供 Render + 保活服务使用，无需鉴权，最快响应）──
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'ok', ts: new Date().toISOString() });
+});
+
 // 认证路由：login 公开；/me 自带鉴权
 app.use('/api/auth', authRouter);
 
