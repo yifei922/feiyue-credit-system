@@ -177,7 +177,7 @@ async function remindOne(row) {
 const cards = computed(() => {
   const s = overview.value.summary || {}
   return [
-    { title: '在读学生', value: s.studentCount ?? '—', sub: '十班' },
+    { title: '在读学生', value: s.studentCount ?? '—', sub: '八（十）班' },
     { title: '本学期任务', value: s.taskCount ?? '—', sub: '进行中' },
     { title: '平均学分', value: s.avgCredits ?? '—', sub: '班级均值' }
   ]

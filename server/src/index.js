@@ -51,5 +51,5 @@ app.use((req, res, next) => {
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  console.log(`[server] 洛一高附中十班学分系统已启动: http://localhost:${PORT}`);
+  console.log(`[server] 洛一高附中八（十）班学分系统已启动: http://localhost:${PORT}`);
 });

@@ -4,7 +4,7 @@
     <el-aside width="220px" class="aside" :class="{ open: menuOpen }">
       <div class="logo">
         <img src="/logo.jpg" alt="洛一高附中" class="logo-img" />
-        <span class="logo-text">洛一高附中十班</span>
+        <span class="logo-text">洛一高附中八（十）班</span>
       </div>
       <el-menu :default-active="activeMenu" router class="menu">
         <el-menu-item v-for="m in menus" :key="m.index" :index="m.index">
@@ -90,7 +90,7 @@ const menus = computed(() => {
 })
 
 const activeMenu = computed(() => route.path)
-const currentTitle = computed(() => route.meta.title || '洛一高附中十班')
+const currentTitle = computed(() => route.meta.title || '洛一高附中八（十）班')
 const userInitial = computed(
   () => (auth.user?.realName || auth.user?.username || '?').charAt(0)
 )

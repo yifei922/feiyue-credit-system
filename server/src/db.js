@@ -124,7 +124,7 @@ function seed() {
   if (cnt > 0) return;
 
   const CLASS_ID = 1;
-  db.prepare('INSERT INTO clazz(name) VALUES(?)').run('洛一高附中十班');
+  db.prepare('INSERT INTO clazz(name) VALUES(?)').run('洛一高附中八（十）班');
 
   // 科目（teacher_id 指向王老师）
   const insSubj = db.prepare('INSERT INTO subject(name, class_id, teacher_id) VALUES(?,?,?)');
@@ -238,7 +238,7 @@ function migrate() {
 
   // 确保存在班级（极端情况下空库场景）
   const hasClass = db.prepare('SELECT id FROM clazz WHERE id=?').get(CLASS_ID);
-  if (!hasClass) db.prepare('INSERT INTO clazz(id, name) VALUES(?,?)').run(CLASS_ID, '洛一高附中十班');
+  if (!hasClass) db.prepare('INSERT INTO clazz(id, name) VALUES(?,?)').run(CLASS_ID, '洛一高附中八（十）班');
 
   // 1) 超级管理员（单独给管理者本人的最高权限账号）
   const SUPER_USER = 'superadmin';

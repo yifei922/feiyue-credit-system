@@ -4,7 +4,7 @@
       <div class="brand">
         <img src="/logo.jpg" alt="洛一高附中" class="logo-img" />
         <div>
-          <h1>洛一高附中十班</h1>
+          <h1>洛一高附中八（十）班</h1>
           <p>班级作业学分管理系统</p>
         </div>
       </div>

@@ -59,8 +59,8 @@ let flowSeq = 6
 
 // 初始预警
 let alerts = [
-  { id: 1, studentId: 4, studentName: '赵六', classId: 10, className: '十班', type: 'CONSECUTIVE_MISS', reason: '连续 3 个任务未完成（错题整理/单元测试卷/第三章习题）', status: 'PENDING', createTime: '2026-07-19 01:00' },
-  { id: 2, studentId: 2, studentName: '李四', classId: 10, className: '十班', type: 'OVERDUE_SOON', reason: '《单元测试卷》将于 2026-07-20 截止且尚未完成', status: 'PENDING', createTime: '2026-07-19 01:00' }
+  { id: 1, studentId: 4, studentName: '赵六', classId: 10, className: '八（十）班', type: 'CONSECUTIVE_MISS', reason: '连续 3 个任务未完成（错题整理/单元测试卷/第三章习题）', status: 'PENDING', createTime: '2026-07-19 01:00' },
+  { id: 2, studentId: 2, studentName: '李四', classId: 10, className: '八（十）班', type: 'OVERDUE_SOON', reason: '《单元测试卷》将于 2026-07-20 截止且尚未完成', status: 'PENDING', createTime: '2026-07-19 01:00' }
 ]
 let alertSeq = 3
 
@@ -156,7 +156,7 @@ export const mockApi = {
 
   // 学生
   listStudents() {
-    return delay(students.map((s) => ({ ...s, className: '十班' })))
+    return delay(students.map((s) => ({ ...s, className: '八（十）班' })))
   },
 
   // 任务
@@ -223,7 +223,7 @@ export const mockApi = {
   },
   // 手动触发扫描（演示用）
   scanAlerts() {
-    alerts.push({ id: alertSeq++, studentId: 2, studentName: '李四', classId: 10, className: '十班', type: 'CONSECUTIVE_MISS', reason: '连续 3 个任务未完成', status: 'PENDING', createTime: new Date().toISOString().slice(0, 16).replace('T', ' ') })
+    alerts.push({ id: alertSeq++, studentId: 2, studentName: '李四', classId: 10, className: '八（十）班', type: 'CONSECUTIVE_MISS', reason: '连续 3 个任务未完成', status: 'PENDING', createTime: new Date().toISOString().slice(0, 16).replace('T', ' ') })
     return delay({ ok: true, count: 1 })
   },
 
