@@ -95,7 +95,7 @@
             <el-form-item label="作业附件">
               <input ref="fileInput" type="file" multiple accept="*/*" style="display:none" @change="onPickFiles" />
               <el-button :icon="Paperclip" @click="$refs.fileInput.click()" :disabled="!submitTaskId">选择附件</el-button>
-              <span class="tip">支持图片 / 视频 / Word / PDF 等任意格式；系统自动压缩体积（图片保清晰度、视频视觉无损、文档无损），画质不变</span>
+              <span class="tip">支持图片 / 视频 / Word / PDF 等任意格式；系统自动压缩体积（图片保清晰度、视频视觉无损、文档无损），画质不变。大体积视频转码较慢，进度条会实时显示处理进度，请耐心等待</span>
             </el-form-item>
           </el-form>
 
@@ -115,9 +115,18 @@
                     <span class="rate" v-if="a.compressedSize < a.originalSize">(压缩 {{ shrinkRate(a.originalSize, a.compressedSize) }})</span>
                   </template>
                 </div>
-                <el-progress v-if="a.status==='uploading'" :percentage="a.progress" :stroke-width="8" />
-                <el-tag v-else-if="a.status==='done'" type="success" size="small" effect="plain">已上传</el-tag>
-                <el-tag v-else-if="a.status==='error'" type="danger" size="small" effect="plain">失败</el-tag>
+                <div class="att-progress" v-if="a.phase==='uploading' || a.phase==='processing'">
+                  <el-progress
+                    :percentage="a.phase==='uploading' ? a.progress : (a.indeterminate ? 100 : a.progress)"
+                    :indeterminate="a.phase==='processing' && a.indeterminate"
+                    :stroke-width="8" />
+                  <span class="att-stage">
+                    <template v-if="a.phase==='uploading'">上传中 {{ a.progress }}%</template>
+                    <template v-else>{{ a.stageText || '处理中…' }}<template v-if="!a.indeterminate && a.progress"> {{ a.progress }}%</template></template>
+                  </span>
+                </div>
+                <el-tag v-else-if="a.phase==='done'" type="success" size="small" effect="plain">已上传</el-tag>
+                <el-tag v-else-if="a.phase==='error'" type="danger" size="small" effect="plain">失败</el-tag>
               </div>
               <el-button link type="danger" size="small" @click="removePending(i)">移除</el-button>
             </div>
@@ -165,7 +174,7 @@ import { listCreditFlow } from '@/api/creditFlow'
 import { recommendTasks } from '@/api/recommend'
 import { exportCompletions, listCompletions, registerCompletion } from '@/api/completion'
 import { listTasks } from '@/api/task'
-import { uploadFile, deleteAttachment } from '@/api/upload'
+import { uploadFile, uploadFileWithProgress, deleteAttachment } from '@/api/upload'
 import { listAlerts, resolveAlert } from '@/api/alert'
 import { fetchAttachmentUrl } from '@/api/upload'
 import { downloadBlob } from '@/utils/download'
@@ -197,7 +206,7 @@ const objectUrls = [] // 需要手动释放的 object URL
 
 const openTasks = computed(() => allTasks.value.filter((t) => t.status === 'OPEN'))
 const submitTask = computed(() => allTasks.value.find((t) => t.id === submitTaskId.value) || null)
-const uploadedCount = computed(() => pending.value.filter((a) => a.status === 'done').length)
+const uploadedCount = computed(() => pending.value.filter((a) => a.phase === 'done').length)
 
 function isImage(a) { return (a.mime || '').startsWith('image/') }
 function isVideo(a) { return (a.mime || '').startsWith('video/') }
@@ -227,8 +236,10 @@ async function onPickFiles(e) {
       mime: file.type,
       originalSize: file.size,
       compressedSize: null,
-      status: 'uploading',
+      phase: 'uploading',
       progress: 0,
+      stageText: '上传中…',
+      indeterminate: false,
       previewUrl: null,
       id: null
     }
@@ -238,16 +249,24 @@ async function onPickFiles(e) {
     objectUrls.push(item.previewUrl)
     pending.value.push(item)
     try {
-      const r = await uploadFile(blob, submitTaskId.value, (p) => { item.progress = p })
+      const r = await uploadFileWithProgress(blob, submitTaskId.value, {
+        onUpload: (p) => { item.phase = 'uploading'; item.progress = p },
+        onProcess: (p, msg, ind) => {
+          item.phase = 'processing'
+          item.stageText = msg || '处理中…'
+          item.indeterminate = !!ind
+          if (p != null) item.progress = p
+        }
+      })
       const data = r.data ?? r
-      item.status = 'done'
+      item.phase = 'done'
       item.progress = 100
       item.id = data.id
       item.compressedSize = data.sizeCompressed
       // 服务端可能再次压缩，以返回值为准
       if (!compressed && data.compressed) item.compressedSize = data.sizeCompressed
     } catch (err) {
-      item.status = 'error'
+      item.phase = 'error'
       ElMessage.error(`附件「${file.name}」上传失败`)
     }
   }
@@ -379,6 +398,9 @@ onBeforeUnmount(() => {
 .att-prev img, .att-prev video { width: 100%; height: 100%; object-fit: cover; }
 .att-file-ico { font-size: 28px; color: #9aa5b1; }
 .att-info { flex: 1; min-width: 0; }
+.att-progress { margin: 2px 0 4px; display: flex; align-items: center; gap: 10px; }
+.att-progress .el-progress { flex: 1; max-width: 220px; }
+.att-stage { font-size: 12px; color: var(--text-soft); white-space: nowrap; }
 .att-name { font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .att-size { font-size: 12px; color: var(--text-soft); margin: 2px 0 4px; }
 .att-size .shrunk { color: #16a34a; }
