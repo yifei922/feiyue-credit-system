@@ -519,6 +519,11 @@ def build_body(path, diags):
           [Paragraph("PDF / 文档",S["td"]),Paragraph("对象流重整 + 无损打包，下载时自动还原",S["td"]),Paragraph("完全无损",S["tdc"])]]
     story.append(mtable(comp,[26*mm,104*mm,30*mm],["CENTER","LEFT","CENTER"]))
     story.append(callout("典型效果：手机照片体积降 60–80%，视频降 30–60%，画质几乎无差别；下载得到的文件可正常打开、清晰如初。"))
+    story.append(Paragraph("7.4　处理进度提示", S["h2"]))
+    story.append(Paragraph("为方便学生清晰掌握上传状态，每个附件在提交时都会显示<b>两段实时进度</b>：", S["body"]))
+    story.append(Paragraph("• <b>上传中 X%</b>：文件字节上传进度，随网络实时变化。", S["body"]))
+    story.append(Paragraph("• <b>处理中 …</b>：服务端自动压缩 / 转码阶段。视频会显示<b>真实百分比</b>（如「视频转码中… 45%」），图片、PDF、文档处理极快，以转圈动画提示「处理中…」，完成后转为「已上传」。", S["body"]))
+    story.append(callout("提示：图片、PDF 压缩通常在瞬间完成，进度条一闪而过属正常现象；真正需要等待的是视频转码（免费版算力有限，较长视频可能需 1–3 分钟），此时进度条会平滑推进至 100% 后再标记完成。"))
     # ---- 08 预警中心 ----
     story += chapter("08", "预警中心")
     story.append(Paragraph("系统自动监测学习状态，产生两类预警：", S["body"]))
