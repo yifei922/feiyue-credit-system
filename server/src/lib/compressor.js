@@ -22,6 +22,16 @@ try { const m = require('ffprobe-static'); ffprobePath = typeof m === 'string' ?
 let PDFDocument = null;
 try { PDFDocument = require('pdf-lib').PDFDocument; } catch (_) { PDFDocument = null; }
 
+// ffmpeg/ffprobe 串行队列：Node 在 Windows 上并发 spawn 多个 ffmpeg.exe 容易进程创建失败（exit 1 / 空 stderr）；
+// 且免费层 CPU 极弱，串行执行反而比并行更快。全部 ffmpeg/ffprobe 调用都走这个互斥链。
+let _ffmpegChain = Promise.resolve();
+function ffmpegSerialize(fn) {
+  const next = _ffmpegChain.then(() => fn());
+  // 不让单个失败阻塞后续任务
+  _ffmpegChain = next.catch(() => {});
+  return next;
+}
+
 const IMG_MAX_SIDE = 4096;                 // 仅超大图才缩放，日常照片分辨率完全保留
 const IMG_QUALITY = 92;                    // 高质量，肉眼无损
 const VIDEO_MAX_INPUT = 300 * 1024 * 1024; // 超过则跳过转码（避免免费层 OOM/超时）
@@ -62,7 +72,7 @@ async function optimizeImage(buf, mime, onProgress) {
 //   - 已是 H.264 视频 + AAC/MP3 音频的 MP4 → 直接转封装(remux, -c copy)，秒级完成、画质 100% 不变；
 //   - 其它（MOV/AVI/HEVC/VP9 等）→ ultrafast 重编码 H.264，尽量保留原音频(copy)，速度比 veryfast 快数倍。
 function probe(inPath) {
-  return new Promise((resolve) => {
+  return ffmpegSerialize(() => new Promise((resolve) => {
     if (!ffprobePath) return resolve(null);
     const p = spawn(ffprobePath, ['-v', 'error',
       '-show_entries', 'format=duration',
@@ -72,12 +82,27 @@ function probe(inPath) {
     p.stdout.on('data', (d) => { out += d; });
     p.on('close', () => { try { resolve(JSON.parse(out)); } catch (_) { resolve(null); } });
     p.on('error', () => resolve(null));
-  });
+  }));
+}
+
+// runFfmpeg 带 1 次重试：偶发 Windows 进程创建失败（空 stderr / exit 1）退避后通常能恢复
+function runFfmpegWithRetry(inPath, outPath, args, onProgress, durationMs) {
+  const attempt = (n) => runFfmpeg(inPath, outPath, args, onProgress, durationMs)
+    .catch((e) => {
+      if (n > 0) {
+        // 退避 120ms 再试一次（给 Windows/AV 一点喘息时间）
+        return new Promise((r) => setTimeout(r, 120)).then(() => attempt(n - 1));
+      }
+      throw e;
+    });
+  return ffmpegSerialize(() => attempt(1));
 }
 
 function runFfmpeg(inPath, outPath, args, onProgress, durationMs) {
   return new Promise((resolve, reject) => {
     const p = spawn(ffmpegPath, args, { stdio: ['ignore', 'pipe', 'pipe'] });
+    let stderrBuf = '';
+    p.stderr.on('data', (d) => { stderrBuf += d.toString(); if (stderrBuf.length > 4096) stderrBuf = stderrBuf.slice(-4096); });
     let lastPct = -1;
     // 从 stdout（-progress pipe:1）解析 out_time_ms 计算百分比
     p.stdout.on('data', (d) => {
@@ -101,7 +126,7 @@ function runFfmpeg(inPath, outPath, args, onProgress, durationMs) {
     p.on('close', (code) => {
       clearTimeout(timer);
       if (code === 0) { if (onProgress) onProgress(100, '视频转码完成'); resolve(); }
-      else reject(new Error('ffmpeg exit ' + code));
+      else reject(new Error('ffmpeg exit ' + code + ' stderr=' + stderrBuf.split('\n').slice(-3).join(' | ')));
     });
   });
 }
@@ -130,7 +155,7 @@ async function optimizeVideo(buf, onProgress) {
     args.push('-progress', 'pipe:1', outP);
     const target = webFriendly ? '视频转封装中…' : '视频转码中…';
     if (onProgress) onProgress(null, target, true);
-    await runFfmpeg(inP, outP, args, onProgress, durMs);
+    await runFfmpegWithRetry(inP, outP, args, onProgress, durMs);
     const out = fs.readFileSync(outP);
     return { buf: out, outMime: 'video/mp4', ext: '.mp4' };
   } catch (e) {
@@ -158,7 +183,7 @@ async function optimizeAudio(buf, originalName, onProgress) {
     // -vn 跳过可能存在的封面图；统一转 AAC 128k（网页友好、听感近无损）
     const args = ['-y', '-i', inP, '-vn', '-c:a', 'aac', '-b:a', '128k', '-progress', 'pipe:1', outP];
     if (onProgress) onProgress(null, '音频转码中…', true);
-    await runFfmpeg(inP, outP, args, onProgress, durMs);
+    await runFfmpegWithRetry(inP, outP, args, onProgress, durMs);
     const out = fs.readFileSync(outP);
     return { buf: out, outMime: 'audio/mp4', ext: '.m4a' };
   } catch (e) {

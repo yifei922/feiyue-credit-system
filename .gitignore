@@ -34,3 +34,6 @@ feiyue-credit-system*.zip
 
 # PDF build temp
 _pdf_tmp/
+
+# Load test scratch space
+test_load/
