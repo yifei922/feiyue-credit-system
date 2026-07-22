@@ -23,3 +23,7 @@ coverage/
 # 例外：项目工作记忆随仓库带走（全新克隆不会被覆盖，仅补充本项目笔记）
 !.workbuddy/memory/
 !.workbuddy/memory/**
+
+# 运行时数据（本地开发库 / 上传附件 / 测试库），不入库
+server/data/
+server/src/data/

@@ -63,6 +63,8 @@ let alerts = [
   { id: 2, studentId: 2, studentName: '李四', classId: 10, className: '八（十）班', type: 'OVERDUE_SOON', reason: '《单元测试卷》将于 2026-07-20 截止且尚未完成', status: 'PENDING', createTime: '2026-07-19 01:00' }
 ]
 let alertSeq = 3
+// Mock 附件存储：key = `${taskId}:${studentId}` -> [attachment, ...]
+let mockAttachments = {}
 
 // ---------- 工具：计算完成率 ----------
 function buildSubjectRate() {
@@ -113,7 +115,7 @@ function buildCreditTrend(studentId) {
 // ---------- 公共 Mock API ----------
 // Mock 用户库（与后端 DataInitializer 一致）
 const mockUsers = [
-  { id: 1, username: 'teacher01', password: '123456', realName: '王老师', role: 'TEACHER', classId: 10 },
+  { id: 1, username: 'teacher01', password: '123456', realName: '杨老师', role: 'TEACHER', classId: 10 },
   { id: 2, username: 'rep01',    password: '123456', realName: '科代表小李', role: 'REP',     classId: 10 },
   { id: 3, username: 'admin',    password: '123456', realName: '管理员',   role: 'ADMIN',   classId: null },
   // 学生账号：id 对应 student 表中学生记录 id（张三=1），用于「学生端」按登录身份展示
@@ -184,13 +186,17 @@ export const mockApi = {
 
   // 完成登记
   registerCompletion(payload) {
-    // payload: { taskId, studentIds, status }
+    // payload: { taskId, studentIds?, status }（学生端只传 taskId+status，按登录身份登记）
     const tid = payload.taskId
+    let sids = payload.studentIds
+    if (!sids || !sids.length) {
+      if (currentUser?.role === 'STUDENT') sids = [currentUser.studentId]
+      else sids = []
+    }
     if (!completion[tid]) completion[tid] = []
     let gained = 0
-    payload.studentIds.forEach((sid) => {
+    sids.forEach((sid) => {
       const idx = completion[tid].findIndex((r) => r.studentId === sid)
-      const prev = idx >= 0 ? completion[tid][idx].status : null
       if (idx >= 0) completion[tid][idx].status = payload.status
       else completion[tid].push({ studentId: sid, status: payload.status })
       const t = tasks.find((x) => x.id === tid)
@@ -203,7 +209,52 @@ export const mockApi = {
         creditFlows.push({ id: flowSeq++, userId: sid, userName: st.name, taskId: tid, taskTitle: t.title, creditChange: change, flowType: fType, createTime: new Date().toISOString().slice(0, 16).replace('T', ' ') })
       }
     })
-    return delay({ affected: payload.studentIds.length, gained })
+    return delay({ affected: sids.length, gained })
+  },
+
+  // 附件上传（Mock：用本地 object URL 模拟）
+  upload(file, taskId, onProgress) {
+    const url = URL.createObjectURL(file)
+    const size = file.size
+    const att = {
+      id: Date.now(),
+      url,
+      dispUrl: url,
+      originalName: file.name,
+      mime: file.type,
+      sizeOriginal: size,
+      sizeCompressed: Math.round(size * 0.7), // 模拟压缩效果
+      compressed: true,
+      storedName: 'mock-' + Date.now()
+    }
+    const key = (taskId || 0) + ':' + (currentUser?.studentId ?? 0)
+    if (!mockAttachments[key]) mockAttachments[key] = []
+    mockAttachments[key].push(att)
+    if (onProgress) { onProgress(50); setTimeout(() => onProgress(100), 120) }
+    return delay({ code: 0, data: att })
+  },
+
+  // 完成明细（Mock：含关联附件）
+  listCompletions(params = {}) {
+    const list = []
+    Object.entries(completion).forEach(([tid, recs]) => {
+      const t = tasks.find((x) => x.id === Number(tid))
+      recs.forEach((r) => {
+        if (params.studentId && r.studentId !== Number(params.studentId)) return
+        const key = tid + ':' + r.studentId
+        const atts = (mockAttachments[key] || []).map((a) => ({ ...a }))
+        list.push({
+          taskId: Number(tid),
+          taskTitle: t?.title,
+          studentId: r.studentId,
+          status: r.status,
+          completionTime: r.status === 'UNFINISHED' || r.status === 'FAILED' ? null : '2026-07-19 10:00',
+          creditEarned: 0,
+          attachments: atts
+        })
+      })
+    })
+    return delay(list)
   },
 
   // 积分流水
@@ -288,7 +339,7 @@ const taskTemplates = [
 let operateLogs = [
   { id: 1, operatorName: '科代表小李', operateType: 'UPDATE', tableName: 'completion_record', recordId: 1, beforeSnapshot: '{"status":"UNFINISHED","credit_change":0}', afterSnapshot: '{"status":"DONE_ONTIME","credit_change":3}', createTime: '2026-07-18 09:12:30' },
   { id: 2, operatorName: '科代表小李', operateType: 'UPDATE', tableName: 'completion_record', recordId: 5, beforeSnapshot: '{"status":"UNFINISHED","credit_change":0}', afterSnapshot: '{"status":"DONE_OVERDUE","credit_change":1}', createTime: '2026-07-17 21:40:10' },
-  { id: 3, operatorName: '王老师', operateType: 'INSERT', tableName: 'task', recordId: 3, beforeSnapshot: null, afterSnapshot: '{"title":"单元测试卷","credit_value":8}', createTime: '2026-07-15 10:05:00' }
+  { id: 3, operatorName: '杨老师', operateType: 'INSERT', tableName: 'task', recordId: 3, beforeSnapshot: null, afterSnapshot: '{"title":"单元测试卷","credit_value":8}', createTime: '2026-07-15 10:05:00' }
 ]
 
 export { useMock, flowTypeText, statusText, typeText }

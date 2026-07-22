@@ -447,7 +447,7 @@ def build_body(path, diags):
           [Paragraph("admin",S["td"]),Paragraph("管理员",S["td"]),Paragraph("123456",S["tdc"]),Paragraph("最高权限，可管理所有设置",S["td"])],
           [Paragraph("teacher01",S["td"]),Paragraph("教师",S["td"]),Paragraph("123456",S["tdc"]),Paragraph("主科任教师，可管理所有科目",S["td"])],
           [Paragraph("rep01 / rep02",S["td"]),Paragraph("课代表",S["td"]),Paragraph("123456",S["tdc"]),Paragraph("仅可管理所负责的科目",S["td"])],
-          [Paragraph("stu01~stu06",S["td"]),Paragraph("学生",S["td"]),Paragraph("123456",S["tdc"]),Paragraph("查看个人学分，不可操作他人",S["td"])],
+          [Paragraph("student01~student06",S["td"]),Paragraph("学生",S["td"]),Paragraph("123456",S["tdc"]),Paragraph("查看个人学分，不可操作他人",S["td"])],
           [Paragraph("superadmin",S["td"]),Paragraph("超级管理员",S["td"]),Paragraph("Feiyue@2026",S["tdc"]),Paragraph("开发者账号，拥有所有权限",S["td"])]]
     story.append(mtable(acct,[30*mm,30*mm,28*mm,72*mm],["CENTER","CENTER","CENTER","LEFT"]))
     story.append(Spacer(1,3*mm))

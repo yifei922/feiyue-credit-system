@@ -115,6 +115,23 @@ CREATE INDEX IF NOT EXISTS idx_completion_student ON completion_record(student_i
 CREATE INDEX IF NOT EXISTS idx_creditflow_student ON credit_flow(student_id);
 CREATE INDEX IF NOT EXISTS idx_alert_student ON alert(student_id);
 CREATE INDEX IF NOT EXISTS idx_operatelog_operator ON operate_log(operator_id);
+
+CREATE TABLE IF NOT EXISTS attachment (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  completion_record_id INTEGER,
+  task_id INTEGER,
+  student_id INTEGER,
+  uploader_id INTEGER,
+  original_name TEXT,
+  stored_name TEXT NOT NULL,
+  mime TEXT,
+  size_original INTEGER,
+  size_compressed INTEGER,
+  width INTEGER,
+  height INTEGER,
+  created_at TEXT DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_attachment_task_stu ON attachment(task_id, student_id);
 `;
 
 db.exec(SCHEMA);
@@ -137,7 +154,7 @@ function seed() {
     'INSERT INTO sys_user(username, password, name, role, class_id, student_id) VALUES(?,?,?,?,?,?)'
   );
   insUser.run('admin', hashPassword('123456'), '管理员', 'ADMIN', CLASS_ID, null);
-  insUser.run('teacher01', hashPassword('123456'), '王老师', 'TEACHER', CLASS_ID, null);
+  insUser.run('teacher01', hashPassword('123456'), '杨老师', 'TEACHER', CLASS_ID, null);
   insUser.run('rep01', hashPassword('123456'), '李课代(语文)', 'REP', CLASS_ID, null);
   insUser.run('rep02', hashPassword('123456'), '张课代(数学)', 'REP', CLASS_ID, null);
 
@@ -160,7 +177,7 @@ function seed() {
   studentsSeed.forEach(([name, no], i) => {
     insStu.run(name, no, CLASS_ID);
     const studentId = db.prepare('SELECT last_insert_rowid() AS id').get().id;
-    const username = 'stu' + String(i + 1).padStart(2, '0');
+    const username = 'student' + String(i + 1).padStart(2, '0');
     insStuUser.run(username, hashPassword('123456'), name, 'STUDENT', CLASS_ID, studentId);
   });
 
@@ -216,7 +233,7 @@ function seed() {
 
   // 操作日志
   db.prepare("INSERT INTO operate_log(operator_id, operator_name, operate_type, table_name, record_id, before_snapshot, after_snapshot) VALUES(?,?,?,?,?,?,?)")
-    .run(teacherId, '王老师', 'INSERT', 'task', 3, null, '{"title":"单元测试卷","credit_value":8}');
+    .run(teacherId, '杨老师', 'INSERT', 'task', 3, null, '{"title":"单元测试卷","credit_value":8}');
   db.prepare("INSERT INTO operate_log(operator_id, operator_name, operate_type, table_name, record_id, before_snapshot, after_snapshot) VALUES(?,?,?,?,?,?,?)")
     .run(r1, '李课代(语文)', 'UPDATE', 'completion_record', 1, '{"status":"UNFINISHED","credit_change":0}', '{"status":"DONE_ONTIME","credit_change":3}');
 
@@ -262,6 +279,19 @@ function migrate() {
     const exist = db.prepare('SELECT id FROM subject WHERE name=? AND class_id=?').get(name, CLASS_ID);
     if (!exist) insSubj.run(name, CLASS_ID, teacherId);
   });
+
+  // 3) 学生账号用户名规范化：stu01 -> student01（修复 student01 登录失败问题）
+  const stuUsers = db.prepare("SELECT id, username FROM sys_user WHERE role='STUDENT' AND username LIKE 'stu_%' AND username NOT LIKE 'student%'").all();
+  const updStu = db.prepare('UPDATE sys_user SET username=? WHERE id=?');
+  const chkStu = db.prepare('SELECT id FROM sys_user WHERE username=?');
+  stuUsers.forEach((u) => {
+    const newName = 'student' + u.username.slice(3); // 'stu01' -> 'student01'
+    if (!chkStu.get(newName)) updStu.run(newName, u.id);
+  });
+
+  // 4) 测试教师 王老师 -> 杨老师（仅改种子默认教师账号与日志）
+  db.prepare("UPDATE sys_user SET name='杨老师' WHERE username='teacher01' AND name='王老师'").run();
+  db.prepare("UPDATE operate_log SET operator_name='杨老师' WHERE operator_name='王老师'").run();
 }
 
 migrate();

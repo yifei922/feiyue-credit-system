@@ -13,15 +13,16 @@ function registerCompletion(task, sid, status, operator) {
   const isDone = status === 'DONE_ONTIME' || status === 'DONE_OVERDUE';
   db.prepare('DELETE FROM completion_record WHERE task_id=? AND student_id=?').run(task.id, sid);
   db.prepare('DELETE FROM credit_flow WHERE task_id=? AND student_id=?').run(task.id, sid);
-  db.prepare('INSERT INTO completion_record(task_id, student_id, status, completion_time, credit_earned, operator_id) VALUES(?,?,?,?,?,?)')
+  const info = db.prepare('INSERT INTO completion_record(task_id, student_id, status, completion_time, credit_earned, operator_id) VALUES(?,?,?,?,?,?)')
     .run(task.id, sid, status, isDone ? now : null, credit, operator.id);
+  const recId = info.lastInsertRowid;
   if (credit > 0) {
     db.prepare('INSERT INTO credit_flow(student_id, task_id, change_amount, flow_type, reason) VALUES(?,?,?,?,?)')
       .run(sid, task.id, credit, flowType, task.title);
   }
   db.prepare('UPDATE student SET total_credits = (SELECT COALESCE(SUM(change_amount),0) FROM credit_flow WHERE student_id=?) WHERE id=?')
     .run(sid, sid);
-  return credit;
+  return { credit, recId };
 }
 
 // 完成登记：计算学分、写入完成记录 + 流水、更新总学分
@@ -47,7 +48,7 @@ router.post('/register', requireRole('ADMIN', 'TEACHER', 'REP', 'STUDENT'), (req
   }
 
   let gained = 0;
-  sids.forEach((sid) => { gained += registerCompletion(task, sid, status, req.user); });
+  sids.forEach((sid) => { gained += registerCompletion(task, sid, status, req.user).credit; });
 
   recordLog(req.user, 'UPSERT', 'completion_record', taskId, null, { studentIds: sids, status, gained });
   ok(res, { affected: sids.length, gained });
@@ -179,9 +180,11 @@ router.get('/', (req, res) => {
   if (req.query.studentId) { sql += ' AND cr.student_id=?'; params.push(Number(req.query.studentId)); }
   sql += ' ORDER BY cr.id DESC';
   const rows = db.prepare(sql).all(...params);
+  const attStmt = db.prepare('SELECT id, original_name AS originalName, stored_name AS storedName, mime, size_original AS sizeOriginal, size_compressed AS sizeCompressed, width, height FROM attachment WHERE task_id=? AND student_id=?');
   ok(res, rows.map(r => ({
     id: r.id, taskId: r.task_id, studentId: r.student_id, studentName: r.studentName,
-    taskTitle: r.taskTitle, status: r.status, completionTime: r.completion_time, creditEarned: r.credit_earned
+    taskTitle: r.taskTitle, status: r.status, completionTime: r.completion_time, creditEarned: r.credit_earned,
+    attachments: attStmt.all(r.task_id, r.student_id).map(a => ({ ...a, url: `/api/uploads/${a.storedName}` }))
   })));
 });
 

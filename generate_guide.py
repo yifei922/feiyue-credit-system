@@ -238,9 +238,9 @@ def build_guide(output_path):
     acct = [
         [Paragraph("<b>用户名</b>", styles["TableHeader"]), Paragraph("<b>角色</b>", styles["TableHeader"]), Paragraph("<b>密码</b>", styles["TableHeader"]), Paragraph("<b>说明</b>", styles["TableHeader"])],
         [Paragraph("admin", styles["TableCell"]), Paragraph("管理员", styles["TableCell"]), Paragraph("123456", styles["TableCell"]), Paragraph("最高权限，可管理所有设置", styles["TableCell"])],
-        [Paragraph("teacher01", styles["TableCell"]), Paragraph("教师（王老师）", styles["TableCell"]), Paragraph("123456", styles["TableCell"]), Paragraph("主科任教师，可管理所有科目", styles["TableCell"])],
+        [Paragraph("teacher01", styles["TableCell"]), Paragraph("教师（杨老师）", styles["TableCell"]), Paragraph("123456", styles["TableCell"]), Paragraph("主科任教师，可管理所有科目", styles["TableCell"])],
         [Paragraph("rep01 / rep02", styles["TableCell"]), Paragraph("课代表", styles["TableCell"]), Paragraph("123456", styles["TableCell"]), Paragraph("仅可管理所负责的科目", styles["TableCell"])],
-        [Paragraph("stu01 ~ stu06", styles["TableCell"]), Paragraph("学生", styles["TableCell"]), Paragraph("123456", styles["TableCell"]), Paragraph("查看个人学分，不可操作他人", styles["TableCell"])],
+        [Paragraph("student01 ~ student06", styles["TableCell"]), Paragraph("学生", styles["TableCell"]), Paragraph("123456", styles["TableCell"]), Paragraph("查看个人学分，不可操作他人", styles["TableCell"])],
         [Paragraph("superadmin", styles["TableCell"]), Paragraph("超级管理员", styles["TableCell"]), Paragraph("Feiyue@2026", styles["TableCell"]), Paragraph("开发者账号，拥有所有权限", styles["TableCell"])],
     ]
     story.append(mckinsey_table(acct, [30 * mm, 30 * mm, 28 * mm, 72 * mm]))
