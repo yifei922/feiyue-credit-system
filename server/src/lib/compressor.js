@@ -12,9 +12,11 @@ const path = require('path');
 const crypto = require('crypto');
 const { spawn } = require('child_process');
 
-// ffmpeg / pdf-lib 均为可选依赖：安装缺失时自动降级，不会导致上传失败或服务崩溃
+// ffmpeg / ffprobe / pdf-lib 均为可选依赖：安装缺失时自动降级，不会导致上传失败或服务崩溃
 let ffmpegPath = null;
 try { ffmpegPath = require('ffmpeg-static'); } catch (_) { ffmpegPath = null; }
+let ffprobePath = null;
+try { const m = require('ffprobe-static'); ffprobePath = typeof m === 'string' ? m : (m && m.path); } catch (_) { ffprobePath = null; }
 let PDFDocument = null;
 try { PDFDocument = require('pdf-lib').PDFDocument; } catch (_) { PDFDocument = null; }
 
@@ -52,35 +54,42 @@ async function optimizeImage(buf, mime, onProgress) {
   } catch (_) { return null; }
 }
 
-// ── 视频：ffmpeg 视觉无损重编码（带进度）──
-function runFfmpeg(inPath, outPath, onProgress) {
+// ── 视频：ffprobe 探测 + ffmpeg 快速转码（带真实进度）──
+// 用 ffprobe 先拿到「准确时长」与「编码格式」：
+//   - 已是 H.264 视频 + AAC/MP3 音频的 MP4 → 直接转封装(remux, -c copy)，秒级完成、画质 100% 不变；
+//   - 其它（MOV/AVI/HEVC/VP9 等）→ ultrafast 重编码 H.264，尽量保留原音频(copy)，速度比 veryfast 快数倍。
+function probe(inPath) {
+  return new Promise((resolve) => {
+    if (!ffprobePath) return resolve(null);
+    const p = spawn(ffprobePath, ['-v', 'error',
+      '-show_entries', 'format=duration',
+      '-show_entries', 'stream=codec_type,codec_name',
+      '-of', 'json', inPath]);
+    let out = '';
+    p.stdout.on('data', (d) => { out += d; });
+    p.on('close', () => { try { resolve(JSON.parse(out)); } catch (_) { resolve(null); } });
+    p.on('error', () => resolve(null));
+  });
+}
+
+function runFfmpeg(inPath, outPath, args, onProgress, durationMs) {
   return new Promise((resolve, reject) => {
-    const args = [
-      '-y', '-i', inPath,
-      '-c:v', 'libx264', '-crf', '23', '-preset', 'veryfast', // veryfast 降低 CPU 占用（免费层 0.1 核）
-      '-c:a', 'aac', '-b:a', '128k',
-      '-movflags', '+faststart',
-      '-progress', 'pipe:1',                 // 机器可读进度写入 stdout
-      outPath
-    ];
     const p = spawn(ffmpegPath, args, { stdio: ['ignore', 'pipe', 'pipe'] });
-    let durationMs = null;
     let lastPct = -1;
-    // 从 stderr 解析总时长
-    p.stderr.on('data', (d) => {
-      if (durationMs != null) return;
-      const m = d.toString().match(/Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)/);
-      if (m) durationMs = (parseInt(m[1]) * 3600 + parseInt(m[2]) * 60 + parseFloat(m[3])) * 1000;
-    });
-    // 从 stdout 解析 out_time_ms 计算百分比
+    // 从 stdout（-progress pipe:1）解析 out_time_ms 计算百分比
     p.stdout.on('data', (d) => {
       if (!onProgress) return;
       const lines = d.toString().split(/\r?\n/);
       for (const line of lines) {
         const ms = line.match(/^out_time_ms=(\d+)/);
-        if (ms && durationMs) {
-          const pct = Math.min(99, Math.max(1, Math.round((parseInt(ms[1]) / durationMs) * 100)));
-          if (pct !== lastPct) { lastPct = pct; onProgress(pct, '视频转码中…'); }
+        if (ms) {
+          if (durationMs && durationMs > 0) {
+            const pct = Math.min(99, Math.max(1, Math.round((parseInt(ms[1]) / durationMs) * 100)));
+            if (pct !== lastPct) { lastPct = pct; onProgress(pct, '视频转码中…'); }
+          } else {
+            // 拿不到时长时退回转圈动画，避免卡死在 0%
+            onProgress(null, '视频转码中…', true);
+          }
         }
       }
     });
@@ -102,10 +111,27 @@ async function optimizeVideo(buf, onProgress) {
   const outP = path.join(tmp, 'out_' + crypto.randomBytes(6).toString('hex') + '.mp4');
   try {
     fs.writeFileSync(inP, buf);
-    await runFfmpeg(inP, outP, onProgress);
+    const info = await probe(inP);
+    const durMs = info && info.format && info.format.duration ? parseFloat(info.format.duration) * 1000 : null;
+    const streams = (info && info.streams) || [];
+    const v = streams.find((s) => s.codec_type === 'video');
+    const a = streams.find((s) => s.codec_type === 'audio');
+    const webFriendly = v && v.codec_name === 'h264' && (!a || ['aac', 'mp3'].includes(a.codec_name));
+    const args = ['-y', '-i', inP, '-movflags', '+faststart'];
+    if (webFriendly) {
+      args.push('-c', 'copy');                    // 已是网页友好格式 → 秒级转封装，不重编码
+    } else {
+      args.push('-c:v', 'libx264', '-crf', '23', '-preset', 'ultrafast'); // 最快预设
+      if (a) args.push('-c:a', 'aac', '-b:a', '128k');                    // 重编码时音频统一转 AAC（避免 MP2/PCM 等无法装入 MP4）
+    }
+    args.push('-progress', 'pipe:1', outP);
+    const target = webFriendly ? '视频转封装中…' : '视频转码中…';
+    if (onProgress) onProgress(null, target, true);
+    await runFfmpeg(inP, outP, args, onProgress, durMs);
     const out = fs.readFileSync(outP);
     return { buf: out, outMime: 'video/mp4', ext: '.mp4' };
-  } catch (_) {
+  } catch (e) {
+    console.error('[optimizeVideo] failed, fallback to original:', e && e.message);
     return null;
   } finally {
     try { fs.unlinkSync(inP); } catch (_) {}

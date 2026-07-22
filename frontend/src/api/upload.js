@@ -16,68 +16,70 @@ export function uploadFile(file, taskId, onProgress) {
 }
 
 // 上传附件并实时上报「服务端处理进度」（图片/视频/PDF 重编码可能耗时，尤其视频）。
-// 流程：先打开 SSE 进度通道 → 上传文件（带 X-Upload-Job-Id）→ 服务端处理时通过 SSE 推送进度 → 收到 done 即完成。
+// 关键设计：以 HTTP 响应为「完成」的唯一依据；SSE 仅用于进度展示。
+// 这样即使 SSE 在代理层被缓冲/丢弃，上传也不会卡死在“处理中”。网络失败自动重试 2 次。
 // callbacks: { onUpload(percent), onProcess(percent|null, message, indeterminate) }
 // 返回 Promise<最终附件数据>，与 /uploads 的返回值结构一致。
 export function uploadFileWithProgress(file, taskId, callbacks = {}) {
   const { onUpload, onProcess } = callbacks
   if (mockApi.useMock) return mockUploadMock(file, taskId, callbacks)
 
-  return new Promise((resolve, reject) => {
-    const jobId = (crypto.randomUUID && crypto.randomUUID()) ||
-      ('job-' + Date.now() + '-' + Math.random().toString(16).slice(2))
-    const token = localStorage.getItem('token') || ''
-    let settled = false
-    let postResult = null
-    const finish = (data) => { if (!settled) { settled = true; resolve(data) } }
-    const failWith = (err) => { if (!settled) { settled = true; reject(err) } }
+  const jobId = (crypto.randomUUID && crypto.randomUUID()) ||
+    ('job-' + Date.now() + '-' + Math.random().toString(16).slice(2))
+  const token = localStorage.getItem('token') || ''
+  const MAX_RETRY = 2
 
-    // 1) 打开 SSE 进度通道
-    const url = `/api/uploads/progress/${encodeURIComponent(jobId)}?token=${encodeURIComponent(token)}`
-    let es
-    try {
-      es = new EventSource(url)
-    } catch (e) { es = null }
-
-    const closeEs = () => { try { es && es.close() } catch (_) {} }
-    if (es) {
-      es.onmessage = (ev) => {
-        let msg
-        try { msg = JSON.parse(ev.data) } catch (_) { return }
-        if (msg.type === 'progress') {
-          onProcess && onProcess(msg.percent, msg.message, msg.indeterminate)
-        } else if (msg.type === 'done') {
-          closeEs()
-          finish({ code: 0, data: msg.data })
-        } else if (msg.type === 'error') {
-          closeEs()
-          failWith(new Error(msg.message || '处理失败'))
-        }
+  // 打开 SSE 进度通道（仅进度，不参与完成判定）
+  const url = `/api/uploads/progress/${encodeURIComponent(jobId)}?token=${encodeURIComponent(token)}`
+  let es = null
+  try { es = new EventSource(url) } catch (_) { es = null }
+  const closeEs = () => { try { es && es.close() } catch (_) {} }
+  if (es) {
+    es.onmessage = (ev) => {
+      let msg
+      try { msg = JSON.parse(ev.data) } catch (_) { return }
+      if (msg.type === 'progress') {
+        onProcess && onProcess(msg.percent, msg.message, msg.indeterminate)
+      } else if (msg.type === 'error') {
+        // 服务端显式返回错误（如文件过大）：关闭通道并失败
+        closeEs()
+        rejectOnce(new Error(msg.message || '处理失败'))
       }
-      es.onerror = () => {
-        // SSE 断开：若 POST 已成功返回则以其为准；否则继续等待 POST 结果
-        if (postResult) { closeEs(); finish(postResult) }
-      }
+      // 注意：不再以 SSE 的 done 作为完成信号，统一由 POST 响应收尾
     }
+    es.onerror = () => { /* 保持连接用于进度；完成由 POST 决定 */ }
+  }
 
-    // 2) 上传文件（关闭上传超时，等待服务端处理完成）
-    const form = new FormData()
-    form.append('file', file)
-    if (taskId) form.append('taskId', String(taskId))
-    form.append('jobId', jobId)
-    request.post('/uploads', form, {
-      timeout: 0,
-      headers: { 'X-Upload-Job-Id': jobId },
-      onUploadProgress: (e) => { if (onUpload && e.total) onUpload(Math.round((e.loaded / e.total) * 100)) }
-    }).then((r) => {
-      const data = r.data ?? r
-      postResult = data
-      // 若没有 SSE（被拦截）或 SSE 尚未推送 done，以 POST 结果收尾
-      if (!es) finish(data)
-    }).catch((err) => {
-      closeEs()
-      failWith(err)
-    })
+  let settled = false
+  let rejectFn = null
+  const rejectOnce = (err) => { if (!settled && rejectFn) { settled = true; closeEs(); rejectFn(err) } }
+
+  return new Promise((resolve, reject) => {
+    rejectFn = reject
+    const doPost = (attempt) => {
+      const form = new FormData()
+      form.append('file', file)
+      if (taskId) form.append('taskId', String(taskId))
+      form.append('jobId', jobId)
+      request.post('/uploads', form, {
+        timeout: 0,
+        headers: { 'X-Upload-Job-Id': jobId },
+        onUploadProgress: (e) => { if (onUpload && e.total) onUpload(Math.round((e.loaded / e.total) * 100)) }
+      }).then((r) => {
+        closeEs()
+        if (!settled) { settled = true; resolve(r.data ?? r) }
+      }).catch((err) => {
+        const retriable = !err.response && attempt < MAX_RETRY // 仅网络层失败重试
+        if (retriable) {
+          if (onProcess) onProcess(null, `网络中断，正在重试(${attempt + 1}/${MAX_RETRY})…`, true)
+          setTimeout(() => doPost(attempt + 1), 800)
+        } else {
+          closeEs()
+          if (!settled) { settled = true; reject(err) }
+        }
+      })
+    }
+    doPost(0)
   })
 }
 
@@ -141,4 +143,24 @@ export async function fetchAttachmentUrl(storedName) {
   const r = await request.get(`/uploads/${storedName}`, { responseType: 'blob' })
   const blob = r instanceof Blob ? r : (r.data || r)
   return URL.createObjectURL(blob)
+}
+
+// ── 未完成上传的本地留存（用于意外关闭后提示续传）──
+// 浏览器安全限制：关闭页面后无法恢复 File 对象本身，故这里只留存「任务标识」，
+// 重新进入时提示用户，并由用户重新选择同一文件后继续上传。
+const PENDING_KEY = 'feiyue_pending_uploads'
+export function getPendingUploads() {
+  try { return JSON.parse(localStorage.getItem(PENDING_KEY) || '[]') } catch (_) { return [] }
+}
+export function addPendingUpload(item) {
+  const list = getPendingUploads().filter((i) => i.id !== item.id)
+  list.push(item)
+  localStorage.setItem(PENDING_KEY, JSON.stringify(list))
+}
+export function removePendingUpload(id) {
+  const list = getPendingUploads().filter((i) => i.id !== id)
+  localStorage.setItem(PENDING_KEY, JSON.stringify(list))
+}
+export function clearPendingUploads() {
+  localStorage.removeItem(PENDING_KEY)
 }

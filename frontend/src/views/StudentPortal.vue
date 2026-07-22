@@ -81,6 +81,23 @@
 
       <!-- 学生端：提交作业（必须上传附件） -->
       <el-tab-pane v-if="isStudent" label="提交作业" name="submit">
+        <el-alert
+          v-if="showResume"
+          type="warning"
+          :closable="false"
+          show-icon
+          class="resume-alert"
+        >
+          <template #title>检测到 {{ resumeList.length }} 个未完成的附件上传</template>
+          <div class="resume-body">
+            <span class="resume-files">{{ resumeList.map((p) => p.name).join('、') }}</span>
+            <span class="resume-tip">上次可能因误关或断网未完成。重新进入后可继续上传（需重新选择同一文件）。</span>
+            <div class="resume-actions">
+              <el-button type="warning" size="small" @click="continueUploads">继续上传</el-button>
+              <el-button size="small" plain @click="ignorePending">忽略</el-button>
+            </div>
+          </div>
+        </el-alert>
         <el-card shadow="never">
           <el-form label-width="88px">
             <el-form-item label="选择任务">
@@ -95,7 +112,7 @@
             <el-form-item label="作业附件">
               <input ref="fileInput" type="file" multiple accept="*/*" style="display:none" @change="onPickFiles" />
               <el-button :icon="Paperclip" @click="$refs.fileInput.click()" :disabled="!submitTaskId">选择附件</el-button>
-              <span class="tip">支持图片 / 视频 / Word / PDF 等任意格式；系统自动压缩体积（图片保清晰度、视频视觉无损、文档无损），画质不变。大体积视频转码较慢，进度条会实时显示处理进度，请耐心等待</span>
+              <span class="tip">支持图片 / 视频 / Word / PDF 等任意格式；系统自动压缩体积（图片保清晰度、视频视觉无损、文档无损），画质不变。大体积视频转码较慢会实时显示进度；若误关页面，重新进入会提示是否继续上传</span>
             </el-form-item>
           </el-form>
 
@@ -174,7 +191,7 @@ import { listCreditFlow } from '@/api/creditFlow'
 import { recommendTasks } from '@/api/recommend'
 import { exportCompletions, listCompletions, registerCompletion } from '@/api/completion'
 import { listTasks } from '@/api/task'
-import { uploadFile, uploadFileWithProgress, deleteAttachment } from '@/api/upload'
+import { uploadFile, uploadFileWithProgress, deleteAttachment, getPendingUploads, addPendingUpload, removePendingUpload, clearPendingUploads } from '@/api/upload'
 import { listAlerts, resolveAlert } from '@/api/alert'
 import { fetchAttachmentUrl } from '@/api/upload'
 import { downloadBlob } from '@/utils/download'
@@ -203,6 +220,29 @@ const submitting = ref(false)
 const mySubs = ref([])
 const fileInput = ref(null)
 const objectUrls = [] // 需要手动释放的 object URL
+
+// ── 意外关闭后的「未完成上传」提示 ──
+const resumeList = ref([])
+const showResume = ref(false)
+function scanPendingUploads() {
+  // 清掉 24 小时前的陈旧记录，避免反复打扰
+  const now = Date.now()
+  const fresh = getPendingUploads().filter((p) => now - (p.ts || 0) < 24 * 3600 * 1000)
+  const mine = fresh.filter((p) => p.studentId === auth.user?.studentId)
+  clearPendingUploads()
+  if (mine.length) { resumeList.value = mine; showResume.value = true }
+  else showResume.value = false
+}
+function continueUploads() {
+  // 用户确认继续：清空陈旧标记并打开文件选择，由用户重新选择同一文件后上传
+  clearPendingUploads()
+  showResume.value = false
+  if (fileInput.value) fileInput.value.click()
+}
+function ignorePending() {
+  clearPendingUploads()
+  showResume.value = false
+}
 
 const openTasks = computed(() => allTasks.value.filter((t) => t.status === 'OPEN'))
 const submitTask = computed(() => allTasks.value.find((t) => t.id === submitTaskId.value) || null)
@@ -241,8 +281,11 @@ async function onPickFiles(e) {
       stageText: '上传中…',
       indeterminate: false,
       previewUrl: null,
-      id: null
+      id: null,
+      pendingId: 'pu_' + Date.now() + '_' + Math.random().toString(16).slice(2)
     }
+    // 记录到本地「未完成上传」清单，意外关闭后可提示续传
+    addPendingUpload({ id: item.pendingId, name: file.name, size: file.size, type: file.type, taskId: submitTaskId.value, studentId: auth.user?.studentId, ts: Date.now() })
     // 浏览器端先压缩（图片）：生成预览并减小实际上传体积
     const { blob, compressed } = await compressImage(file)
     item.previewUrl = URL.createObjectURL(blob)
@@ -265,6 +308,7 @@ async function onPickFiles(e) {
       item.compressedSize = data.sizeCompressed
       // 服务端可能再次压缩，以返回值为准
       if (!compressed && data.compressed) item.compressedSize = data.sizeCompressed
+      removePendingUpload(item.pendingId) // 上传成功 → 从未完成清单移除
     } catch (err) {
       item.phase = 'error'
       ElMessage.error(`附件「${file.name}」上传失败`)
@@ -276,6 +320,7 @@ function removePending(i) {
   const a = pending.value[i]
   if (a.previewUrl) { URL.revokeObjectURL(a.previewUrl); const idx = objectUrls.indexOf(a.previewUrl); if (idx >= 0) objectUrls.splice(idx, 1) }
   if (a.id) deleteAttachment(a.id).catch(() => {})
+  if (a.pendingId) removePendingUpload(a.pendingId)
   pending.value.splice(i, 1)
 }
 
@@ -363,6 +408,7 @@ onMounted(async () => {
     allTasks.value = t.data ?? t
     await loadAll()
   }
+  scanPendingUploads() // 进入页面即检查是否有上次未完成的附件上传
 })
 onBeforeUnmount(() => {
   objectUrls.forEach((u) => URL.revokeObjectURL(u))
@@ -393,6 +439,11 @@ onBeforeUnmount(() => {
 .deadline-hint { font-size: 12px; color: var(--text-soft); margin-left: 10px; }
 .tip { font-size: 12px; color: var(--text-soft); margin-left: 10px; }
 .att-list { margin: 8px 0 4px; display: flex; flex-direction: column; gap: 10px; }
+.resume-alert { margin-bottom: 14px; }
+.resume-body { font-size: 13px; line-height: 1.7; }
+.resume-files { font-weight: 600; color: #b45309; word-break: break-all; }
+.resume-tip { color: var(--text-soft); margin-left: 6px; }
+.resume-actions { margin-top: 8px; display: flex; gap: 10px; }
 .att-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: #fff; }
 .att-prev { width: 64px; height: 64px; border-radius: 8px; overflow: hidden; background: #f3f4f6; display: flex; align-items: center; justify-content: center; flex: none; }
 .att-prev img, .att-prev video { width: 100%; height: 100%; object-fit: cover; }

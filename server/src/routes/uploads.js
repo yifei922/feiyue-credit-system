@@ -68,6 +68,8 @@ router.post('/', upload.single('file'), async (req, res) => {
     const originalName = req.file.originalname || 'file';
     const sizeOriginal = req.file.size;
 
+    // 处理前先发一个「准备中」进度，避免前端在等待服务端首字节时毫无反应
+    if (jobId) jobEmit(jobId, { type: 'progress', percent: 0, message: '处理中…', indeterminate: true });
     const { buf, outMime, ext, storageEnc, width, height, method } =
       await processUpload(req.file.buffer, req.file.mimetype, originalName,
         jobId ? (pct, msg, ind) => jobEmit(jobId, { type: 'progress', percent: pct, message: msg, indeterminate: !!ind }) : null);
