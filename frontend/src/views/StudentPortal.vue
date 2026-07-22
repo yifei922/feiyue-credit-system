@@ -95,7 +95,7 @@
             <el-form-item label="作业附件">
               <input ref="fileInput" type="file" multiple accept="*/*" style="display:none" @change="onPickFiles" />
               <el-button :icon="Paperclip" @click="$refs.fileInput.click()" :disabled="!submitTaskId">选择附件</el-button>
-              <span class="tip">支持图片 / 视频 / Word / PDF 等任意格式；图片将自动压缩以减小体积</span>
+              <span class="tip">支持图片 / 视频 / Word / PDF 等任意格式；系统自动压缩体积（图片保清晰度、视频视觉无损、文档无损），画质不变</span>
             </el-form-item>
           </el-form>
 

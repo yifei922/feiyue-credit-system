@@ -1,6 +1,7 @@
-// 浏览器端图片压缩：在上传前先压缩，进一步减少体积与上传耗时。
-// 仅对图片生效；视频/PDF/Word 等原样返回（服务端也会再做一次压缩兜底）。
-export async function compressImage(file, { maxSide = 1600, quality = 0.82 } = {}) {
+// 浏览器端图片预处理：保清晰度前提下适度减小上传体积。
+// 仅在图片“超大”(最长边 > maxSide) 时才缩放；否则保留原分辨率，仅高质量重编码。
+// 视频/PDF/Word 等原样返回，交由服务端做视觉无损/无损压缩。
+export async function compressImage(file, { maxSide = 4096, quality = 0.92 } = {}) {
   if (!file.type.startsWith('image/') || file.type === 'image/svg+xml' || file.type === 'image/gif') {
     return { blob: file, compressed: false }
   }
@@ -24,8 +25,10 @@ export async function compressImage(file, { maxSide = 1600, quality = 0.82 } = {
     const blob = await res.blob()
     const ext = outType === 'image/jpeg' ? 'jpg' : 'webp'
     const outName = (file.name || 'image').replace(/\.[^.]+$/, '') + '.' + ext
+    // 若重编码后反而更大（原图已是高压缩率），保留原文件以免体积/画质双输
+    if (blob.size >= file.size) return { blob: file, compressed: false, width: w, height: h }
     const outFile = new File([blob], outName, { type: outType })
-    return { blob: outFile, compressed: blob.size < file.size, width: w, height: h }
+    return { blob: outFile, compressed: true, width: w, height: h }
   } catch (e) {
     return { blob: file, compressed: false }
   }

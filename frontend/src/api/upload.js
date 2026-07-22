@@ -15,6 +15,18 @@ export function uploadFile(file, taskId, onProgress) {
   })
 }
 
+// 附件存储用量统计（管理端）
+export function fetchStorageUsage() {
+  if (mockApi.useMock) {
+    return Promise.resolve({ code: 0, data: {
+      files: 6, usedBytes: 3_500_000, originalBytes: 9_800_000, savedBytes: 6_300_000,
+      quotaBytes: 1024 * 1024 * 1024, ephemeral: true,
+      note: '免费层为临时磁盘，重新部署或实例重建后附件会被清空；如需长期保存请接入对象存储（R2/OSS）。'
+    }})
+  }
+  return request.get('/uploads/stats/usage')
+}
+
 // 删除附件
 export function deleteAttachment(id) {
   if (mockApi.useMock) return Promise.resolve({ code: 0, data: { ok: true } })

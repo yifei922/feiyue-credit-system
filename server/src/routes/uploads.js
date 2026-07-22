@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const sharp = require('sharp');
+const zlib = require('zlib');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const { db } = require('../db');
 const { ok, fail } = require('../util');
+const { processUpload } = require('../lib/compressor');
 
 const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(__dirname, '..', 'data', 'uploads');
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
@@ -14,40 +15,8 @@ fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 // 内存模式：先收进 buffer，压缩后再落盘（避免先写大文件再压缩的浪费）
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 80 * 1024 * 1024 } // 单文件 80MB 上限（视频/文档类允许较大）
+  limits: { fileSize: 300 * 1024 * 1024 } // 单文件 300MB 上限（视频类允许较大，转码后落盘更小）
 });
-
-const MAX_SIDE = 1600;   // 图片最长边上限
-const JPEG_Q = 82;       // JPEG 质量
-const WEBP_Q = 80;       // WebP 质量
-
-// 图片自动压缩：缩放 + 重编码；非图片原样保留
-async function optimize(buf, mime, originalName) {
-  const ext0 = path.extname(originalName || '').toLowerCase();
-  if (!/^image\//.test(mime) || mime === 'image/svg+xml' || mime === 'image/gif') {
-    return { buf, outMime: mime, width: null, height: null, ext: ext0 };
-  }
-  try {
-    const img = sharp(buf, { failOn: 'none' });
-    const meta = await img.metadata();
-    if (meta.width && meta.height) {
-      const long = Math.max(meta.width, meta.height);
-      if (long > MAX_SIDE) {
-        if (meta.width >= meta.height) img.resize({ width: MAX_SIDE });
-        else img.resize({ height: MAX_SIDE });
-      }
-    }
-    let outMime = mime, ext = ext0;
-    if (meta.hasAlpha) { img.webp({ quality: WEBP_Q }); outMime = 'image/webp'; ext = '.webp'; }
-    else { img.jpeg({ quality: JPEG_Q, mozjpeg: true }); outMime = 'image/jpeg'; ext = '.jpg'; }
-    const out = await img.toBuffer();
-    const m2 = await sharp(out).metadata();
-    return { buf: out, outMime, width: m2.width, height: m2.height, ext };
-  } catch (e) {
-    // 压缩失败则保留原图，不影响上传
-    return { buf, outMime: mime, width: null, height: null, ext: ext0 };
-  }
-}
 
 // 上传（任意登录用户均可；学生提交作业时 student_id 取自登录身份）
 router.post('/', upload.single('file'), async (req, res) => {
@@ -58,14 +27,16 @@ router.post('/', upload.single('file'), async (req, res) => {
     const originalName = req.file.originalname || 'file';
     const sizeOriginal = req.file.size;
 
-    const { buf, outMime, width, height, ext } = await optimize(req.file.buffer, req.file.mimetype, originalName);
+    const { buf, outMime, ext, storageEnc, width, height, method } =
+      await processUpload(req.file.buffer, req.file.mimetype, originalName);
+
     const storedName = crypto.randomBytes(12).toString('hex') + ext;
     fs.writeFileSync(path.join(UPLOAD_DIR, storedName), buf);
 
     const info = db.prepare(`INSERT INTO attachment
-      (completion_record_id, task_id, student_id, uploader_id, original_name, stored_name, mime, size_original, size_compressed, width, height)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?)`)
-      .run(null, taskId, studentId, req.user.id, originalName, storedName, outMime, sizeOriginal, buf.length, width, height);
+      (completion_record_id, task_id, student_id, uploader_id, original_name, stored_name, mime, size_original, size_compressed, width, height, storage_enc)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`)
+      .run(null, taskId, studentId, req.user.id, originalName, storedName, outMime, sizeOriginal, buf.length, width, height, storageEnc);
 
     ok(res, {
       id: info.lastInsertRowid,
@@ -73,15 +44,37 @@ router.post('/', upload.single('file'), async (req, res) => {
       originalName,
       mime: outMime,
       sizeOriginal,
-      sizeCompressed: buf.length,
+      sizeCompressed: buf.length,     // 实际占用磁盘的字节
       width, height,
-      compressed: buf.length < sizeOriginal
+      method,                          // image / video / pdf / gzip / none
+      compressed: buf.length < sizeOriginal,
+      ratio: sizeOriginal ? Math.round((1 - buf.length / sizeOriginal) * 100) : 0
     });
   } catch (e) {
-    if (e.code === 'LIMIT_FILE_SIZE') return fail(res, 413, '文件超过 80MB 上限');
+    if (e.code === 'LIMIT_FILE_SIZE') return fail(res, 413, '文件超过 300MB 上限');
     console.error('[upload] error', e);
     fail(res, 500, '上传失败：' + (e.message || ''));
   }
+});
+
+// 存储用量统计（管理端展示 + 回答“能存多大/多久”）
+router.get('/stats/usage', (req, res) => {
+  if (!['ADMIN', 'TEACHER', 'REP'].includes(req.user.role)) return fail(res, 403, '无权查看');
+  const agg = db.prepare(`SELECT COUNT(*) AS files,
+      COALESCE(SUM(size_compressed),0) AS used,
+      COALESCE(SUM(size_original),0) AS original
+    FROM attachment`).get();
+  // 免费层临时磁盘约 1GB 可用（保守取 1GB 作为展示配额）
+  const QUOTA = 1024 * 1024 * 1024;
+  ok(res, {
+    files: agg.files,
+    usedBytes: agg.used,
+    originalBytes: agg.original,
+    savedBytes: Math.max(0, agg.original - agg.used),
+    quotaBytes: QUOTA,
+    ephemeral: true,          // 临时磁盘：重新部署 / 长时间休眠后会重置
+    note: '免费层为临时磁盘，重新部署或实例重建后附件会被清空；如需长期保存请接入对象存储（R2/OSS）。'
+  });
 });
 
 // 查看/下载（鉴权；学生仅能访问自己的附件）
@@ -97,7 +90,16 @@ router.get('/:storedName', (req, res) => {
   if (!fs.existsSync(fp)) return fail(res, 404, '文件已丢失');
   res.setHeader('Content-Type', row.mime || 'application/octet-stream');
   res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(row.original_name || 'file')}"`);
-  fs.createReadStream(fp).pipe(res);
+  const stream = fs.createReadStream(fp);
+  stream.on('error', () => { if (!res.headersSent) fail(res, 500, '读取失败'); });
+  // gzip 无损存储：下载时透明解压，还原为与上传完全一致的字节
+  if (row.storage_enc === 'gzip') {
+    const gunzip = zlib.createGunzip();
+    gunzip.on('error', () => { if (!res.headersSent) res.status(500).end(); });
+    stream.pipe(gunzip).pipe(res);
+  } else {
+    stream.pipe(res);
+  }
 });
 
 // 删除（上传者本人或管理员）

@@ -129,6 +129,7 @@ CREATE TABLE IF NOT EXISTS attachment (
   size_compressed INTEGER,
   width INTEGER,
   height INTEGER,
+  storage_enc TEXT DEFAULT 'raw',
   created_at TEXT DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_attachment_task_stu ON attachment(task_id, student_id);
@@ -292,6 +293,12 @@ function migrate() {
   // 4) 测试教师 王老师 -> 杨老师（仅改种子默认教师账号与日志）
   db.prepare("UPDATE sys_user SET name='杨老师' WHERE username='teacher01' AND name='王老师'").run();
   db.prepare("UPDATE operate_log SET operator_name='杨老师' WHERE operator_name='王老师'").run();
+
+  // 5) 附件存储编码列（raw/gzip）：用于视频/PDF/文档的无损存储压缩，下载时按此透明解压
+  const attCols = db.prepare("PRAGMA table_info(attachment)").all();
+  if (!attCols.some((c) => c.name === 'storage_enc')) {
+    db.prepare("ALTER TABLE attachment ADD COLUMN storage_enc TEXT DEFAULT 'raw'").run();
+  }
 }
 
 migrate();

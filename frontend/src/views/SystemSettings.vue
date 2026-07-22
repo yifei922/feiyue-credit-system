@@ -74,6 +74,42 @@
         </el-card>
       </el-tab-pane>
 
+      <!-- 存储用量（管理员/老师） -->
+      <el-tab-pane v-if="canManage" label="存储用量" name="storage">
+        <el-card shadow="never">
+          <template #header>
+            <span class="h">附件存储用量</span>
+            <span class="sub">学生作业附件的存储占用情况与压缩节省</span>
+          </template>
+          <div class="storage-grid">
+            <div class="stat">
+              <div class="v">{{ fmtSize(usage.usedBytes) }}</div>
+              <div class="k">已用容量（压缩后）</div>
+            </div>
+            <div class="stat">
+              <div class="v">{{ fmtSize(usage.quotaBytes) }}</div>
+              <div class="k">可用配额（临时磁盘）</div>
+            </div>
+            <div class="stat">
+              <div class="v ok">省下 {{ fmtSize(usage.savedBytes) }}</div>
+              <div class="k">压缩前 {{ fmtSize(usage.originalBytes) }} → 现 {{ fmtSize(usage.usedBytes) }}</div>
+            </div>
+            <div class="stat">
+              <div class="v">{{ usage.files }}</div>
+              <div class="k">附件总数</div>
+            </div>
+          </div>
+          <el-progress :percentage="usagePercent" :stroke-width="14" :color="usageColor" style="margin:8px 0 4px" />
+          <div class="tip">已用 {{ usagePercent }}% · 约可再存 {{ estRemaining }}</div>
+          <el-alert type="warning" :closable="false" show-icon style="margin-top:14px">
+            <template #title>附件为临时存储，不会永久保存</template>
+            当前部署在免费层（临时磁盘约 1GB）。<b>重新部署代码、实例休眠重建或平台维护后，已上传的附件会被清空</b>（数据库业务数据同样如此）。
+            按每份作业压缩后约 0.3–1MB 估算，可容纳约 <b>1000–3000 份</b>附件；保存时长取决于是否重新部署，通常为<b>数天到数周</b>。
+            如需长期、稳定保存，建议接入对象存储（Cloudflare R2 / 阿里云 OSS，均有免费额度），我可以帮你改造。
+          </el-alert>
+        </el-card>
+      </el-tab-pane>
+
       <!-- 操作日志 -->
       <el-tab-pane label="操作日志" name="logs">
         <el-card shadow="never">
@@ -175,6 +211,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { listOperateLogs } from '@/api/operateLog'
 import { listSubjects, setSubjectReps } from '@/api/subject'
 import { listUsers, resetPassword, setUserRole } from '@/api/user'
+import { fetchStorageUsage } from '@/api/upload'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
@@ -277,11 +314,38 @@ function roleTag(role) {
   return { ADMIN: 'danger', TEACHER: 'warning', REP: 'primary', STUDENT: 'info' }[role] || 'info'
 }
 
+// ---- 存储用量 ----
+const usage = ref({ files: 0, usedBytes: 0, originalBytes: 0, savedBytes: 0, quotaBytes: 1024 * 1024 * 1024 })
+const usagePercent = computed(() => {
+  const p = usage.value.quotaBytes ? (usage.value.usedBytes / usage.value.quotaBytes) * 100 : 0
+  return Math.min(100, Math.round(p * 10) / 10)
+})
+const usageColor = computed(() => usagePercent.value > 85 ? '#e6a23c' : '#67c23a')
+const estRemaining = computed(() => {
+  const free = Math.max(0, usage.value.quotaBytes - usage.value.usedBytes)
+  const per = 600 * 1024 // 单份作业压缩后约 0.6MB
+  return Math.floor(free / per) + ' 份左右'
+})
+function fmtSize(b) {
+  if (b == null) return '—'
+  if (b < 1024) return b + ' B'
+  if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB'
+  if (b < 1024 * 1024 * 1024) return (b / 1024 / 1024).toFixed(1) + ' MB'
+  return (b / 1024 / 1024 / 1024).toFixed(2) + ' GB'
+}
+async function loadUsage() {
+  try {
+    const r = await fetchStorageUsage()
+    usage.value = r.data ?? r
+  } catch (_) { /* ignore */ }
+}
+
 onMounted(() => {
   load()
   if (canManage.value) {
     loadSubjects()
     loadUsers()
+    loadUsage()
   }
 })
 </script>
@@ -295,4 +359,10 @@ onMounted(() => {
 .rep-tag { margin-right: 6px; }
 .muted { color: #b0b6c0; }
 .tip { margin-top: 12px; font-size: 12px; color: #8a94a6; line-height: 1.7; }
+.storage-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 8px; }
+.storage-grid .stat { background: #f7f9fc; border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.storage-grid .v { font-size: 22px; font-weight: 700; color: #2b3242; }
+.storage-grid .v.ok { color: #67c23a; font-size: 18px; }
+.storage-grid .k { font-size: 12px; color: #8a94a6; margin-top: 4px; }
+@media (max-width: 768px) { .storage-grid { grid-template-columns: repeat(2, 1fr); } }
 </style>

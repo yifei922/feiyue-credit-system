@@ -404,9 +404,9 @@ def build_body(path, diags):
          ("04","任务管理","创建任务、自定义项与模板"),
          ("05","完成登记","记录学生任务完成状态"),
          ("06","学生管理","档案维护、手动调分与导出"),
-         ("07","学生端","学生查看个人学分明细"),
+         ("07","学生端","查看个人学分 · 提交作业附件"),
          ("08","预警中心","连续未完成与即将截止提醒"),
-         ("09","系统设置","科目、课代表、账号与日志"),
+         ("09","系统设置","科目、课代表、账号、存储与日志"),
          ("10","移动端适配","手机 / 平板访问说明"),
          ("11","常见问题","FAQ 与部署指引")]
     for n,t,d in toc:
@@ -501,11 +501,24 @@ def build_body(path, diags):
     story.append(Paragraph("• <b>导出报表</b>：将学分数据导出为 CSV，便于在 Excel 中分析或上报。", S["body"]))
     # ---- 07 学生端 ----
     story += chapter("07", "学生端")
+    story.append(Paragraph("7.1　查看个人学分", S["h2"]))
     story.append(Paragraph("学生登录后进入「学生端」，可查看：", S["body"]))
     story.append(Paragraph("• 个人基本信息（姓名、学号、当前总学分）", S["body"]))
     story.append(Paragraph("• 所有任务完成状态一览", S["body"]))
     story.append(Paragraph("• 学分流水明细（来源任务、变动金额、类型、时间）", S["body"]))
-    story.append(callout("学生端为只读模式，无法修改任何数据，保证数据公正性。"))
+    story.append(callout("学生仅能查看本人数据，无法修改学分或查看他人成绩，保证数据公正性。"))
+    story.append(Paragraph("7.2　提交作业与附件", S["h2"]))
+    story.append(Paragraph("学生在「提交作业」页选择任务后上传附件并提交。系统按截止时间自动判定<b>按时 / 逾期</b>并计分，无需老师手动录入。", S["body"]))
+    story.append(Paragraph("• <b>支持任意格式</b>：图片（JPG/PNG/HEIC）、视频（MP4/MOV）、Word、Excel、PDF 等均可上传，单文件上限 300MB。", S["body"]))
+    story.append(Paragraph("• <b>提交要求</b>：每次提交至少附带 1 个附件；上传过程显示进度与压缩前后体积。", S["body"]))
+    story.append(Paragraph("7.3　智能压缩（保清晰度）", S["h2"]))
+    story.append(Paragraph("为节省流量与存储，系统在上传时自动压缩附件体积，<b>且不牺牲清晰度</b>：", S["body"]))
+    comp=[[Paragraph("<b>类型</b>",S["th"]),Paragraph("<b>压缩方式</b>",S["th"]),Paragraph("<b>清晰度</b>",S["th"])],
+          [Paragraph("图片",S["td"]),Paragraph("保留原分辨率，高质量重编码（q92），仅超 4096px 才缩放",S["td"]),Paragraph("肉眼无损",S["tdc"])],
+          [Paragraph("视频",S["td"]),Paragraph("H.264 重编码（CRF23），分辨率、帧率完全不变",S["td"]),Paragraph("视觉无损",S["tdc"])],
+          [Paragraph("PDF / 文档",S["td"]),Paragraph("对象流重整 + 无损打包，下载时自动还原",S["td"]),Paragraph("完全无损",S["tdc"])]]
+    story.append(mtable(comp,[26*mm,104*mm,30*mm],["CENTER","LEFT","CENTER"]))
+    story.append(callout("典型效果：手机照片体积降 60–80%，视频降 30–60%，画质几乎无差别；下载得到的文件可正常打开、清晰如初。"))
     # ---- 08 预警中心 ----
     story += chapter("08", "预警中心")
     story.append(Paragraph("系统自动监测学习状态，产生两类预警：", S["body"]))
@@ -533,6 +546,8 @@ def build_body(path, diags):
           ("学生能看到别人成绩吗？","不能。学生端只展示本人数据。"),
           ("学分算错了怎么办？","可在「学生管理」中用「手动调分」修正并填写原因备查。"),
           ("如何备份数据？","所有数据存于 server/data/credit.db，定期复制此文件即可备份。"),
+          ("学生上传的附件能永久保存吗？","当前免费版为临时存储（约 1GB，可容纳约 1000–3000 份压缩后附件），重新部署或实例重建后会清空，保存时长通常为数天到数周。重要作业请及时下载留存；如需长期保存，可接入对象存储（R2 / OSS）。"),
+          ("附件压缩会不会让作业变模糊？","不会。图片保留原分辨率仅优化编码、视频按视觉无损重编码、PDF 与文档为完全无损，下载后清晰度与原件一致。"),
           ("显示 APPLICATION LOADING 怎么办？","这是服务冷启动正常现象（免费版约 30 秒）。建议配置 UptimeRobot 保活避免休眠。"),
           ("如何部署到公网？","项目已配置 Render Blueprint，推送代码到 GitHub 即自动上线。")]
     for q,a in faqs:

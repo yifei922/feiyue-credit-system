@@ -27,3 +27,7 @@ coverage/
 # 运行时数据（本地开发库 / 上传附件 / 测试库），不入库
 server/data/
 server/src/data/
+
+# build/temp artifacts
+*.timestamp-*.mjs
+feiyue-credit-system*.zip
