@@ -1,6 +1,8 @@
 // 附件压缩流水线：按类型选择“保清晰度 / 视觉无损 / 完全无损”的策略压体积。
 // - 图片：保留原分辨率（仅超大图才缩到 4096px），高质量重编码（q92），肉眼无损、体积更小。
 // - 视频：ffmpeg 重编码 H.264 CRF23，分辨率/帧率不变，视觉无损、体积通常显著下降。
+// - 音频：ffmpeg 重编码为 AAC 128k（.m4a），WAV/FLAC 等无损大文件体积可降 80–90%，
+//        听感近无损；已压缩的 MP3 等若重编码无收益则保留原文件，零质量损失风险。
 // - PDF：pdf-lib 对象流无损重存 + gzip 无损兜底，画质 100% 不变。
 // - 其他文档（Word/Excel/PPT/zip/txt…）：gzip 无损存储，下载时透明还原，字节完全一致。
 // 任一步骤失败都回退原文件，绝不影响上传成功；仅当结果更小才采用压缩版。
@@ -27,6 +29,7 @@ const VIDEO_TIMEOUT_MS = 8 * 60 * 1000;    // 单个视频转码超时保护
 
 const isImage = (m) => /^image\//.test(m || '');
 const isVideo = (m, name = '') => /^video\//.test(m || '') || /\.(mp4|mov|m4v|webm|avi|mkv|flv|3gp|wmv)$/i.test(name);
+const isAudio = (m, name = '') => /^audio\//.test(m || '') || /\.(mp3|wav|wave|flac|m4a|aac|ogg|oga|wma|amr|opus|aiff?|midi?)$/i.test(name);
 const isPdf = (m, name = '') => (m === 'application/pdf') || /\.pdf$/i.test(name);
 
 // progress 回调签名：onProgress(percent|null, message, indeterminate=false)
@@ -139,6 +142,34 @@ async function optimizeVideo(buf, onProgress) {
   }
 }
 
+// ── 音频：ffmpeg 重编码为 AAC 128k（体积大降、听感近无损）──
+// 目标：WAV/FLAC 等无损大文件 → AAC 128k（体积可降 80–90%）；MP3 等若重编码无收益则保留原文件。
+async function optimizeAudio(buf, originalName, onProgress) {
+  if (!ffmpegPath || buf.length > VIDEO_MAX_INPUT) return null; // 复用体积上限保护
+  if (onProgress) onProgress(null, '音频处理中…', true);
+  const tmp = os.tmpdir();
+  const ext0 = path.extname(originalName || '').toLowerCase();
+  const inP = path.join(tmp, 'in_' + crypto.randomBytes(6).toString('hex') + (ext0 || '.bin'));
+  const outP = path.join(tmp, 'out_' + crypto.randomBytes(6).toString('hex') + '.m4a');
+  try {
+    fs.writeFileSync(inP, buf);
+    const info = await probe(inP);
+    const durMs = info && info.format && info.format.duration ? parseFloat(info.format.duration) * 1000 : null;
+    // -vn 跳过可能存在的封面图；统一转 AAC 128k（网页友好、听感近无损）
+    const args = ['-y', '-i', inP, '-vn', '-c:a', 'aac', '-b:a', '128k', '-progress', 'pipe:1', outP];
+    if (onProgress) onProgress(null, '音频转码中…', true);
+    await runFfmpeg(inP, outP, args, onProgress, durMs);
+    const out = fs.readFileSync(outP);
+    return { buf: out, outMime: 'audio/mp4', ext: '.m4a' };
+  } catch (e) {
+    console.error('[optimizeAudio] failed, fallback to original:', e && e.message);
+    return null;
+  } finally {
+    try { fs.unlinkSync(inP); } catch (_) {}
+    try { fs.unlinkSync(outP); } catch (_) {}
+  }
+}
+
 // ── PDF：pdf-lib 无损重存 ──
 async function optimizePdf(buf, onProgress) {
   if (!PDFDocument) return null;
@@ -170,6 +201,9 @@ async function processUpload(buffer, mime, originalName, onProgress) {
   } else if (isVideo(mime, originalName)) {
     const r = await optimizeVideo(buffer, onProgress);
     if (r && r.buf.length < size0) result = { buf: r.buf, outMime: r.outMime, ext: r.ext, storageEnc: 'raw', width: null, height: null, method: 'video' };
+  } else if (isAudio(mime, originalName)) {
+    const r = await optimizeAudio(buffer, originalName, onProgress);
+    if (r && r.buf.length < size0) result = { buf: r.buf, outMime: r.outMime, ext: r.ext, storageEnc: 'raw', width: null, height: null, method: 'audio' };
   } else if (isPdf(mime, originalName)) {
     let best = buffer;
     const opt = await optimizePdf(buffer, onProgress);

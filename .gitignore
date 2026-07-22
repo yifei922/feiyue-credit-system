@@ -31,3 +31,6 @@ server/src/data/
 # build/temp artifacts
 *.timestamp-*.mjs
 feiyue-credit-system*.zip
+
+# PDF build temp
+_pdf_tmp/

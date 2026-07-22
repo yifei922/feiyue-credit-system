@@ -110,9 +110,9 @@
               </span>
             </el-form-item>
             <el-form-item label="作业附件">
-              <input ref="fileInput" type="file" multiple accept="*/*" style="display:none" @change="onPickFiles" />
+              <input ref="fileInput" type="file" multiple accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.txt,.md" style="display:none" @change="onPickFiles" />
               <el-button :icon="Paperclip" @click="$refs.fileInput.click()" :disabled="!submitTaskId">选择附件</el-button>
-              <span class="tip">支持图片 / 视频 / Word / PDF 等任意格式；系统自动压缩体积（图片保清晰度、视频视觉无损、文档无损），画质不变。大体积视频转码较慢会实时显示进度；若误关页面，重新进入会提示是否继续上传</span>
+              <span class="tip">支持图片 / 视频 / 音频 / Word / PDF 等任意格式；系统自动压缩体积（图片保清晰度、视频与音频视觉/听感近无损、文档无损），画质不变。大体积视频/音频转码较慢会实时显示进度；若误关页面，重新进入会提示是否继续上传</span>
             </el-form-item>
           </el-form>
 
