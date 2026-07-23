@@ -22,6 +22,13 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', ts: new Date().toISOString() });
 });
 
+// ── 限制 sharp/libvips 线程数：免费层 0.1 CPU 跑 1-2 个 libvips 线程最优，避免线程切换浪费 ──
+try {
+  const sharp = require('sharp');
+  sharp.concurrency(2);
+  sharp.cache(false); // 进程级缓存关闭，省内存（上传走完后下次重新加载即可）
+} catch (_) { /* sharp 未安装时跳过 */ }
+
 // 认证路由：login 公开；/me 自带鉴权
 app.use('/api/auth', authRouter);
 

@@ -37,9 +37,10 @@ function jobEnd(jobId) {
 }
 
 // 内存模式：先收进 buffer，压缩后再落盘（避免先写大文件再压缩的浪费）
+// 限制单文件 30MB：保护免费层 512MB 内存，免遭 20 并发 × 大文件 OOM
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 300 * 1024 * 1024 } // 单文件 300MB 上限（视频类允许较大，转码后落盘更小）
+  limits: { fileSize: 30 * 1024 * 1024 } // 单文件 30MB 上限
 });
 
 // 上传进度 SSE（鉴权由中间件处理；EventSource 用 ?token= 携带）
@@ -99,7 +100,7 @@ router.post('/', upload.single('file'), async (req, res) => {
     ok(res, payload);
   } catch (e) {
     if (jobId) jobEmit(jobId, { type: 'error', message: e.message || '处理失败' });
-    if (e.code === 'LIMIT_FILE_SIZE') return fail(res, 413, '文件超过 300MB 上限');
+    if (e.code === 'LIMIT_FILE_SIZE') return fail(res, 413, '文件超过 30MB 上限（请压缩后上传）');
     console.error('[upload] error', e);
     fail(res, 500, '上传失败：' + (e.message || ''));
   } finally {

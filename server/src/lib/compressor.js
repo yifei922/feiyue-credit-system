@@ -206,8 +206,7 @@ async function optimizePdf(buf, onProgress) {
   } catch (_) { return null; }
 }
 
-const gzip = (buf) => zlib.gzipSync(buf, { level: 9 });
-const gunzip = (buf) => zlib.gunzipSync(buf);
+const gzip = (buf) => new Promise((resolve, reject) => zlib.gzip(buf, { level: 9 }, (e, r) => e ? reject(e) : resolve(r)));
 
 /**
  * 处理上传字节，返回落盘信息。
@@ -234,7 +233,7 @@ async function processUpload(buffer, mime, originalName, onProgress) {
     const opt = await optimizePdf(buffer, onProgress);
     if (opt && opt.length < best.length) best = opt;
     if (onProgress) onProgress(null, 'PDF 打包中…', true);
-    const gz = gzip(best);
+    const gz = await gzip(best);
     if (gz.length < best.length) {
       result = { buf: gz, outMime: 'application/pdf', ext: '.pdf', storageEnc: 'gzip', width: null, height: null, method: 'pdf+gzip' };
     } else if (best.length < size0) {
@@ -243,7 +242,7 @@ async function processUpload(buffer, mime, originalName, onProgress) {
   } else {
     // 其他任意格式：gzip 无损（仅当有意义收益时采用）
     if (onProgress) onProgress(null, '文档压缩中…', true);
-    const gz = gzip(buffer);
+    const gz = await gzip(buffer);
     if (gz.length < size0 * 0.98) {
       result = { buf: gz, outMime: mime, ext: ext0, storageEnc: 'gzip', width: null, height: null, method: 'gzip' };
     }
@@ -252,7 +251,7 @@ async function processUpload(buffer, mime, originalName, onProgress) {
 }
 
 module.exports = {
-  processUpload, gunzip,
+  processUpload,
   ffmpegAvailable: !!ffmpegPath,
   pdfLibAvailable: !!PDFDocument,
 };

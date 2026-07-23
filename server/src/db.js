@@ -10,6 +10,9 @@ fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
 
 const db = new DatabaseSync(DB_PATH);
 db.exec('PRAGMA foreign_keys = ON;');
+// 开启 WAL：写不阻塞读，提升并发上传时附件记录的写入吞吐
+db.exec('PRAGMA journal_mode = WAL;');
+db.exec('PRAGMA synchronous = NORMAL;'); // WAL 模式下 NORMAL 比 FULL 快很多，掉电风险极低可接受
 
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS clazz (
