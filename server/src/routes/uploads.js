@@ -43,6 +43,18 @@ const upload = multer({
   limits: { fileSize: 30 * 1024 * 1024 } // 单文件 30MB 上限
 });
 
+// multer 在流式接收中检测到 fileSize 超限会通过 next(err) 传递 LIMIT_FILE_SIZE，
+// 默认会落到 express 的 HTML 500。用 wrapper 拦截转换为友好的 413 JSON 响应。
+function uploadSingle(req, res, next) {
+  upload.single('file')(req, res, (err) => {
+    if (err && err.code === 'LIMIT_FILE_SIZE') {
+      return fail(res, 413, '文件超过 30MB 上限，请压缩后上传');
+    }
+    if (err) return next(err);
+    next();
+  });
+}
+
 // 上传进度 SSE（鉴权由中间件处理；EventSource 用 ?token= 携带）
 router.get('/progress/:jobId', (req, res) => {
   res.writeHead(200, {
@@ -60,7 +72,7 @@ router.get('/progress/:jobId', (req, res) => {
 });
 
 // 上传（任意登录用户均可；学生提交作业时 student_id 取自登录身份）
-router.post('/', upload.single('file'), async (req, res) => {
+router.post('/', uploadSingle, async (req, res) => {
   const jobId = req.body.jobId || req.headers['x-upload-job-id'] || null;
   try {
     if (!req.file) return fail(res, 400, '未收到文件');
