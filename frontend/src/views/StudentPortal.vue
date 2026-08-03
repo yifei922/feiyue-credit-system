@@ -112,7 +112,10 @@
             <el-form-item label="作业附件">
               <input ref="fileInput" type="file" multiple accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.txt,.md" style="display:none" @change="onPickFiles" />
               <el-button :icon="Paperclip" @click="$refs.fileInput.click()" :disabled="!submitTaskId">选择附件</el-button>
-              <span class="tip">支持图片 / 视频 / 音频 / Word / PDF 等任意格式；系统自动压缩体积（图片保清晰度、视频与音频视觉/听感近无损、文档无损），画质不变。大体积视频/音频转码较慢会实时显示进度；若误关页面，重新进入会提示是否继续上传</span>
+              <span class="size-tip">单个文件最大 <b>30 MB</b>，超过将被拒绝</span>
+            </el-form-item>
+            <el-form-item>
+              <span class="tip">支持图片 / 视频 / 音频 / Word / PDF / PPT / Excel / 压缩包等任意格式；系统自动压缩体积（图片保清晰度、视频与音频视觉/听感近无损、文档无损），画质不变。大体积视频/音频转码较慢会实时显示进度；若误关页面，重新进入会提示是否继续上传</span>
             </el-form-item>
           </el-form>
 
@@ -270,7 +273,17 @@ async function onPickFiles(e) {
   const files = Array.from(e.target.files || [])
   e.target.value = '' // 允许重复选择同一文件
   if (!files.length) return
+  // 前端兜底：单文件 30MB 上限（与服务端 multer 一致）。超限直接拦截并提示，避免走完整上传流程浪费带宽
+  const MAX = 30 * 1024 * 1024
   for (const file of files) {
+    if (file.size > MAX) {
+      const sizeMB = (file.size / 1024 / 1024).toFixed(1)
+      ElMessage.warning(`「${file.name}」${sizeMB}MB 超过 30MB 上限，请用手机自带「压缩视频」或电脑 WinRAR / macOS 归档工具压缩后上传`)
+      continue
+    }
+  }
+  const accepted = files.filter((f) => f.size <= MAX)
+  for (const file of accepted) {
     const item = {
       name: file.name,
       mime: file.type,
@@ -438,6 +451,8 @@ onBeforeUnmount(() => {
 .notice-time { font-size: 12px; color: var(--text-soft); }
 .deadline-hint { font-size: 12px; color: var(--text-soft); margin-left: 10px; }
 .tip { font-size: 12px; color: var(--text-soft); margin-left: 10px; }
+.size-tip { margin-left: 12px; font-size: 12px; color: #b35900; background: #fff7e6; padding: 4px 10px; border-radius: 4px; border: 1px solid #ffd591; }
+.size-tip b { color: #c8102e; }
 .att-list { margin: 8px 0 4px; display: flex; flex-direction: column; gap: 10px; }
 .resume-alert { margin-bottom: 14px; }
 .resume-body { font-size: 13px; line-height: 1.7; }

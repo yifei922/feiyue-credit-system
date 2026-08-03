@@ -37,3 +37,6 @@ _pdf_tmp/
 
 # Load test scratch space
 test_load/
+
+# Optional scripts（保活脚本按需部署，本机默认不需要）
+keep_alive.py

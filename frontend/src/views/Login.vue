@@ -32,6 +32,21 @@
       </el-form>
 
       <p class="hint">默认账号：teacher01(教师) / rep01(科代) / student01(学生) / admin　·　密码均为 123456</p>
+
+      <el-alert
+        v-if="coldStartTip"
+        type="info"
+        :title="coldStartTip.title"
+        :description="coldStartTip.desc"
+        show-icon
+        :closable="false"
+        class="cold-start-alert"
+      />
+
+      <div class="cold-start-foot">
+        <el-icon><InfoFilled /></el-icon>
+        <span>本系统部署在免费服务器，首次打开可能需要 30–50 秒（冷启动），请耐心等候；之后会很快。</span>
+      </div>
     </div>
   </div>
 </template>
@@ -39,7 +54,7 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { User, Lock } from '@element-plus/icons-vue'
+import { User, Lock, InfoFilled } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { login } from '@/api/auth'
 import { useAuthStore } from '@/stores/auth'
@@ -48,6 +63,7 @@ const router = useRouter()
 const route = useRoute()
 const auth = useAuthStore()
 const loading = ref(false)
+const coldStartTip = ref(null) // 冷启动时给出温馨提示（首屏明显延迟时弹出）
 const formRef = ref()
 const form = reactive({ username: '', password: '' })
 const rules = {
@@ -59,6 +75,7 @@ async function onSubmit() {
   await formRef.value.validate(async (valid) => {
     if (!valid) return
     loading.value = true
+    coldStartTip.value = { title: '正在唤醒服务器…', desc: '免费服务器冷启动可能需要 30–50 秒，请稍候。' }
     try {
       const res = await login(form)
       auth.setAuth(res.data.token, res.data.user)
@@ -69,6 +86,7 @@ async function onSubmit() {
       router.push(target)
     } catch (e) {
       // 错误提示已由响应拦截器统一处理
+      coldStartTip.value = null
     } finally {
       loading.value = false
     }
@@ -128,6 +146,26 @@ async function onSubmit() {
   color: #c0bfc0;
   margin-top: 12px;
   letter-spacing: 1px;
+}
+.cold-start-alert {
+  margin-top: 14px;
+}
+.cold-start-foot {
+  margin-top: 14px;
+  padding: 8px 10px;
+  background: #f6f8ff;
+  border-radius: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: #5b6478;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.cold-start-foot .el-icon {
+  margin-top: 2px;
+  color: #8893ad;
+  flex-shrink: 0;
 }
 
 /* 手机端：登录卡片满宽、内边距收紧 */
