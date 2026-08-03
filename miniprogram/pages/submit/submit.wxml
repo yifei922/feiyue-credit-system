@@ -1,0 +1,33 @@
+<view class="container">
+  <view wx:if="{{task}}" class="task-info card">
+    <view class="task-title">{{task.title}}</view>
+    <view class="muted">{{task.subjectName || ''}} · 截止：{{task.deadline}}</view>
+  </view>
+
+  <view class="card">
+    <view class="muted" style="margin-bottom:8px;">单个文件最大 <text class="danger">30 MB</text>，超过将被拒绝</view>
+    <view class="muted" style="font-size:12px; line-height:1.5;">支持图片 / 视频 / 音频 / Word / PDF 等任意格式；系统自动压缩体积，画质不变。</view>
+    <button class="btn-primary" bindtap="chooseFile" style="margin-top:12px;">📎 选择附件</button>
+  </view>
+
+  <view wx:if="{{files.length}}" class="file-list">
+    <view wx:for="{{files}}" wx:key="path" class="file-item card" data-i="{{index}}">
+      <view class="file-info">
+        <view class="file-name">{{item.name}}</view>
+        <view class="file-size muted">
+          {{formatSize(item.size)}}
+          <text wx:if="{{item.compressedSize}}" class="success"> → {{formatSize(item.compressedSize)}} (服务端已压缩)</text>
+        </view>
+        <view wx:if="{{item.status==='uploading'}}" class="bar"><view class="fill" style="width: {{item.progress}}%"></view></view>
+      </view>
+      <view class="file-action">
+        <text wx:if="{{item.status==='done'}}" class="success">✓</text>
+        <text wx:elif="{{item.status==='error'}}" class="danger">✗</text>
+        <text wx:elif="{{item.status==='uploading'}}" class="muted">{{item.progress}}%</text>
+        <view class="del" data-i="{{index}}" catchtap="removeFile">×</view>
+      </view>
+    </view>
+  </view>
+
+  <button wx:if="{{files.length}}" class="btn-primary submit-btn" bindtap="uploadAll" loading="{{submitting}}" disabled="{{submitting}}">📤 提交作业（{{files.length}} 个附件）</button>
+</view>

@@ -1,0 +1,29 @@
+{
+  "description": "洛一高附中八（十）班学分管理系统 - 微信小程序端",
+  "miniprogramRoot": "./",
+  "projectname": "feiyue-credit-mp",
+  "appid": "wx0fe78d74fdc47c1b",
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true,
+    "newFeature": true,
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    }
+  },
+  "compileType": "miniprogram",
+  "libVersion": "3.4.0",
+  "condition": {},
+  "cloudfunctionRoot": "",
+  "cloudtemplate": "",
+  "cloudfunctionTemplateRoot": "",
+  "miniprogram": {
+    "current": -1,
+    "list": []
+  }
+}

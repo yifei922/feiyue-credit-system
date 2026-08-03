@@ -35,6 +35,8 @@ CREATE TABLE IF NOT EXISTS sys_user (
   role TEXT NOT NULL,
   class_id INTEGER,
   student_id INTEGER,
+  openid TEXT UNIQUE,           -- 微信小程序 openid（用于一键登录）
+  avatar TEXT,                  -- 头像 URL
   create_time TEXT DEFAULT (datetime('now'))
 );
 CREATE TABLE IF NOT EXISTS subject_rep (
@@ -103,6 +105,84 @@ CREATE TABLE IF NOT EXISTS operate_log (
   after_snapshot TEXT,
   create_time TEXT DEFAULT (datetime('now'))
 );
+
+-- ── 微信小程序专用表（社交 + 课程资料 + 积分 + 广告）──
+-- 班级圈动态
+CREATE TABLE IF NOT EXISTS post (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  text TEXT,
+  images TEXT,                 -- JSON array of URLs
+  video_url TEXT,
+  resource_id INTEGER,         -- 可选：关联课程资料
+  created_at TEXT DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_post_created ON post(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_post_user ON post(user_id, created_at DESC);
+
+-- 动态点赞
+CREATE TABLE IF NOT EXISTS post_like (
+  post_id INTEGER NOT NULL,
+  user_id INTEGER NOT NULL,
+  created_at TEXT DEFAULT (datetime('now')),
+  PRIMARY KEY (post_id, user_id)
+);
+
+-- 动态评论
+CREATE TABLE IF NOT EXISTS post_comment (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  post_id INTEGER NOT NULL,
+  user_id INTEGER NOT NULL,
+  text TEXT NOT NULL,
+  created_at TEXT DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_comment_post ON post_comment(post_id, created_at);
+
+-- 课程资料库（年级+科目分级）
+CREATE TABLE IF NOT EXISTS resource (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  grade TEXT NOT NULL,         -- 初一/初二/初三
+  subject TEXT NOT NULL,       -- 语数英物化政史地生...
+  title TEXT NOT NULL,
+  cover TEXT,                  -- 封面图 URL
+  type TEXT NOT NULL,          -- article(文章)/video(视频)/pdf(文档)/link(外链)
+  url TEXT NOT NULL,           -- 资料实际 URL
+  description TEXT,
+  source TEXT,                 -- 来源网站（如"人教社官网"）+ 授权类型（如"CC-BY"）
+  tags TEXT,                   -- JSON array
+  sort_order INTEGER DEFAULT 0,
+  view_count INTEGER DEFAULT 0,
+  unlock_count INTEGER DEFAULT 0,  -- 被广告解锁次数
+  created_by INTEGER,          -- 上传/录入者 user_id
+  created_at TEXT DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_resource_gs ON resource(grade, subject, sort_order);
+
+-- 用户积分（看广告赚积分）
+CREATE TABLE IF NOT EXISTS user_points (
+  user_id INTEGER PRIMARY KEY,
+  points INTEGER DEFAULT 0,
+  total_earned INTEGER DEFAULT 0,
+  updated_at TEXT DEFAULT (datetime('now'))
+);
+
+-- 每日免费查看配额（防滥用）
+CREATE TABLE IF NOT EXISTS user_daily_view (
+  user_id INTEGER NOT NULL,
+  day TEXT NOT NULL,           -- YYYY-MM-DD
+  view_count INTEGER DEFAULT 0,
+  PRIMARY KEY (user_id, day)
+);
+
+-- 广告观看记录（防刷：每日每资源上限）
+CREATE TABLE IF NOT EXISTS ad_view_log (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  resource_id INTEGER NOT NULL,
+  day TEXT NOT NULL,
+  created_at TEXT DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_adview_user_day ON ad_view_log(user_id, day);
 CREATE TABLE IF NOT EXISTS task_template (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT,
@@ -301,6 +381,16 @@ function migrate() {
   const attCols = db.prepare("PRAGMA table_info(attachment)").all();
   if (!attCols.some((c) => c.name === 'storage_enc')) {
     db.prepare("ALTER TABLE attachment ADD COLUMN storage_enc TEXT DEFAULT 'raw'").run();
+  }
+
+  // 6) 微信小程序登录字段
+  const userCols = db.prepare("PRAGMA table_info(sys_user)").all();
+  if (!userCols.some((c) => c.name === 'openid')) {
+    db.prepare("ALTER TABLE sys_user ADD COLUMN openid TEXT").run();
+    db.prepare("CREATE UNIQUE INDEX IF NOT EXISTS idx_user_openid ON sys_user(openid)").run();
+  }
+  if (!userCols.some((c) => c.name === 'avatar')) {
+    db.prepare("ALTER TABLE sys_user ADD COLUMN avatar TEXT").run();
   }
 }
 

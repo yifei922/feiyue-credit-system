@@ -13,6 +13,11 @@ const dashboardRouter = require('./routes/dashboard');
 const operateLogRouter = require('./routes/operateLog');
 const usersRouter = require('./routes/users');
 const authMiddleware = require('./middleware/auth');
+// 小程序专用路由（社交 + 课程资料 + 积分 + 微信登录）
+const mpAuthRouter = require('./routes/mp_auth');
+const mpFeedRouter = require('./routes/mp_feed');
+const mpResourcesRouter = require('./routes/mp_resources');
+const mpPointsRouter = require('./routes/mp_points');
 
 const app = express();
 app.use(express.json());
@@ -32,6 +37,9 @@ try {
 // 认证路由：login 公开；/me 自带鉴权
 app.use('/api/auth', authRouter);
 
+// 小程序微信登录：公开端点（拿 code 换 openid 不能要求登录），单独挂载绕过 authMiddleware
+app.use('/api/mp/auth', mpAuthRouter);
+
 // 其余 API 统一鉴权
 const api = express.Router();
 api.use(authMiddleware);
@@ -46,6 +54,10 @@ api.use('/recommend', recommendRouter);
 api.use('/dashboard', dashboardRouter);
 api.use('/operate-logs', operateLogRouter);
 api.use('/users', usersRouter);
+// 小程序需要登录的接口（社交 + 课程资料 + 积分）
+api.use('/mp', mpFeedRouter);
+api.use('/mp', mpResourcesRouter);
+api.use('/mp', mpPointsRouter);
 app.use('/api', api);
 
 // 同源托管前端（单进程全栈，部署到免费平台只需这一个服务）

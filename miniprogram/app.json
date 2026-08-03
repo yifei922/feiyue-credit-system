@@ -1,0 +1,37 @@
+{
+  "pages": [
+    "pages/login/login",
+    "pages/index/index",
+    "pages/study/study",
+    "pages/tasks/tasks",
+    "pages/feed/feed",
+    "pages/me/me",
+    "pages/submit/submit",
+    "pages/resource-detail/resource-detail",
+    "pages/post-detail/post-detail",
+    "pages/credits/credits"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#c8102e",
+    "navigationBarTitleText": "洛一高附中八（十）班",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f6f8ff",
+    "enablePullDownRefresh": false
+  },
+  "tabBar": {
+    "color": "#8893ad",
+    "selectedColor": "#c8102e",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      { "pagePath": "pages/index/index",    "text": "首页" },
+      { "pagePath": "pages/study/study",    "text": "学习" },
+      { "pagePath": "pages/tasks/tasks",    "text": "作业" },
+      { "pagePath": "pages/feed/feed",      "text": "班级圈" },
+      { "pagePath": "pages/me/me",          "text": "我的" }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

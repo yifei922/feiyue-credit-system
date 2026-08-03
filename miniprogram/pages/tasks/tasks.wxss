@@ -1,0 +1,25 @@
+.tab-bar {
+  display: flex;
+  background: #fff;
+  border-radius: 24px;
+  padding: 4px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 16px rgba(31,41,55,0.04);
+}
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 8px 0;
+  border-radius: 20px;
+  font-size: 13px;
+  color: #5b6478;
+}
+.tab.active { background: #c8102e; color: #fff; }
+.center { text-align: center; padding: 30px; }
+.task-card { transition: all 0.2s; }
+.task-card:active { transform: scale(0.99); }
+.task-card.done { opacity: 0.7; }
+.task-card.overdue { border-left: 4px solid #c8102e; }
+.task-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+.task-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.task-action { margin-top: 6px; font-size: 12px; color: #c8102e; }
