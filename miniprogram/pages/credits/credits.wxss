@@ -1,7 +1,0 @@
-.center { text-align: center; padding: 30px; }
-.list { margin-top: 4px; }
-.row { display: flex; align-items: center; }
-.item-title { font-size: 14px; font-weight: 500; }
-.spacer { flex: 1; }
-.gain { font-size: 18px; font-weight: 700; color: #2e7d32; }
-.loss { font-size: 18px; font-weight: 700; color: #c8102e; }
