@@ -1,0 +1,29 @@
+<view class="container">
+  <view wx:if="{{!loaded}}" class="muted center">加载中…</view>
+  <block wx:elif="{{res}}">
+    <view class="card">
+      <view class="res-title">{{res.title}}</view>
+      <view class="meta">
+        <text class="tag">{{res.grade}}</text>
+        <text class="tag">{{res.subject}}</text>
+        <text class="tag tag-green">{{res.type === 'article' ? '图文' : res.type === 'video' ? '视频' : '文档'}}</text>
+      </view>
+      <view wx:if="{{res.description}}" class="desc">{{res.description}}</view>
+      <view wx:if="{{res.source}}" class="muted source">来源：{{res.source}}</view>
+    </view>
+
+    <view wx:if="{{freeQuota}}" class="quota card">
+      <view class="muted">今日免费配额：{{freeQuota.used}} / {{freeQuota.total}}</view>
+    </view>
+
+    <view wx:if="{{requiresAd}}" class="ad-block card">
+      <view class="ad-title">🎬 今日免费次数已用完</view>
+      <view class="muted">看完一段 15 秒广告即可解锁 1 次（今日已解锁 {{adUnlocksToday}}/{{adDailyLimit}}）</view>
+      <button class="btn-primary" bindtap="onWatchAd">▶ 看广告解锁</button>
+    </view>
+
+    <view wx:else class="open-block card">
+      <button class="btn-primary" bindtap="onOpen">📖 查看资料</button>
+    </view>
+  </block>
+</view>

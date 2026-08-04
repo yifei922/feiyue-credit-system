@@ -133,32 +133,4 @@ router.delete('/admin/resources/:id', (req, res) => {
   ok(res, { ok: true });
 });
 
-// 批量导入（教师/管理员一次性录入多条；支持 JSON 数组）
-router.post('/admin/resources/batch', (req, res) => {
-  if (!isAdmin(req.user)) return fail(res, 403, '无权操作');
-  const list = Array.isArray(req.body?.list) ? req.body.list : [];
-  if (list.length === 0) return fail(res, 400, 'list 不能为空');
-  if (list.length > 500) return fail(res, 400, '单次最多 500 条');
-  const insert = db.prepare(`INSERT INTO resource(grade, subject, title, type, url, description, source, tags, sort_order, created_by)
-                             VALUES(?,?,?,?,?,?,?,?,?,?)`);
-  let inserted = 0, skipped = 0;
-  const errors = [];
-  const tx = db.transaction((items) => {
-    for (let i = 0; i < items.length; i++) {
-      const r = items[i];
-      if (!r.grade || !r.subject || !r.title || !r.type || !r.url) {
-        skipped++; errors.push(`#${i+1}: 缺少必填字段`); continue;
-      }
-      try {
-        insert.run(r.grade, r.subject, r.title, r.type, r.url,
-          r.description || null, r.source || null,
-          JSON.stringify(r.tags || []), +r.sort_order || 0, req.user.id);
-        inserted++;
-      } catch (e) { skipped++; errors.push(`#${i+1}: ${e.message}`); }
-    }
-  });
-  try { tx(list); } catch (e) { return fail(res, 500, e.message); }
-  ok(res, { inserted, skipped, total: list.length, errors: errors.slice(0, 10) });
-});
-
 module.exports = router;

@@ -1,0 +1,41 @@
+<view class="login-page">
+  <view class="login-card">
+    <view class="brand">
+      <image src="/assets/logo.jpg" class="logo-img" mode="aspectFit"></image>
+      <view>
+        <view class="title">洛一高附中八（十）班</view>
+        <view class="subtitle">班级作业学分管理</view>
+      </view>
+    </view>
+
+    <view class="powered-by">斐越科技 出品</view>
+
+    <!-- 微信一键登录 -->
+    <button class="btn-primary wx-login" bindtap="onWxLogin" loading="{{loading}}">
+      📱 微信一键登录
+    </button>
+
+    <view class="divider-or">—— 或使用账号密码 ——</view>
+
+    <view class="form-block">
+      <view class="input-row">
+        <text class="input-label">用户名</text>
+        <input class="input" placeholder="如 student01" value="{{username}}" bindinput="onUserInput" />
+      </view>
+      <view class="input-row">
+        <text class="input-label">密码</text>
+        <input class="input" password="{{!showPwd}}" placeholder="初始密码 123456" value="{{password}}" bindinput="onPwdInput" />
+        <view class="eye" bindtap="togglePwd">{{showPwd ? '🙈' : '👁'}}</view>
+      </view>
+      <button class="btn-ghost" bindtap="onPwdLogin" loading="{{loading}}">登 录</button>
+    </view>
+
+    <view wx:if="{{coldHint}}" class="cold-hint">⏱ {{coldHint}}免费服务器冷启动需 30–50 秒</view>
+    <view class="bottom-hint">
+      <text class="muted">默认账号：teacher01 / rep01 / student01 / admin　·　密码 123456</text>
+    </view>
+    <view class="bottom-warn">
+      <text class="muted">⚠ 首次打开可能需 30–50 秒（免费服务器冷启动），请稍候</text>
+    </view>
+  </view>
+</view>

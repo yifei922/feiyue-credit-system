@@ -1,0 +1,50 @@
+<view class="container">
+  <view class="tab-bar">
+    <view class="tab {{tab==='open'?'active':''}}" data-t="open" bindtap="switchTab">待完成 ({{open.length}})</view>
+    <view class="tab {{tab==='done'?'active':''}}" data-t="done" bindtap="switchTab">已完成</view>
+    <view class="tab {{tab==='overdue'?'active':''}}" data-t="overdue" bindtap="switchTab">逾期</view>
+  </view>
+
+  <view wx:if="{{loading}}" class="muted center">加载中…</view>
+
+  <!-- 待完成 -->
+  <block wx:if="{{tab==='open'}}">
+    <view wx:if="{{open.length===0}}" class="muted center">🎉 暂无待完成作业</view>
+    <view wx:for="{{open}}" wx:key="id" class="card task-card" data-id="{{item.id}}" bindtap="goSubmit">
+      <view class="task-title">{{item.title}}</view>
+      <view class="task-meta">
+        <text class="tag">{{item.subjectName || '其他'}}</text>
+        <text class="tag tag-red">+{{item.creditValue}} 学分</text>
+        <text wx:if="{{item.deadline}}" class="muted">⏰ 截止：{{item.deadline}}</text>
+      </view>
+      <view class="task-action">
+        <text class="muted">点此提交作业 →</text>
+      </view>
+    </view>
+  </block>
+
+  <!-- 已完成 -->
+  <block wx:if="{{tab==='done'}}">
+    <view wx:if="{{done.length===0}}" class="muted center">暂无已完成记录</view>
+    <view wx:for="{{done}}" wx:key="id" class="card task-card done">
+      <view class="task-title">{{item.title}}</view>
+      <view class="task-meta">
+        <text class="tag">{{item.subjectName || '其他'}}</text>
+        <text class="tag tag-green">+{{item.creditValue}} 学分 ✓</text>
+      </view>
+    </view>
+  </block>
+
+  <!-- 逾期 -->
+  <block wx:if="{{tab==='overdue'}}">
+    <view wx:if="{{overdue.length===0}}" class="muted center">👍 没有逾期作业</view>
+    <view wx:for="{{overdue}}" wx:key="id" class="card task-card overdue" data-id="{{item.id}}" bindtap="goSubmit">
+      <view class="task-title">{{item.title}}</view>
+      <view class="task-meta">
+        <text class="tag">{{item.subjectName || '其他'}}</text>
+        <text class="tag tag-red">⚠ 已逾期</text>
+        <text wx:if="{{item.deadline}}" class="muted">截止：{{item.deadline}}</text>
+      </view>
+    </view>
+  </block>
+</view>

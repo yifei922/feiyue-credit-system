@@ -1,0 +1,34 @@
+<view class="container">
+  <view class="publish-fab" bindtap="goPublish">
+    <text class="plus">＋</text>
+  </view>
+
+  <view wx:if="{{list.length === 0 && !loading}}" class="muted center">暂无动态，发第一条吧～</view>
+
+  <view wx:for="{{list}}" wx:key="id" class="post card">
+    <view class="post-head">
+      <image class="post-avatar" src="{{item.user_avatar || '/assets/avatar_default.png'}}"></image>
+      <view class="post-meta">
+        <view class="post-name">{{item.user_name}}</view>
+        <view class="muted post-time">{{item.created_at}}</view>
+      </view>
+    </view>
+    <view wx:if="{{item.text}}" class="post-text" data-id="{{item.id}}" bindtap="goDetail">{{item.text}}</view>
+    <view wx:if="{{item.images && item.images.length}}" class="post-images">
+      <image wx:for="{{item.images}}" wx:key="*this" wx:for-item="img" class="post-img" src="{{img}}" mode="aspectFill"></image>
+    </view>
+    <view class="post-actions">
+      <view class="action" data-id="{{item.id}}" catchtap="toggleLike">
+        <text class="ico {{item.liked_by_me ? 'liked' : ''}}">♥</text>
+        <text class="muted">{{item.like_count || 0}}</text>
+      </view>
+      <view class="action" data-id="{{item.id}}" bindtap="goDetail">
+        <text class="ico">💬</text>
+        <text class="muted">{{item.comment_count || 0}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{loading}}" class="muted center">加载中…</view>
+  <view wx:elif="{{!hasMore && list.length > 0}}" class="muted center">— 已到底 —</view>
+</view>

@@ -44,12 +44,6 @@ const routes = [
         meta: { title: '学生管理' }
       },
       {
-        path: 'resources',
-        name: 'resources',
-        component: () => import('@/views/ResourceManage.vue'),
-        meta: { title: '课程资料' }
-      },
-      {
         path: 'alerts',
         name: 'alerts',
         component: () => import('@/views/WarningCenter.vue'),

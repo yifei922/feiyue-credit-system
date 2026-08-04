@@ -1,0 +1,37 @@
+# 斐越十班学分系统 —— 一键编排（前端 Nginx + 后端 Node）
+# 用法：
+#   cp .env.example .env   # 填入微信 AppID/Secret 等
+#   docker compose up -d --build
+#   浏览器访问 http://localhost:8080
+services:
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: credit-backend
+    environment:
+      - NODE_ENV=production
+      - PORT=8080                       # 与前端 nginx 反代 backend:8080 对应
+      - DB_PATH=/app/data/credit.db
+      - WX_APP_ID=${WX_APP_ID}
+      - WX_APP_SECRET=${WX_APP_SECRET}
+      - JWT_SECRET=${JWT_SECRET:-please-change-in-prod}
+    volumes:
+      - backend-data:/app/data          # SQLite 数据持久化
+    expose:
+      - "8080"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: credit-frontend
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"                       # 宿主机 8080 -> Nginx 80
+    restart: unless-stopped
+
+volumes:
+  backend-data:

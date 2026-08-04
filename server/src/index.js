@@ -1,0 +1,76 @@
+const express = require('express');
+const path = require('path');
+const authRouter = require('./routes/auth');
+const studentsRouter = require('./routes/students');
+const subjectsRouter = require('./routes/subjects');
+const tasksRouter = require('./routes/tasks');
+const completionsRouter = require('./routes/completions');
+const uploadsRouter = require('./routes/uploads');
+const creditFlowRouter = require('./routes/creditFlow');
+const alertsRouter = require('./routes/alerts');
+const recommendRouter = require('./routes/recommend');
+const dashboardRouter = require('./routes/dashboard');
+const operateLogRouter = require('./routes/operateLog');
+const usersRouter = require('./routes/users');
+const authMiddleware = require('./middleware/auth');
+// 小程序专用路由（社交 + 课程资料 + 积分 + 微信登录）
+const mpAuthRouter = require('./routes/mp_auth');
+const mpFeedRouter = require('./routes/mp_feed');
+const mpResourcesRouter = require('./routes/mp_resources');
+const mpPointsRouter = require('./routes/mp_points');
+
+const app = express();
+app.use(express.json());
+
+// ── 健康检查（供 Render + 保活服务使用，无需鉴权，最快响应）──
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'ok', ts: new Date().toISOString() });
+});
+
+// ── 限制 sharp/libvips 线程数：免费层 0.1 CPU 跑 1-2 个 libvips 线程最优，避免线程切换浪费 ──
+try {
+  const sharp = require('sharp');
+  sharp.concurrency(2);
+  sharp.cache(false); // 进程级缓存关闭，省内存（上传走完后下次重新加载即可）
+} catch (_) { /* sharp 未安装时跳过 */ }
+
+// 认证路由：login 公开；/me 自带鉴权
+app.use('/api/auth', authRouter);
+
+// 小程序微信登录：公开端点（拿 code 换 openid 不能要求登录），单独挂载绕过 authMiddleware
+app.use('/api/mp/auth', mpAuthRouter);
+
+// 其余 API 统一鉴权
+const api = express.Router();
+api.use(authMiddleware);
+api.use('/students', studentsRouter);
+api.use('/subjects', subjectsRouter);
+api.use('/tasks', tasksRouter);
+api.use('/completion', completionsRouter);
+api.use('/uploads', uploadsRouter);
+api.use('/credit-flow', creditFlowRouter);
+api.use('/alerts', alertsRouter);
+api.use('/recommend', recommendRouter);
+api.use('/dashboard', dashboardRouter);
+api.use('/operate-logs', operateLogRouter);
+api.use('/users', usersRouter);
+// 小程序需要登录的接口（社交 + 课程资料 + 积分）
+api.use('/mp', mpFeedRouter);
+api.use('/mp', mpResourcesRouter);
+api.use('/mp', mpPointsRouter);
+app.use('/api', api);
+
+// 同源托管前端（单进程全栈，部署到免费平台只需这一个服务）
+const DIST = path.join(__dirname, '..', '..', 'frontend', 'dist');
+app.use(express.static(DIST));
+
+// 非 /api 请求回退到 index.html（前端使用 hash 路由，路径恒为 /）
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api')) return next();
+  res.sendFile(path.join(DIST, 'index.html'));
+});
+
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`[server] 洛一高附中八（十）班学分系统已启动: http://localhost:${PORT}`);
+});

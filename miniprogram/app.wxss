@@ -1,0 +1,22 @@
+/* app.wxss - 全局样式 */
+page {
+  background: #f6f8ff;
+  color: #1f2937;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.container { padding: 16px; }
+.row { display: flex; align-items: center; }
+.col { display: flex; flex-direction: column; }
+.spacer { flex: 1; }
+.muted { color: #8893ad; }
+.danger { color: #c8102e; }
+.success { color: #2e7d32; }
+.card { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 4px 16px rgba(31,41,55,0.04); }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; background: #eef2ff; color: #2e6ca4; margin-right: 6px; }
+.tag-red { background: #fff0f1; color: #c8102e; }
+.tag-green { background: #e8f5e9; color: #2e7d32; }
+.btn-primary { background: #c8102e; color: #fff; border-radius: 24px; padding: 12px; text-align: center; }
+.btn-ghost { background: #fff; color: #c8102e; border: 1px solid #c8102e; border-radius: 24px; padding: 12px; text-align: center; }
+.divider { height: 1px; background: #eef0f4; margin: 12px 0; }
