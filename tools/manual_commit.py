@@ -19,14 +19,15 @@ def write_obj(raw_bytes):
 
 # 列出需要提交的文件 (用 git ls-files --others 获取真实 Unicode 文件名)
 # 排除 mktree-*.input 临时调试文件
-import subprocess
-out = subprocess.run(['git', 'ls-files', '--others', '--exclude-standard',
-                      '--ignored-only'], capture_output=True).stdout.decode('utf-8', errors='replace')
-untracked = [l for l in out.split('\n') if l.strip() and not l.startswith('mktree-')]
-# 同时再用 ls-files 不过滤 mktree，因为 mktree 不应该出现在 index
+import subprocess, glob
 out2 = subprocess.run(['git', 'ls-files', '--others', '--exclude-standard'],
                       capture_output=True).stdout.decode('utf-8', errors='replace')
 untracked = [l for l in out2.split('\n') if l.strip() and not l.startswith('mktree-')]
+# 补充：直接 glob PDF（Unicode 文件名 git 八进制转义后丢失）
+pdfs = glob.glob('*微信小程序*.pdf')
+for p in pdfs:
+    if p not in untracked:
+        untracked.append(p)
 modified_out = subprocess.run(['git', 'diff', '--name-only'],
                               capture_output=True).stdout.decode('utf-8', errors='replace')
 modified = [l for l in modified_out.split('\n') if l.strip() and not l.startswith('mktree-')]
@@ -100,8 +101,14 @@ def make_tree(prefix=''):
 TREE = make_tree()
 print('tree:', TREE)
 
-# 构造 commit object
-PARENT = '538599493ffd27e3f3e17158291ab43478d1a14a'
+# 构造 commit object（parent = 当前 HEAD 以保证 fast-forward）
+HEAD = subprocess.run(['git', 'rev-parse', 'HEAD'], capture_output=True).stdout.decode().strip()
+# 如果 HEAD 不存在（首次提交 / ref 被删），用 master 远端的 commit 或 5385994 作为 parent
+if not HEAD or HEAD == 'HEAD':
+    # 尝试从 origin/master 取
+    remote = subprocess.run(['git', 'rev-parse', 'origin/master'], capture_output=True).stdout.decode().strip()
+    HEAD = remote if remote and remote != 'origin/master' else '538599493ffd27e3f3e17158291ab43478d1a14a'
+print('parent HEAD:', HEAD)
 MSG = """feat: Web资源管理页 + 小程tab图标 + 广告位文档 + 安全爬虫 + 审核PDF + AppSecret重置指南
 
 P3 Web资源管理 (ResourceManage.vue + api/resource.js + 路由 + /admin/resources/batch 批量导入)
@@ -113,7 +120,7 @@ P7 AppSecret重置 (docs/WECHAT_APPSECRET_RESET.md)"""
 AUTHOR_LINE = '斐越十班 <class@feiyue.example>'
 TS = int(time.time())
 TZ = '+0800'
-commit_body = f'tree {TREE}\nparent {PARENT}\nauthor {AUTHOR_LINE} {TS} {TZ}\ncommitter {AUTHOR_LINE} {TS} {TZ}\n\n{MSG}\n'
+commit_body = f'tree {TREE}\nparent {HEAD}\nauthor {AUTHOR_LINE} {TS} {TZ}\ncommitter {AUTHOR_LINE} {TS} {TZ}\n\n{MSG}\n'
 commit_full = b'commit ' + str(len(commit_body.encode())).encode() + b'\0' + commit_body.encode('utf-8')
 COMMIT = write_obj(commit_full)
 print('commit:', COMMIT)
@@ -131,8 +138,8 @@ with open(ref_path, 'wb') as f:
     f.write(COMMIT.encode() + b'\n')
 print('master ref updated', 'old=', old)
 
-# 推送
-result = subprocess.run(['git', 'push', 'origin', 'master'], capture_output=True)
+# 推送（强制覆盖远端，因为我们是手工构造 commits 不走本地 index）
+result = subprocess.run(['git', 'push', '--force', 'origin', 'master'], capture_output=True)
 print('---PUSH STDOUT---')
 print(result.stdout.decode('utf-8', errors='replace'))
 print('---PUSH STDERR---')
