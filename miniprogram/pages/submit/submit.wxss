@@ -1,8 +1,8 @@
 .task-info { padding: 14px; }
 .task-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
-.danger { color: #c8102e; }
+.danger { color: #ff5c7c; }
 .success { color: #2e7d32; }
-.btn-primary { background: #c8102e; color: #fff; border-radius: 24px; }
+.btn-primary { background: linear-gradient(135deg, #7C5CFF, #4D9BFF); color: #fff; border-radius: 24px; box-shadow: 0 8px 20px rgba(124,92,255,0.35); }
 
 .file-list { margin-top: 4px; }
 .file-item { display: flex; align-items: center; padding: 12px; }
@@ -10,7 +10,7 @@
 .file-name { font-size: 14px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .file-size { font-size: 11px; margin: 2px 0 6px; }
 .bar { height: 4px; background: #eef0f4; border-radius: 2px; overflow: hidden; }
-.fill { height: 100%; background: #c8102e; transition: width 0.2s; }
+.fill { height: 100%; background: linear-gradient(90deg, #7C5CFF, #4D9BFF); transition: width 0.2s; }
 .file-action { display: flex; align-items: center; gap: 10px; padding-left: 12px; }
 .del { width: 24px; height: 24px; line-height: 24px; text-align: center; background: #f0f0f0; border-radius: 50%; color: #8893ad; }
 .submit-btn { margin-top: 16px; }

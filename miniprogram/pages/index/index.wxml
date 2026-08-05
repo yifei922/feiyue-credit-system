@@ -15,19 +15,19 @@
   <!-- 快捷入口 -->
   <view class="quick-row">
     <view class="quick-item" bindtap="onTabTasks">
-      <view class="quick-ico">📝</view>
+      <view class="quick-ico" style="background:linear-gradient(135deg,#FFB23E,#FF7E6B)">📝</view>
       <view class="quick-text">今日作业</view>
     </view>
     <view class="quick-item" bindtap="onTabStudy">
-      <view class="quick-ico">📚</view>
+      <view class="quick-ico" style="background:linear-gradient(135deg,#7C5CFF,#4D9BFF)">📚</view>
       <view class="quick-text">资料库</view>
     </view>
     <view class="quick-item" bindtap="onTabFeed">
-      <view class="quick-ico">💬</view>
+      <view class="quick-ico" style="background:linear-gradient(135deg,#2DD4A7,#38D9C9)">💬</view>
       <view class="quick-text">班级圈</view>
     </view>
     <view class="quick-item" bindtap="onTabMe">
-      <view class="quick-ico">🏆</view>
+      <view class="quick-ico" style="background:linear-gradient(135deg,#FF7EB3,#FF758C)">🏆</view>
       <view class="quick-text">我的</view>
     </view>
   </view>
@@ -45,7 +45,8 @@
   <view wx:elif="{{resources.length === 0}}" class="muted center">暂无资料</view>
   <view wx:else class="res-grid">
     <view wx:for="{{resources}}" wx:key="id" class="res-card" data-id="{{item.id}}" bindtap="goDetail">
-      <view class="res-cover" style="background: linear-gradient(135deg, #2e6ca4, #c8102e);">
+      <view class="res-cover" style="background: linear-gradient(135deg, #7C5CFF, #4D9BFF);">
+        <text class="sub-tag">{{item.subject}}</text>
         <text class="cover-text">{{item.subject}}</text>
       </view>
       <view class="res-title">{{item.title}}</view>

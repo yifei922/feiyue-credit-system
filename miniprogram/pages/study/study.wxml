@@ -20,16 +20,19 @@
   <view wx:elif="{{list.length === 0}}" class="muted center">暂无资料</view>
   <view wx:else class="list">
     <view wx:for="{{list}}" wx:key="id" class="item card" data-id="{{item.id}}" bindtap="goDetail">
-      <view class="item-title">{{item.title}}</view>
-      <view class="item-desc muted">{{item.description || '暂无描述'}}</view>
-      <view class="item-meta">
-        <text class="tag">{{item.subject}}</text>
-        <text class="tag tag-green">{{item.type === 'article' ? '图文' : item.type === 'video' ? '视频' : item.type === 'pdf' ? '文档' : '外链'}}</text>
-        <text wx:if="{{item.source}}" class="muted source">来源：{{item.source}}</text>
-      </view>
-      <view class="item-stats">
-        <text class="muted">👁 {{item.view_count || 0}} 次浏览</text>
-        <text wx:if="{{item.unlock_count}}" class="muted">🎬 已解锁 {{item.unlock_count}} 次</text>
+      <view class="item-thumb" style="background:linear-gradient(135deg,#7C5CFF,#4D9BFF)">📘</view>
+      <view class="item-body">
+        <view class="item-title">{{item.title}}</view>
+        <view class="item-desc muted">{{item.description || '暂无描述'}}</view>
+        <view class="item-meta">
+          <text class="tag">{{item.subject}}</text>
+          <text class="tag tag-green">{{item.type === 'article' ? '图文' : item.type === 'video' ? '视频' : item.type === 'pdf' ? '文档' : '外链'}}</text>
+          <text wx:if="{{item.source}}" class="muted source">来源：{{item.source}}</text>
+        </view>
+        <view class="item-stats">
+          <text class="muted">👁 {{item.view_count || 0}} 次浏览</text>
+          <text wx:if="{{item.unlock_count}}" class="muted">🎬 已解锁 {{item.unlock_count}} 次</text>
+        </view>
       </view>
     </view>
   </view>

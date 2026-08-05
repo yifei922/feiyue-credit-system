@@ -7,4 +7,4 @@
 .ad-block { text-align: center; padding: 20px; }
 .ad-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
 .open-block { padding: 20px; }
-.btn-primary { background: #c8102e; color: #fff; border-radius: 24px; margin-top: 12px; }
+.btn-primary { background: linear-gradient(135deg, #7C5CFF, #4D9BFF); color: #fff; border-radius: 24px; margin-top: 12px; box-shadow: 0 8px 20px rgba(124,92,255,0.35); }

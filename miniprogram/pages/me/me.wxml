@@ -24,17 +24,17 @@
 
   <view class="menu card">
     <view class="menu-item" bindtap="goPublish">
-      <text class="ico">📝</text>
+      <view class="ico" style="background:linear-gradient(135deg,#FF7EB3,#FF758C)">📝</view>
       <text>发动态</text>
       <text class="muted spacer">›</text>
     </view>
     <view class="menu-item" bindtap="goCredits">
-      <text class="ico">📊</text>
+      <view class="ico" style="background:linear-gradient(135deg,#7C5CFF,#4D9BFF)">📊</view>
       <text>学分流水</text>
       <text class="muted spacer">›</text>
     </view>
     <view class="menu-item" bindtap="onLogout">
-      <text class="ico">🚪</text>
+      <view class="ico" style="background:#ff5c7c">🚪</view>
       <text class="danger">退出登录</text>
       <text class="muted spacer">›</text>
     </view>

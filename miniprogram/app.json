@@ -13,23 +13,23 @@
   ],
   "window": {
     "backgroundTextStyle": "light",
-    "navigationBarBackgroundColor": "#c8102e",
+    "navigationBarBackgroundColor": "#7C5CFF",
     "navigationBarTitleText": "洛一高附中八（十）班",
     "navigationBarTextStyle": "white",
-    "backgroundColor": "#f6f8ff",
+    "backgroundColor": "#f4f5fb",
     "enablePullDownRefresh": false
   },
   "tabBar": {
-    "color": "#8893ad",
-    "selectedColor": "#c8102e",
+    "color": "#b9bfd6",
+    "selectedColor": "#7C5CFF",
     "backgroundColor": "#ffffff",
     "borderStyle": "white",
     "list": [
-      { "pagePath": "pages/index/index",    "text": "首页" },
-      { "pagePath": "pages/study/study",    "text": "学习" },
-      { "pagePath": "pages/tasks/tasks",    "text": "作业" },
-      { "pagePath": "pages/feed/feed",      "text": "班级圈" },
-      { "pagePath": "pages/me/me",          "text": "我的" }
+      { "pagePath": "pages/index/index",  "text": "首页",   "iconPath": "assets/tab/home.png",  "selectedIconPath": "assets/tab/home_a.png" },
+      { "pagePath": "pages/study/study",  "text": "学习",   "iconPath": "assets/tab/study.png", "selectedIconPath": "assets/tab/study_a.png" },
+      { "pagePath": "pages/tasks/tasks",  "text": "作业",   "iconPath": "assets/tab/tasks.png", "selectedIconPath": "assets/tab/tasks_a.png" },
+      { "pagePath": "pages/feed/feed",    "text": "班级圈", "iconPath": "assets/tab/feed.png",  "selectedIconPath": "assets/tab/feed_a.png" },
+      { "pagePath": "pages/me/me",        "text": "我的",   "iconPath": "assets/tab/me.png",    "selectedIconPath": "assets/tab/me_a.png" }
     ]
   },
   "style": "v2",

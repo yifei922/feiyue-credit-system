@@ -1,15 +1,45 @@
-.search-bar { background: #fff; border-radius: 24px; padding: 8px 14px; margin-bottom: 12px; box-shadow: 0 4px 16px rgba(31,41,55,0.04); }
-.search { font-size: 14px; }
-.grade-bar { display: flex; background: #fff; border-radius: 24px; padding: 4px; margin-bottom: 12px; box-shadow: 0 4px 16px rgba(31,41,55,0.04); }
-.grade-tab { flex: 1; text-align: center; padding: 8px 0; border-radius: 20px; font-size: 13px; color: #5b6478; }
-.grade-tab.active { background: #c8102e; color: #fff; }
-.subj-bar { white-space: nowrap; padding-bottom: 4px; }
-.subj-tab { display: inline-block; padding: 6px 14px; border-radius: 16px; background: #fff; color: #5b6478; font-size: 13px; margin-right: 6px; box-shadow: 0 2px 8px rgba(31,41,55,0.04); }
-.subj-tab.active { background: #c8102e; color: #fff; }
+/* study.wxss - 青春版资料库 */
+.search-bar {
+  background: #fff; border-radius: 22px; padding: 11px 16px; margin-bottom: 12px;
+  box-shadow: 0 6px 18px rgba(90,80,200,0.08); display: flex; align-items: center; gap: 8px;
+}
+.search { font-size: 14px; flex: 1; }
+
+.grade-bar {
+  display: flex; background: #fff; border-radius: 24px; padding: 4px; margin-bottom: 12px;
+  box-shadow: 0 6px 18px rgba(90,80,200,0.08);
+}
+.grade-tab {
+  flex: 1; text-align: center; padding: 9px 0; border-radius: 20px;
+  font-size: 13.5px; font-weight: 600; color: #7a82a6;
+}
+.grade-tab.active {
+  background: linear-gradient(135deg, #7C5CFF, #4D9BFF); color: #fff;
+  box-shadow: 0 6px 16px rgba(124,92,255,0.35);
+}
+
+.subj-bar { white-space: nowrap; padding-bottom: 6px; }
+.subj-tab {
+  display: inline-block; padding: 7px 15px; border-radius: 16px;
+  background: #fff; color: #7a82a6; font-size: 13px; font-weight: 600; margin-right: 6px;
+  box-shadow: 0 4px 12px rgba(90,80,200,0.06);
+}
+.subj-tab.active {
+  background: linear-gradient(135deg, #7C5CFF, #4D9BFF); color: #fff;
+  box-shadow: 0 6px 16px rgba(124,92,255,0.35);
+}
+
 .center { text-align: center; padding: 30px; }
 .list { margin-top: 4px; }
-.item-title { font-size: 15px; font-weight: 600; line-height: 1.4; margin-bottom: 4px; }
-.item-desc { font-size: 13px; line-height: 1.5; margin-bottom: 8px; }
-.item-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
+
+.item { display: flex; gap: 12px; align-items: center; }
+.item-thumb {
+  width: 60px; height: 60px; border-radius: 14px; flex: 0 0 60px;
+  display: flex; align-items: center; justify-content: center; font-size: 26px; color: #fff;
+}
+.item-body { flex: 1; min-width: 0; }
+.item-title { font-size: 15px; font-weight: 700; line-height: 1.4; margin-bottom: 4px; }
+.item-desc { font-size: 12.5px; line-height: 1.5; margin-bottom: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.item-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .source { font-size: 11px; }
 .item-stats { display: flex; gap: 12px; font-size: 12px; margin-top: 4px; }

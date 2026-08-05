@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>洛一高附中八（十）班 · 小程序视觉预览</title>
+<style>
+  :root{
+    --violet:#7C5CFF; --blue:#4D9BFF; --cyan:#4DD0FF;
+    --pink:#FF6B9D; --coral:#FF7E6B; --amber:#FFB23E; --mint:#2DD4A7;
+    --ink:#1B1F3B; --muted:#7A82A6; --bg:#F4F5FB; --card:#FFFFFF;
+    --grad-brand:linear-gradient(135deg,#7C5CFF 0%,#4D9BFF 100%);
+    --grad-warm:linear-gradient(135deg,#FF7EB3 0%,#FF758C 100%);
+    --grad-sun:linear-gradient(135deg,#FFB23E 0%,#FF7E6B 100%);
+    --grad-mint:linear-gradient(135deg,#2DD4A7 0%,#38D9C9 100%);
+    --shadow:0 10px 30px rgba(90,80,200,.12);
+    --shadow-sm:0 6px 18px rgba(90,80,200,.08);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif;
+    background:radial-gradient(1200px 800px at 20% 10%,#efeaff 0%,#e9f2ff 40%,#f4f5fb 70%);
+    color:var(--ink); min-height:100vh;
+    display:flex; align-items:flex-start; justify-content:center; gap:40px;
+    padding:40px 24px; flex-wrap:wrap;
+  }
+
+  /* ===== Phone ===== */
+  .phone{
+    width:390px; height:844px; flex:0 0 auto;
+    background:#0c0f1d; border-radius:54px; padding:14px;
+    box-shadow:0 40px 90px rgba(40,30,90,.35), inset 0 0 0 2px #2a2f45;
+    position:relative;
+  }
+  .phone::after{ /* side buttons */
+    content:""; position:absolute; right:-3px; top:170px; width:3px; height:64px;
+    border-radius:3px; background:#2a2f45;
+  }
+  .screen{
+    width:100%; height:100%; background:var(--bg); border-radius:42px; overflow:hidden;
+    position:relative; display:flex; flex-direction:column;
+  }
+  .statusbar{
+    height:44px; flex:0 0 44px; display:flex; align-items:center; justify-content:space-between;
+    padding:0 26px; font-size:13px; font-weight:600; color:#fff;
+    background:var(--grad-brand); position:relative; z-index:5;
+  }
+  .statusbar .icons{display:flex; gap:6px; align-items:center;}
+  .statusbar .icons span{display:inline-block; width:16px; height:11px; position:relative;}
+  .dot{width:6px;height:6px;border-radius:50%;background:#fff;display:inline-block;margin-left:2px;}
+
+  .viewport{flex:1; overflow:hidden; position:relative;}
+  .page{
+    position:absolute; inset:0; overflow-y:auto; overflow-x:hidden;
+    padding:0 16px 96px; opacity:0; transform:translateX(12px); pointer-events:none;
+    transition:opacity .28s ease, transform .28s ease;
+  }
+  .page.active{opacity:1; transform:none; pointer-events:auto;}
+  .page::-webkit-scrollbar{width:0;}
+
+  /* ===== Top nav (per page) ===== */
+  .topnav{display:flex; align-items:center; gap:10px; padding:8px 2px 12px;}
+  .topnav .t{font-size:19px; font-weight:800; letter-spacing:.5px;}
+  .topnav .sub{font-size:12px; color:var(--muted); font-weight:500;}
+  .nav-back{
+    width:34px; height:34px; border-radius:50%; background:#fff; box-shadow:var(--shadow-sm);
+    display:flex; align-items:center; justify-content:center; font-size:20px; cursor:pointer; margin-right:4px;
+  }
+  .nav-ico{margin-left:auto; width:36px; height:36px; border-radius:50%; background:#fff; box-shadow:var(--shadow-sm);
+    display:flex; align-items:center; justify-content:center; font-size:18px; cursor:pointer;}
+
+  /* sub page overlay */
+  .subpage{
+    position:absolute; inset:0; background:var(--bg); z-index:20;
+    display:flex; flex-direction:column;
+    transform:translateX(100%); transition:transform .32s cubic-bezier(.22,.61,.36,1);
+  }
+  .subpage.open{transform:none;}
+  .subpage .topbar{
+    height:54px; flex:0 0 54px; background:#fff; display:flex; align-items:center; gap:8px;
+    padding:0 12px; box-shadow:0 2px 10px rgba(0,0,0,.04); font-weight:700; font-size:16px; z-index:2;
+  }
+  .subpage .body{flex:1; overflow-y:auto; padding:16px;}
+
+  /* ===== Cards ===== */
+  .card{background:var(--card); border-radius:20px; padding:16px; box-shadow:var(--shadow-sm); margin-bottom:14px;}
+  .muted{color:var(--muted);}
+  .center{text-align:center; padding:40px 16px; color:var(--muted);}
+
+  /* ===== INDEX ===== */
+  .hero{
+    margin:0 -16px 16px; padding:18px 20px 24px; color:#fff; position:relative; overflow:hidden;
+    background:var(--grad-brand);
+    border-radius:0 0 30px 30px;
+  }
+  .hero::before{content:""; position:absolute; width:240px; height:240px; right:-70px; top:-90px;
+    background:radial-gradient(circle,rgba(255,255,255,.35),transparent 70%);}
+  .hero::after{content:""; position:absolute; width:160px; height:160px; left:-50px; bottom:-70px;
+    background:radial-gradient(circle,rgba(77,155,255,.5),transparent 70%);}
+  .hero-top{display:flex; align-items:center; gap:14px; position:relative; z-index:1;}
+  .avatar{width:58px;height:58px;border-radius:50%;background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.15);flex:0 0 58px;
+    display:flex;align-items:center;justify-content:center;font-size:26px;}
+  .hero .nm{font-size:20px;font-weight:800;}
+  .hero .cl{font-size:13px;opacity:.92;margin-top:2px;}
+  .pill{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.22);
+    backdrop-filter:blur(6px); padding:5px 12px; border-radius:20px; font-size:12px; font-weight:600; margin-top:10px;}
+  .hero-stats{display:flex; gap:10px; margin-top:16px; position:relative; z-index:1;}
+  .hstat{flex:1; background:rgba(255,255,255,.16); border-radius:16px; padding:10px 12px; backdrop-filter:blur(6px);}
+  .hstat .v{font-size:22px;font-weight:800;line-height:1;}
+  .hstat .l{font-size:11px;opacity:.9;margin-top:4px;}
+
+  .quick{display:flex; gap:10px; margin-bottom:16px;}
+  .quick .q{flex:1; background:#fff; border-radius:18px; padding:14px 6px; text-align:center; box-shadow:var(--shadow-sm);
+    cursor:pointer; transition:transform .15s;}
+  .quick .q:active{transform:scale(.95);}
+  .q .qi{width:48px;height:48px;border-radius:16px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;}
+  .q .qt{font-size:12.5px;font-weight:600;color:var(--ink);}
+
+  .seg{display:flex; background:#fff; border-radius:24px; padding:4px; margin-bottom:14px; box-shadow:var(--shadow-sm);}
+  .seg .s{flex:1;text-align:center;padding:9px 0;border-radius:20px;font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer;transition:.2s;}
+  .seg .s.on{background:var(--grad-brand);color:#fff;box-shadow:0 6px 16px rgba(124,92,255,.35);}
+
+  .stitle{font-size:16px;font-weight:800;margin:6px 2px 12px;display:flex;align-items:center;gap:6px;}
+  .stitle .em{font-size:18px;}
+
+  .grid{display:flex;flex-wrap:wrap;gap:12px;}
+  .rc{width:calc(50% - 6px);background:#fff;border-radius:18px;overflow:hidden;box-shadow:var(--shadow-sm);cursor:pointer;transition:transform .15s;}
+  .rc:active{transform:scale(.97);}
+  .rc .cv{height:96px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:30px;position:relative;}
+  .rc .cv .sub2{position:absolute;left:10px;top:8px;font-size:11px;font-weight:600;background:rgba(0,0,0,.18);padding:2px 8px;border-radius:10px;}
+  .rc .ti{font-size:13.5px;font-weight:600;padding:9px 11px 3px;line-height:1.35;height:38px;overflow:hidden;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+  .rc .mt{display:flex;justify-content:space-between;align-items:center;padding:0 11px 10px;font-size:11px;color:var(--muted);}
+  .tag{font-size:11px;font-weight:700;padding:3px 9px;border-radius:10px;color:#fff;}
+
+  .adban{margin-top:6px;background:var(--grad-sun);border-radius:18px;padding:14px 16px;color:#fff;display:flex;align-items:center;gap:12px;
+    box-shadow:0 10px 26px rgba(255,126,107,.3);position:relative;overflow:hidden;}
+  .adban .sh{position:absolute;top:0;left:-60%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);animation:sh 2.4s infinite;}
+  @keyframes sh{to{left:160%;}}
+  .adban .ai{font-size:30px;}
+  .adban .at{font-size:14px;font-weight:800;}
+  .adban .as{font-size:11px;opacity:.95;margin-top:2px;}
+  .adban .ab{margin-left:auto;background:#fff;color:#FF6A3D;font-weight:800;font-size:12px;padding:8px 14px;border-radius:14px;white-space:nowrap;}
+
+  /* ===== STUDY ===== */
+  .search{background:#fff;border-radius:22px;padding:11px 16px;display:flex;align-items:center;gap:8px;box-shadow:var(--shadow-sm);margin-bottom:12px;}
+  .search input{border:0;outline:0;flex:1;font-size:14px;background:transparent;}
+  .chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:8px;}
+  .chips::-webkit-scrollbar{height:0;}
+  .chip{flex:0 0 auto;background:#fff;border-radius:16px;padding:8px 14px;font-size:13px;font-weight:600;color:var(--muted);box-shadow:var(--shadow-sm);cursor:pointer;}
+  .chip.on{background:var(--grad-brand);color:#fff;box-shadow:0 6px 16px rgba(124,92,255,.35);}
+  .ritem{display:flex;gap:12px;background:#fff;border-radius:18px;padding:14px;box-shadow:var(--shadow-sm);margin-bottom:12px;cursor:pointer;transition:transform .15s;}
+  .ritem:active{transform:scale(.98);}
+  .ritem .thumb{width:64px;height:64px;border-radius:14px;flex:0 0 64px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;}
+  .ritem .rx{flex:1;min-width:0;}
+  .ritem .rt{font-size:15px;font-weight:700;line-height:1.35;}
+  .ritem .rd{font-size:12.5px;color:var(--muted);margin:4px 0 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .ritem .rm{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:11px;color:var(--muted);}
+
+  /* ===== TASKS ===== */
+  .ttabs{display:flex;background:#fff;border-radius:24px;padding:4px;margin-bottom:14px;box-shadow:var(--shadow-sm);}
+  .ttabs .tt{flex:1;text-align:center;padding:9px 0;border-radius:20px;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;}
+  .ttabs .tt.on{background:var(--grad-brand);color:#fff;box-shadow:0 6px 16px rgba(124,92,255,.3);}
+  .task{background:#fff;border-radius:18px;padding:16px;box-shadow:var(--shadow-sm);margin-bottom:12px;position:relative;overflow:hidden;cursor:pointer;transition:transform .15s;}
+  .task:active{transform:scale(.98);}
+  .task .bar{position:absolute;left:0;top:0;bottom:0;width:5px;}
+  .task .ttl{font-size:15.5px;font-weight:700;margin-bottom:8px;padding-left:4px;}
+  .task .tm{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-left:4px;}
+  .badge{font-size:12px;font-weight:800;padding:4px 10px;border-radius:12px;color:#fff;}
+  .b-violet{background:var(--violet);} .b-mint{background:var(--mint);} .b-coral{background:var(--coral);}
+  .task .dl{margin-left:auto;font-size:11.5px;color:var(--muted);}
+  .task .act{margin-top:10px;padding-left:4px;font-size:13px;font-weight:700;color:var(--violet);}
+  .task.ov .bar{background:var(--coral);} .task.ov{opacity:.92;}
+  .task.done{opacity:.6;}
+  .ring{width:46px;height:46px;border-radius:50%;background:conic-gradient(var(--mint) 0 72%,#eef0f6 0);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--ink);margin-left:auto;}
+
+  /* ===== FEED ===== */
+  .fab{position:absolute;right:18px;bottom:96px;width:56px;height:56px;border-radius:50%;background:var(--grad-warm);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:300;box-shadow:0 10px 26px rgba(255,107,157,.45);
+    z-index:8;cursor:pointer;animation:pulse 2.2s infinite;}
+  @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
+  .post{background:#fff;border-radius:18px;padding:15px;box-shadow:var(--shadow-sm);margin-bottom:13px;}
+  .ph{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+  .ph .pa{width:42px;height:42px;border-radius:50%;background:var(--grad-brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex:0 0 42px;}
+  .ph .pn{font-size:14px;font-weight:700;} .ph .pt{font-size:11px;color:var(--muted);}
+  .ptxt{font-size:14px;line-height:1.6;margin:4px 0;}
+  .pimgs{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;}
+  .pimg{width:calc(33.33% - 4px);aspect-ratio:1/1;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;}
+  .pact{display:flex;gap:26px;padding-top:11px;margin-top:8px;border-top:1px solid #f0f1f7;font-size:13px;color:var(--muted);}
+  .pact .a{display:flex;align-items:center;gap:6px;cursor:pointer;}
+  .pact .heart{font-size:18px;color:var(--muted);transition:transform .2s,color .2s;}
+  .pact .heart.liked{color:var(--pink);}
+  .pact .heart.pop{animation:pop .4s;}
+  @keyframes pop{0%{transform:scale(1);}40%{transform:scale(1.5);}100%{transform:scale(1);}}
+
+  /* ===== ME ===== */
+  .me-hero{margin:0 -16px 14px;padding:24px 20px;background:var(--grad-brand);color:#fff;position:relative;overflow:hidden;border-radius:0 0 30px 30px;}
+  .me-hero::after{content:"";position:absolute;width:180px;height:180px;right:-50px;bottom:-80px;background:radial-gradient(circle,rgba(255,255,255,.3),transparent 70%);}
+  .me-hero .mh{display:flex;align-items:center;gap:14px;position:relative;z-index:1;}
+  .me-hero .ma{width:64px;height:64px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:30px;flex:0 0 64px;}
+  .me-hero .mn{font-size:21px;font-weight:800;} .me-hero .mr{font-size:13px;opacity:.9;margin-top:2px;}
+  .me-stats{display:flex;background:#fff;border-radius:20px;padding:16px 0;box-shadow:var(--shadow-sm);margin-bottom:14px;}
+  .me-stats .ms{flex:1;text-align:center;position:relative;}
+  .me-stats .ms+.ms::before{content:"";position:absolute;left:0;top:14%;height:72%;width:1px;background:#eef0f6;}
+  .me-stats .mv{font-size:22px;font-weight:800;background:var(--grad-brand);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .me-stats .ml{font-size:11.5px;color:var(--muted);margin-top:3px;}
+  .menu{background:#fff;border-radius:20px;box-shadow:var(--shadow-sm);overflow:hidden;}
+  .mitem{display:flex;align-items:center;gap:12px;padding:15px 16px;cursor:pointer;transition:background .15s;}
+  .mitem:active{background:#f7f8ff;}
+  .mitem+.mitem{border-top:1px solid #f3f4f9;}
+  .mitem .mi{width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;flex:0 0 34px;}
+  .mitem .mt{font-size:14.5px;font-weight:600;}
+  .mitem .mg{margin-left:auto;color:#c8cde0;font-size:18px;}
+  .badges{display:flex;gap:10px;margin:4px 0 14px;}
+  .badge2{flex:1;background:#fff;border-radius:16px;padding:12px;text-align:center;box-shadow:var(--shadow-sm);}
+  .badge2 .be{font-size:26px;} .badge2 .bl{font-size:11px;color:var(--muted);margin-top:4px;}
+
+  /* ===== LOGIN ===== */
+  .login{height:100%;display:flex;flex-direction:column;justify-content:center;padding:30px 26px;background:var(--bg);}
+  .login .lg-card{background:#fff;border-radius:26px;padding:30px 24px;box-shadow:var(--shadow);}
+  .login .brand{display:flex;align-items:center;gap:14px;margin-bottom:6px;}
+  .login .logo{width:56px;height:56px;border-radius:16px;background:var(--grad-brand);display:flex;align-items:center;justify-content:center;font-size:30px;color:#fff;flex:0 0 56px;}
+  .login .lt{font-size:19px;font-weight:800;} .login .ls{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .login .pw{text-align:center;font-size:12px;color:var(--muted);margin:14px 0 18px;}
+  .btn-primary{width:100%;border:0;border-radius:16px;padding:14px;font-size:15.5px;font-weight:800;color:#fff;background:var(--grad-brand);box-shadow:0 10px 24px rgba(124,92,255,.35);cursor:pointer;transition:transform .15s;}
+  .btn-primary:active{transform:scale(.97);}
+  .btn-warm{background:var(--grad-warm);box-shadow:0 10px 24px rgba(255,107,157,.35);}
+  .divider{text-align:center;color:#c2c7da;font-size:12px;margin:18px 0;position:relative;}
+  .divider::before,.divider::after{content:"";position:absolute;top:50%;width:30%;height:1px;background:#e7e9f2;}
+  .divider::before{left:0;} .divider::after{right:0;}
+  .inrow{display:flex;align-items:center;gap:10px;background:#f5f6fb;border-radius:14px;padding:13px 14px;margin-bottom:12px;}
+  .inrow .il{font-size:13px;color:var(--muted);flex:0 0 48px;}
+  .inrow input{flex:1;border:0;outline:0;background:transparent;font-size:14px;}
+  .btn-ghost{width:100%;border:0;border-radius:16px;padding:14px;font-size:15.5px;font-weight:800;color:var(--violet);background:#f1eeff;cursor:pointer;}
+
+  /* ===== RESOURCE DETAIL ===== */
+  .rd-cover{height:170px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:54px;color:#fff;margin-bottom:14px;position:relative;overflow:hidden;}
+  .rd-cover .rdc-sub{position:absolute;left:14px;top:14px;background:rgba(0,0,0,.2);padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600;}
+  .rd-title{font-size:19px;font-weight:800;line-height:1.4;margin-bottom:10px;}
+  .rd-meta{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px;}
+  .rd-desc{font-size:13.5px;color:#4a5070;line-height:1.7;margin-bottom:12px;}
+  .quota{background:#eef9f4;border:1px solid #cdeede;border-radius:16px;padding:12px 14px;font-size:13px;color:#1f8a5f;font-weight:600;margin-bottom:12px;}
+  .ad-unlock{background:var(--grad-sun);border-radius:18px;padding:18px;color:#fff;text-align:center;box-shadow:0 12px 30px rgba(255,126,107,.32);}
+  .ad-unlock .au-t{font-size:16px;font-weight:800;margin-bottom:6px;}
+  .ad-unlock .au-s{font-size:12.5px;opacity:.95;margin-bottom:14px;line-height:1.5;}
+  .ad-unlock .au-b{background:#fff;color:#FF6A3D;font-weight:800;border:0;border-radius:14px;padding:12px 26px;font-size:14px;cursor:pointer;}
+  .fake-ad{position:fixed;inset:0;background:#11131f;z-index:60;display:none;align-items:center;justify-content:center;flex-direction:column;color:#fff;}
+  .fake-ad.show{display:flex;}
+  .fake-ad .fa-box{width:80%;max-width:320px;height:200px;border-radius:18px;background:linear-gradient(135deg,#3a2a6b,#7C5CFF);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;position:relative;overflow:hidden;}
+  .fake-ad .fa-close{position:absolute;top:18px;right:18px;font-size:13px;color:#aaa;}
+  .fake-ad .fa-bar{width:60%;height:5px;background:#333;margin-top:20px;border-radius:3px;overflow:hidden;}
+  .fake-ad .fa-bar i{display:block;height:100%;background:var(--mint);width:0;animation:fill 3s linear forwards;}
+  @keyframes fill{to{width:100%;}}
+  .open-cta{background:var(--grad-mint);border-radius:18px;padding:18px;text-align:center;color:#fff;}
+  .open-cta button{border:0;background:#fff;color:#1f8a5f;font-weight:800;padding:12px 26px;border-radius:14px;font-size:14px;cursor:pointer;}
+
+  /* ===== SUBMIT / PUBLISH ===== */
+  .textarea{width:100%;min-height:120px;background:#fff;border-radius:16px;padding:14px;font-size:14.5px;line-height:1.6;border:0;outline:0;resize:none;box-shadow:var(--shadow-sm);}
+  .img-pick{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+  .img-add{width:80px;height:80px;border-radius:14px;border:2px dashed #cfd3e6;display:flex;align-items:center;justify-content:center;font-size:30px;color:#b9bfd6;cursor:pointer;}
+  .img-thumb{width:80px;height:80px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;color:#fff;position:relative;}
+  .img-thumb .x{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#ff5c7c;color:#fff;font-size:13px;display:flex;align-items:center;justify-content:center;}
+
+  /* ===== POST DETAIL ===== */
+  .cmt{background:#fff;border-radius:16px;padding:13px 14px;margin-bottom:10px;box-shadow:var(--shadow-sm);}
+  .cmt .cn{font-size:13px;font-weight:700;margin-bottom:4px;}
+  .cmt .ct{font-size:13.5px;line-height:1.55;color:#3a3f5c;}
+  .cmt .ct2{font-size:11px;color:var(--muted);margin-top:5px;}
+  .cin{display:flex;gap:10px;margin-top:14px;}
+  .cin input{flex:1;background:#fff;border:0;outline:0;border-radius:14px;padding:13px 16px;font-size:14px;box-shadow:var(--shadow-sm);}
+  .cin button{border:0;background:var(--grad-brand);color:#fff;font-weight:700;border-radius:14px;padding:0 20px;font-size:14px;cursor:pointer;}
+
+  /* ===== SUBMIT TASK ===== */
+  .file-item{display:flex;align-items:center;gap:12px;background:#fff;border-radius:16px;padding:13px;box-shadow:var(--shadow-sm);margin-bottom:10px;}
+  .file-item .fi{width:40px;height:40px;border-radius:12px;background:var(--grad-brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex:0 0 40px;}
+  .file-item .fx{flex:1;min-width:0;}
+  .file-item .fn{font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .file-item .fs{font-size:11.5px;color:var(--muted);margin-top:3px;}
+  .file-item .fpr{height:5px;background:#eef0f6;border-radius:3px;margin-top:6px;overflow:hidden;}
+  .file-item .fpr i{display:block;height:100%;background:var(--mint);width:100%;}
+  .file-item .fd{margin-left:auto;width:24px;height:24px;border-radius:50%;background:#ffe9ec;color:#ff5c7c;display:flex;align-items:center;justify-content:center;font-size:15px;}
+
+  /* ===== CREDITS ===== */
+  .ct-item{display:flex;align-items:center;background:#fff;border-radius:16px;padding:14px;box-shadow:var(--shadow-sm);margin-bottom:10px;}
+  .ct-item .ci{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;flex:0 0 40px;margin-right:12px;}
+  .ct-item .cx{flex:1;}
+  .ct-item .ctt{font-size:14px;font-weight:600;} .ct-item .ctd{font-size:11.5px;color:var(--muted);margin-top:2px;}
+  .ct-item .cam{font-size:18px;font-weight:800;} .am-pos{color:var(--mint);} .am-neg{color:var(--coral);}
+
+  /* ===== Sidebar legend ===== */
+  .legend{flex:0 0 260px;max-width:320px;background:#fff;border-radius:24px;padding:24px;box-shadow:var(--shadow);align-self:flex-start;}
+  .legend h2{font-size:18px;font-weight:800;margin-bottom:4px;}
+  .legend p{font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:16px;}
+  .legend .sw{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+  .legend .sw span{font-size:11px;font-weight:700;color:#fff;padding:5px 11px;border-radius:10px;}
+  .legend .navb{display:block;width:100%;text-align:left;border:0;background:#f5f6fb;border-radius:12px;padding:11px 14px;margin-bottom:8px;font-size:13.5px;font-weight:600;color:var(--ink);cursor:pointer;transition:.15s;}
+  .legend .navb:hover{background:#efecff;color:var(--violet);}
+  .legend .navb small{display:block;font-size:11px;color:var(--muted);font-weight:500;margin-top:2px;}
+  .legend hr{border:0;border-top:1px solid #eef0f6;margin:16px 0;}
+  .legend .tip{font-size:11.5px;color:var(--muted);background:#f7f8ff;border-radius:12px;padding:12px;line-height:1.6;}
+
+  @media(max-width:760px){
+    body{flex-direction:column;align-items:center;padding:20px 10px;gap:24px;}
+    .legend{width:390px;max-width:92vw;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ PHONE ============ -->
+<div class="phone">
+  <div class="screen">
+    <div class="statusbar">
+      <span>9:41</span>
+      <span class="icons"><span class="dot"></span><span class="dot"></span><span class="dot"></span>📶 🔋</span>
+    </div>
+    <div class="viewport">
+
+      <!-- ===== INDEX ===== -->
+      <section class="page active" id="page-index">
+        <div class="hero">
+          <div class="hero-top">
+            <div class="avatar">🦊</div>
+            <div>
+              <div class="nm">王梓涵</div>
+              <div class="cl">八（十）班 · 初二年级</div>
+            </div>
+          </div>
+          <div class="pill">🔥 连续打卡 12 天</div>
+          <div class="hero-stats">
+            <div class="hstat"><div class="v">36</div><div class="l">我的学分</div></div>
+            <div class="hstat"><div class="v">1280</div><div class="l">积分余额</div></div>
+            <div class="hstat"><div class="v">No.3</div><div class="l">班级排名</div></div>
+          </div>
+        </div>
+
+        <div class="quick">
+          <div class="q" onclick="goTab('tasks')"><div class="qi" style="background:var(--grad-sun)">📝</div><div class="qt">今日作业</div></div>
+          <div class="q" onclick="goTab('study')"><div class="qi" style="background:var(--grad-brand)">📚</div><div class="qt">资料库</div></div>
+          <div class="q" onclick="goTab('feed')"><div class="qi" style="background:var(--grad-mint)">💬</div><div class="qt">班级圈</div></div>
+          <div class="q" onclick="goTab('me')"><div class="qi" style="background:var(--grad-warm)">🏆</div><div class="qt">我的</div></div>
+        </div>
+
+        <div class="seg">
+          <div class="s" onclick="seg(this,'idx-grade')">初一</div>
+          <div class="s on" onclick="seg(this,'idx-grade')">初二</div>
+          <div class="s" onclick="seg(this,'idx-grade')">初三</div>
+        </div>
+
+        <div class="stitle"><span class="em">🎯</span> 初二 · 为你推荐</div>
+        <div class="grid">
+          <div class="rc" onclick="openRes('勾股定理重难点突破','数学','📐','图文','2.3万')">
+            <div class="cv" style="background:linear-gradient(135deg,#7C5CFF,#4D9BFF)"><span class="sub2">数学</span>📐</div>
+            <div class="ti">勾股定理重难点突破精讲</div>
+            <div class="mt"><span class="tag" style="background:#7C5CFF">图文</span><span>👁 2.3万</span></div>
+          </div>
+          <div class="rc" onclick="openRes('英语完形填空高频词','英语','🔤','视频','1.8万')">
+            <div class="cv" style="background:linear-gradient(135deg,#4D9BFF,#4DD0FF)"><span class="sub2">英语</span>🔤</div>
+            <div class="ti">英语完形填空高频词速记</div>
+            <div class="mt"><span class="tag" style="background:#4D9BFF">视频</span><span>👁 1.8万</span></div>
+          </div>
+          <div class="rc" onclick="openRes('物理浮力实验动画','物理','⚡','视频','9654')">
+            <div class="cv" style="background:linear-gradient(135deg,#2DD4A7,#38D9C9)"><span class="sub2">物理</span>⚡</div>
+            <div class="ti">物理浮力实验动画演示</div>
+            <div class="mt"><span class="tag" style="background:#2DD4A7">视频</span><span>👁 9654</span></div>
+          </div>
+          <div class="rc" onclick="openRes('历史时间轴梳理','历史','📜','文档','7321')">
+            <div class="cv" style="background:linear-gradient(135deg,#FF7E6B,#FFB23E)"><span class="sub2">历史</span>📜</div>
+            <div class="ti">中国近代史时间轴梳理</div>
+            <div class="mt"><span class="tag" style="background:#FF7E6B">文档</span><span>👁 7321</span></div>
+          </div>
+        </div>
+
+        <div class="adban" onclick="openResAd()">
+          <div class="sh"></div>
+          <div class="ai">🎁</div>
+          <div><div class="at">看广告，解锁更多资料</div><div class="as">今日免费 2/3 · 看完 15s 广告 +1 次</div></div>
+          <div class="ab">去观看</div>
+        </div>
+      </section>
+
+      <!-- ===== STUDY ===== -->
+      <section class="page" id="page-study">
+        <div class="topnav"><div><div class="t">学习资料库</div><div class="sub">精选 · 合法来源 · 不侵权</div></div></div>
+        <div class="search">🔍<input placeholder="搜索资料标题 / 标签"></div>
+        <div class="seg">
+          <div class="s" onclick="seg(this,'st-grade')">初一</div>
+          <div class="s on" onclick="seg(this,'st-grade')">初二</div>
+          <div class="s" onclick="seg(this,'st-grade')">初三</div>
+        </div>
+        <div class="chips">
+          <div class="chip on" onclick="chip(this)">全部</div>
+          <div class="chip" onclick="chip(this)">语文</div>
+          <div class="chip" onclick="chip(this)">数学</div>
+          <div class="chip" onclick="chip(this)">英语</div>
+          <div class="chip" onclick="chip(this)">物理</div>
+          <div class="chip" onclick="chip(this)">化学</div>
+          <div class="chip" onclick="chip(this)">历史</div>
+        </div>
+
+        <div class="ritem" onclick="openRes('勾股定理重难点突破','数学','📐','图文','2.3万')">
+          <div class="thumb" style="background:linear-gradient(135deg,#7C5CFF,#4D9BFF)">📐</div>
+          <div class="rx"><div class="rt">勾股定理重难点突破精讲</div><div class="rd">含典型例题解析与易错点提示，配套PDF可下载</div>
+            <div class="rm"><span class="tag" style="background:#7C5CFF">数学</span><span class="tag" style="background:#2DD4A7">图文</span><span>来源：人教社官网</span></div></div>
+        </div>
+        <div class="ritem" onclick="openRes('物理浮力实验动画','物理','⚡','视频','9654')">
+          <div class="thumb" style="background:linear-gradient(135deg,#2DD4A7,#38D9C9)">⚡</div>
+          <div class="rx"><div class="rt">物理浮力实验动画演示</div><div class="rd">动态演示阿基米德原理，直观易懂</div>
+            <div class="rm"><span class="tag" style="background:#2DD4A7">物理</span><span class="tag" style="background:#4D9BFF">视频</span><span>来源：教育部资源平台</span></div></div>
+        </div>
+        <div class="ritem" onclick="openRes('英语完形填空高频词','英语','🔤','视频','1.8万')">
+          <div class="thumb" style="background:linear-gradient(135deg,#4D9BFF,#4DD0FF)">🔤</div>
+          <div class="rx"><div class="rt">英语完形填空高频词速记</div><div class="rd">按主题分类，配真人朗读音频</div>
+            <div class="rm"><span class="tag" style="background:#4D9BFF">英语</span><span class="tag" style="background:#4D9BFF">视频</span><span>来源：官方公众号</span></div></div>
+        </div>
+        <div class="ritem" onclick="openRes('历史时间轴梳理','历史','📜','文档','7321')">
+          <div class="thumb" style="background:linear-gradient(135deg,#FF7E6B,#FFB23E)">📜</div>
+          <div class="rx"><div class="rt">中国近代史时间轴梳理</div><div class="rd">一图看懂重大事件脉络，复习必备</div>
+            <div class="rm"><span class="tag" style="background:#FF7E6B">历史</span><span class="tag" style="background:#7C5CFF">文档</span><span>来源：人教社官网</span></div></div>
+        </div>
+      </section>
+
+      <!-- ===== TASKS ===== -->
+      <section class="page" id="page-tasks">
+        <div class="topnav"><div><div class="t">作业</div><div class="sub">按时提交，学分 +1~+3</div></div></div>
+        <div class="ttabs">
+          <div class="tt on" onclick="ttab(this)">待完成 (3)</div>
+          <div class="tt" onclick="ttab(this)">已完成</div>
+          <div class="tt" onclick="ttab(this)">逾期 (1)</div>
+        </div>
+
+        <div class="task" onclick="openSubmit('数学每日一练（第12周）','数学','2026-08-06 18:00')">
+          <div class="bar" style="background:var(--violet)"></div>
+          <div class="ttl">数学每日一练（第12周）</div>
+          <div class="tm"><span class="badge b-violet">数学</span><span class="badge b-mint">+2 学分</span><span class="dl">⏰ 截止 08-06</span></div>
+          <div class="act">点此提交作业 →</div>
+        </div>
+        <div class="task" onclick="openSubmit('英语听力打卡 Day 30','英语','2026-08-05 20:00')">
+          <div class="bar" style="background:var(--blue)"></div>
+          <div class="ttl">英语听力打卡 Day 30</div>
+          <div class="tm"><span class="badge b-violet" style="background:#4D9BFF">英语</span><span class="badge b-mint">+1 学分</span><span class="dl">⏰ 截止 08-05</span></div>
+          <div class="act">点此提交作业 →</div>
+        </div>
+        <div class="task" onclick="openSubmit('物理实验报告：浮力','物理','2026-08-07 18:00')">
+          <div class="bar" style="background:var(--mint)"></div>
+          <div class="ttl">物理实验报告：浮力</div>
+          <div class="tm"><span class="badge b-violet" style="background:#2DD4A7">物理</span><span class="badge b-mint">+3 学分</span><span class="dl">⏰ 截止 08-07</span></div>
+          <div class="act">点此提交作业 →</div>
+        </div>
+        <div class="task ov" onclick="openSubmit('语文读书笔记','语文','2026-07-30 18:00')">
+          <div class="bar" style="background:var(--coral)"></div>
+          <div class="ttl">语文读书笔记（已逾期）</div>
+          <div class="tm"><span class="badge b-violet" style="background:var(--pink)">语文</span><span class="badge b-coral">⚠ 逾期</span><span class="dl">截止 07-30</span></div>
+          <div class="act" style="color:var(--coral)">补交入口 →</div>
+        </div>
+      </section>
+
+      <!-- ===== FEED ===== -->
+      <section class="page" id="page-feed">
+        <div class="topnav"><div><div class="t">班级圈</div><div class="sub">分享日常 · 一起成长</div></div></div>
+
+        <div class="post">
+          <div class="ph"><div class="pa">🌟</div><div><div class="pn">李思源</div><div class="pt">2 小时前</div></div></div>
+          <div class="ptxt">周末和小组一起把物理浮力实验做完了！原来轮船能浮起来真的是靠排开的水 🚢 分享我们的实验笔记～</div>
+          <div class="pimgs">
+            <div class="pimg" style="background:linear-gradient(135deg,#2DD4A7,#38D9C9)">🧪</div>
+            <div class="pimg" style="background:linear-gradient(135deg,#7C5CFF,#4D9BFF)">📐</div>
+            <div class="pimg" style="background:linear-gradient(135deg,#FFB23E,#FF7E6B)">🚢</div>
+          </div>
+          <div class="pact">
+            <div class="a" onclick="like(this)"><span class="heart">♥</span><span class="lc">128</span></div>
+            <div class="a" onclick="openPost('李思源','2 小时前','周末和小组一起把物理浮力实验做完了！原来轮船能浮起来真的是靠排开的水 🚢 分享我们的实验笔记～')">💬 <span>24</span></div>
+          </div>
+        </div>
+
+        <div class="post">
+          <div class="ph"><div class="pa">🌈</div><div><div class="pn">班主任·王老师</div><div class="pt">今天 09:12</div></div></div>
+          <div class="ptxt">同学们，期中复习资料已上传到「学习」栏目，记得按时完成每日一练，有疑问随时在班级圈留言 💡</div>
+          <div class="pact">
+            <div class="a" onclick="like(this)"><span class="heart">♥</span><span class="lc">256</span></div>
+            <div class="a" onclick="openPost('班主任·王老师','今天 09:12','同学们，期中复习资料已上传到「学习」栏目，记得按时完成每日一练，有疑问随时在班级圈留言 💡')">💬 <span>63</span></div>
+          </div>
+        </div>
+
+        <div class="post">
+          <div class="ph"><div class="pa">🐼</div><div><div class="pn">张可</div><div class="pt">昨天</div></div></div>
+          <div class="ptxt">打卡第 30 天！英语听力终于不慌了，分享我的错题本方法 ✍️</div>
+          <div class="pact">
+            <div class="a" onclick="like(this)"><span class="heart">♥</span><span class="lc">89</span></div>
+            <div class="a" onclick="openPost('张可','昨天','打卡第 30 天！英语听力终于不慌了，分享我的错题本方法 ✍️')">💬 <span>15</span></div>
+          </div>
+        </div>
+
+        <div class="fab" onclick="openPublish()">＋</div>
+      </section>
+
+      <!-- ===== ME ===== -->
+      <section class="page" id="page-me">
+        <div class="me-hero">
+          <div class="mh">
+            <div class="ma">🦊</div>
+            <div><div class="mn">王梓涵</div><div class="mr">学生 · 八（十）班</div></div>
+          </div>
+        </div>
+
+        <div class="me-stats">
+          <div class="ms"><div class="mv">36</div><div class="ml">学分明细</div></div>
+          <div class="ms"><div class="mv">1280</div><div class="ml">积分余额</div></div>
+          <div class="ms"><div class="mv">860</div><div class="ml">累计赚取</div></div>
+        </div>
+
+        <div class="badges">
+          <div class="badge2"><div class="be">🔥</div><div class="bl">打卡达人</div></div>
+          <div class="badge2"><div class="be">📚</div><div class="bl">好学之星</div></div>
+          <div class="badge2"><div class="be">🏆</div><div class="bl">学分前三</div></div>
+        </div>
+
+        <div class="menu">
+          <div class="mitem" onclick="openPublish()"><div class="mi" style="background:var(--grad-warm)">📝</div><div class="mt">发动态</div><div class="mg">›</div></div>
+          <div class="mitem" onclick="openCredits()"><div class="mi" style="background:var(--grad-brand)">📊</div><div class="mt">学分流水</div><div class="mg">›</div></div>
+          <div class="mitem" onclick="goTab('study')"><div class="mi" style="background:var(--grad-mint)">🎁</div><div class="mt">积分商城（看广告赚积分）</div><div class="mg">›</div></div>
+          <div class="mitem" onclick="back()"><div class="mi" style="background:#ff5c7c">🚪</div><div class="mt" style="color:#ff5c7c">退出登录</div><div class="mg">›</div></div>
+        </div>
+        <div class="center" style="font-size:11px;">斐越科技 出品 · 班级学分管理 v2.0</div>
+      </section>
+
+      <!-- ============ SUB PAGES ============ -->
+      <div class="subpage" id="sub-login">
+        <div class="login">
+          <div class="lg-card">
+            <div class="brand"><div class="logo">🎓</div><div><div class="lt">洛一高附中八（十）班</div><div class="ls">班级作业 · 学分管理</div></div></div>
+            <div class="pw">斐越科技 出品</div>
+            <button class="btn-primary" onclick="toast('微信登录中…')">📱 微信一键登录</button>
+            <div class="divider">或使用账号密码</div>
+            <div class="inrow"><div class="il">用户名</div><input placeholder="如 student01"></div>
+            <div class="inrow"><div class="il">密码</div><input type="password" placeholder="初始密码 123456"></div>
+            <button class="btn-ghost" onclick="toast('登录中…')">登 录</button>
+            <div class="center" style="font-size:11px;padding:14px 0 0;">默认账号 teacher01 / rep01 / student01 / admin</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="subpage" id="sub-res">
+        <div class="topbar"><div class="nav-back" onclick="back()">‹</div>资料详情</div>
+        <div class="body">
+          <div class="rd-cover" id="rd-cover"><span class="rdc-sub" id="rd-sub">数学</span><span id="rd-emoji">📐</span></div>
+          <div class="rd-title" id="rd-title">勾股定理重难点突破</div>
+          <div class="rd-meta"><span class="tag" style="background:#7C5CFF" id="rd-tag1">数学</span><span class="tag" style="background:#2DD4A7" id="rd-tag2">图文</span><span class="muted" id="rd-view">👁 2.3万 次浏览</span></div>
+          <div class="rd-desc">含典型例题解析与易错点提示，配套 PDF 可下载。内容来源合法（人教社官网），不侵权，适合初二同步复习使用。</div>
+          <div class="quota">✅ 今日免费配额：2 / 3（还可免费查看 1 次）</div>
+          <div class="ad-unlock" id="rd-ad">
+            <div class="au-t">🎬 想多看？看广告解锁</div>
+            <div class="au-s">今日免费次数用完后可看 15 秒广告解锁 1 次<br>每次看广告还可 +5 积分（每日上限 20 次）</div>
+            <button class="au-b" onclick="watchAd()">▶ 看广告解锁</button>
+          </div>
+          <div class="open-cta" id="rd-open" style="display:none"><div style="font-size:15px;font-weight:800;margin-bottom:12px;">🎉 已解锁，开始学习吧！</div><button onclick="toast('正在打开资料…')">📖 查看资料</button></div>
+        </div>
+      </div>
+
+      <div class="subpage" id="sub-publish">
+        <div class="topbar"><div class="nav-back" onclick="back()">‹</div>发布动态</div>
+        <div class="body">
+          <textarea class="textarea" placeholder="说点什么吧…分享你的学习日常 🌟"></textarea>
+          <div class="img-pick">
+            <div class="img-thumb" style="background:linear-gradient(135deg,#7C5CFF,#4D9BFF)">📷<div class="x">×</div></div>
+            <div class="img-thumb" style="background:linear-gradient(135deg,#FFB23E,#FF7E6B)">📝<div class="x">×</div></div>
+            <div class="img-add">＋</div>
+          </div>
+          <button class="btn-primary btn-warm" style="margin-top:18px;" onclick="toast('已发布 🎉')">发布</button>
+        </div>
+      </div>
+
+      <div class="subpage" id="sub-post">
+        <div class="topbar"><div class="nav-back" onclick="back()">‹</div>动态详情</div>
+        <div class="body">
+          <div class="post" style="margin-bottom:14px;">
+            <div class="ph"><div class="pa" id="pp-a">🌟</div><div><div class="pn" id="pp-n">李思源</div><div class="pt" id="pp-t">2 小时前</div></div></div>
+            <div class="ptxt" id="pp-x">周末和小组一起把物理浮力实验做完了！</div>
+          </div>
+          <div class="cmt"><div class="cn">陈悦</div><div class="ct">太厉害了！求实验笔记模板 🙏</div><div class="ct2">1 小时前</div></div>
+          <div class="cmt"><div class="cn">王梓涵</div><div class="ct">下次组队叫上我呀～</div><div class="ct2">32 分钟前</div></div>
+          <div class="cmt"><div class="cn">班主任·王老师</div><div class="ct">为你们的探究精神点赞 👍</div><div class="ct2">12 分钟前</div></div>
+          <div class="cin"><input placeholder="写评论…"><button onclick="toast('评论成功')">发送</button></div>
+        </div>
+      </div>
+
+      <div class="subpage" id="sub-submit">
+        <div class="topbar"><div class="nav-back" onclick="back()">‹</div>提交作业</div>
+        <div class="body">
+          <div class="card">
+            <div class="rd-title" id="sm-t" style="font-size:16px;">数学每日一练（第12周）</div>
+            <div class="muted" id="sm-s" style="font-size:12.5px;">数学 · 截止 2026-08-06 18:00</div>
+          </div>
+          <div class="card" style="font-size:12.5px;line-height:1.6;color:#4a5070;">
+            单个文件最大 <b style="color:#ff5c7c">30 MB</b>，超过将被拒绝。<br>支持图片 / 视频 / 音频 / Word / PDF 等任意格式；系统自动压缩，画质不变。
+          </div>
+          <div class="file-item">
+            <div class="fi">📄</div>
+            <div class="fx"><div class="fn">数学每日一练_王梓涵.pdf</div><div class="fs">2.4 MB → 已压缩 1.1 MB</div><div class="fpr"><i></i></div></div>
+            <div class="fd">✓</div>
+          </div>
+          <button class="btn-primary" style="margin-top:8px;" onclick="toast('提交成功，+2 学分 🎉')">📤 提交作业（1 个附件）</button>
+        </div>
+      </div>
+
+      <div class="subpage" id="sub-credits">
+        <div class="topbar"><div class="nav-back" onclick="back()">‹</div>学分流水</div>
+        <div class="body">
+          <div class="ct-item"><div class="ci" style="background:var(--mint)">✅</div><div class="cx"><div class="ctt">数学每日一练</div><div class="ctd">2026-08-03 18:20</div></div><div class="cam am-pos">+2</div></div>
+          <div class="ct-item"><div class="ci" style="background:var(--mint)">✅</div><div class="cx"><div class="ctt">英语听力打卡 Day 29</div><div class="ctd">2026-08-02 20:05</div></div><div class="cam am-pos">+1</div></div>
+          <div class="ct-item"><div class="ci" style="background:var(--coral)">⚠️</div><div class="cx"><div class="ctt">语文读书笔记（逾期）</div><div class="ctd">2026-07-31 09:10</div></div><div class="cam am-neg">-1</div></div>
+          <div class="ct-item"><div class="ci" style="background:var(--mint)">✅</div><div class="cx"><div class="ctt">物理实验报告</div><div class="ctd">2026-07-30 17:40</div></div><div class="cam am-pos">+3</div></div>
+          <div class="ct-item"><div class="ci" style="background:var(--mint)">✅</div><div class="cx"><div class="ctt">英语听力打卡 Day 28</div><div class="ctd">2026-07-29 20:30</div></div><div class="cam am-pos">+1</div></div>
+        </div>
+      </div>
+
+      <!-- fake ad overlay -->
+      <div class="fake-ad" id="fakeAd">
+        <div class="fa-close" onclick="closeAd()">✕ 关闭</div>
+        <div class="fa-box">广告展示中…</div>
+        <div style="font-size:12px;color:#888;margin-top:14px;">看完即可解锁资料</div>
+        <div class="fa-bar"><i></i></div>
+      </div>
+
+    </div><!-- /viewport -->
+
+    <!-- ===== TAB BAR ===== -->
+    <div class="tabbar" id="tabbar" style="height:78px;flex:0 0 78px;background:#fff;display:flex;box-shadow:0 -4px 20px rgba(0,0,0,.05);padding-bottom:14px;">
+      <div class="tb" onclick="goTab('index')" style="flex:1;text-align:center;padding-top:10px;cursor:pointer;color:var(--violet);font-weight:700;">
+        <div style="font-size:22px;">🏠</div><div style="font-size:11px;margin-top:2px;">首页</div></div>
+      <div class="tb" onclick="goTab('study')" style="flex:1;text-align:center;padding-top:10px;cursor:pointer;color:#b9bfd6;font-weight:600;">
+        <div style="font-size:22px;">📚</div><div style="font-size:11px;margin-top:2px;">学习</div></div>
+      <div class="tb" onclick="goTab('tasks')" style="flex:1;text-align:center;padding-top:10px;cursor:pointer;color:#b9bfd6;font-weight:600;">
+        <div style="font-size:22px;">📝</div><div style="font-size:11px;margin-top:2px;">作业</div></div>
+      <div class="tb" onclick="goTab('feed')" style="flex:1;text-align:center;padding-top:10px;cursor:pointer;color:#b9bfd6;font-weight:600;">
+        <div style="font-size:22px;">💬</div><div style="font-size:11px;margin-top:2px;">班级圈</div></div>
+      <div class="tb" onclick="goTab('me')" style="flex:1;text-align:center;padding-top:10px;cursor:pointer;color:#b9bfd6;font-weight:600;">
+        <div style="font-size:22px;">🏆</div><div style="font-size:11px;margin-top:2px;">我的</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ LEGEND ============ -->
+<div class="legend">
+  <h2>📱 小程序视觉预览</h2>
+  <p>洛一高附中八（十）班 · 青春版 UI。点击右侧手机内的卡片 / 底部 Tab 即可切换页面与功能。</p>
+  <div style="font-size:12px;font-weight:700;margin-bottom:8px;">品牌色板</div>
+  <div class="sw">
+    <span style="background:linear-gradient(135deg,#7C5CFF,#4D9BFF)">极光紫蓝</span>
+    <span style="background:linear-gradient(135deg,#FF7EB3,#FF758C)">活力粉</span>
+    <span style="background:linear-gradient(135deg,#FFB23E,#FF7E6B)">暖阳橙</span>
+    <span style="background:linear-gradient(135deg,#2DD4A7,#38D9C9)">薄荷绿</span>
+  </div>
+  <hr>
+  <div style="font-size:12px;font-weight:700;margin-bottom:8px;">跳转预览</div>
+  <button class="navb" onclick="goTab('index')">🏠 首页 <small>用户卡 / 快捷入口 / 年级切换 / 推荐</small></button>
+  <button class="navb" onclick="goTab('study')">📚 学习资料库 <small>搜索 / 学科筛选 / 合法来源</small></button>
+  <button class="navb" onclick="goTab('tasks')">📝 作业 <small>待完成 / 已完成 / 逾期</small></button>
+  <button class="navb" onclick="goTab('feed')">💬 班级圈 <small>动态 / 点赞 / 评论 / 发布</small></button>
+  <button class="navb" onclick="goTab('me')">🏆 我的 <small>学分 / 积分 / 徽章 / 菜单</small></button>
+  <button class="navb" onclick="openRes('勾股定理重难点突破','数学','📐','图文','2.3万')">📄 资料详情 <small>广告解锁演示</small></button>
+  <button class="navb" onclick="openPublish()">✍️ 发布动态</button>
+  <button class="navb" onclick="openSubmit('数学每日一练（第12周）','数学','2026-08-06 18:00')">📤 提交作业</button>
+  <button class="navb" onclick="openCredits()">📊 学分流水</button>
+  <button class="navb" onclick="document.getElementById('sub-login').classList.add('open')">🔑 登录页</button>
+  <hr>
+  <div class="tip">💡 设计要点：极光渐变主色 + 玻璃拟态卡片 + 学科色标签 + 微交互动效（点赞弹跳、FAB 呼吸、广告流光），整体偏年轻、清爽、有冲击力。</div>
+</div>
+
+<script>
+  function goTab(name){
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.getElementById('page-'+name).classList.add('active');
+    // tab colors
+    const map={index:0,study:1,tasks:2,feed:3,me:4};
+    document.querySelectorAll('#tabbar .tb').forEach((t,i)=>{
+      const on=i===map[name];
+      t.style.color=on?'var(--violet)':'#b9bfd6';
+      t.style.fontWeight=on?'700':'600';
+    });
+  }
+  function seg(el,grp){ el.parentElement.querySelectorAll('.s').forEach(s=>s.classList.remove('on')); el.classList.add('on'); }
+  function chip(el){ el.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('on')); el.classList.add('on'); }
+  function ttab(el){ el.parentElement.querySelectorAll('.tt').forEach(t=>t.classList.remove('on')); el.classList.add('on'); }
+
+  function back(){ document.querySelectorAll('.subpage').forEach(s=>s.classList.remove('open')); }
+
+  function openRes(title,subj,emoji,type,view){
+    document.getElementById('rd-title').textContent=title;
+    document.getElementById('rd-sub').textContent=subj;
+    document.getElementById('rd-emoji').textContent=emoji;
+    document.getElementById('rd-tag1').textContent=subj;
+    document.getElementById('rd-tag2').textContent=type;
+    document.getElementById('rd-view').textContent='👁 '+view+' 次浏览';
+    const colors={语文:'#FF6B9D',数学:'#7C5CFF',英语:'#4D9BFF',物理:'#2DD4A7',化学:'#FF9F43',历史:'#FF7E6B',地理:'#38D9C9',生物:'#82C43C',道德与法治:'#A66CFF'};
+    const c=colors[subj]||'#7C5CFF';
+    document.getElementById('rd-cover').style.background='linear-gradient(135deg,'+c+','+c+'cc)';
+    document.getElementById('rd-tag1').style.background=c;
+    // reset ad state
+    document.getElementById('rd-ad').style.display='block';
+    document.getElementById('rd-open').style.display='none';
+    document.getElementById('sub-res').classList.add('open');
+  }
+  function openResAd(){ openRes('勾股定理重难点突破','数学','📐','图文','2.3万'); }
+  function watchAd(){
+    document.getElementById('fakeAd').classList.add('show');
+    setTimeout(()=>{
+      document.getElementById('fakeAd').classList.remove('show');
+      document.getElementById('rd-ad').style.display='none';
+      document.getElementById('rd-open').style.display='block';
+    },3200);
+  }
+  function closeAd(){ document.getElementById('fakeAd').classList.remove('show'); }
+
+  function openPublish(){ document.getElementById('sub-publish').classList.add('open'); }
+  function openPost(name,time,txt){
+    document.getElementById('pp-n').textContent=name;
+    document.getElementById('pp-t').textContent=time;
+    document.getElementById('pp-x').textContent=txt;
+    document.getElementById('sub-post').classList.add('open');
+  }
+  function openSubmit(title,subj,deadline){
+    document.getElementById('sm-t').textContent=title;
+    document.getElementById('sm-s').textContent=subj+' · 截止 '+deadline;
+    document.getElementById('sub-submit').classList.add('open');
+  }
+  function openCredits(){ document.getElementById('sub-credits').classList.add('open'); }
+
+  function like(el){
+    const h=el.querySelector('.heart'); const lc=el.querySelector('.lc');
+    h.classList.add('pop'); setTimeout(()=>h.classList.remove('pop'),400);
+    if(h.classList.contains('liked')){ h.classList.remove('liked'); lc.textContent=parseInt(lc.textContent)-1; }
+    else { h.classList.add('liked'); lc.textContent=parseInt(lc.textContent)+1; }
+  }
+  function toast(msg){ alert(msg); }
+</script>
+</body>
+</html>

@@ -3,7 +3,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #eef2ff 0%, #f5f7fb 60%);
+  background: linear-gradient(160deg, #7C5CFF 0%, #4D9BFF 55%, #2DD4A7 100%);
   padding: 24px;
 }
 .login-card {
@@ -60,6 +60,11 @@
 .btn-ghost {
   margin-top: 8px;
   width: 100%;
+  background: #fff;
+  color: #7C5CFF;
+  border: 1.5px solid #7C5CFF;
+  border-radius: 24px;
+  font-weight: 600;
 }
 .cold-hint {
   margin-top: 12px;

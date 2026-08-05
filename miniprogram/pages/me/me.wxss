@@ -1,25 +1,38 @@
+/* me.wxss - 青春版我的 */
 .me-card {
-  display: flex; align-items: center;
-  background: #fff; border-radius: 12px; padding: 16px;
-  margin-bottom: 12px;
-  box-shadow: 0 4px 16px rgba(31,41,55,0.04);
+  display: flex; align-items: center; gap: 14px;
+  background: linear-gradient(135deg, #7C5CFF 0%, #4D9BFF 100%);
+  border-radius: 22px; padding: 20px 18px; margin-bottom: 14px; color: #fff;
+  box-shadow: 0 12px 30px rgba(124,92,255,0.28); position: relative; overflow: hidden;
 }
-.avatar { width: 60px; height: 60px; border-radius: 50%; background: #eef0f4; margin-right: 14px; }
-.name { font-size: 18px; font-weight: 600; }
-.role { font-size: 13px; margin-top: 2px; }
+.me-card::after {
+  content: ""; position: absolute; width: 150px; height: 150px; right: -50px; bottom: -70px;
+  background: radial-gradient(circle, rgba(255,255,255,0.22), transparent 70%);
+}
+.avatar { width: 60px; height: 60px; border-radius: 50%; background: #fff; margin-right: 14px; flex: 0 0 60px;
+  display: flex; align-items: center; justify-content: center; font-size: 28px; }
+.name { font-size: 20px; font-weight: 800; }
+.role { font-size: 13px; opacity: 0.92; margin-top: 2px; }
 
-.row { display: flex; padding: 16px 0; }
-.row-item { flex: 1; text-align: center; }
-.big-num { font-size: 20px; font-weight: 700; color: #c8102e; }
+.row { display: flex; padding: 16px 0; background: #fff; border-radius: 20px; box-shadow: 0 6px 18px rgba(90,80,200,0.08); margin-bottom: 14px; }
+.row-item { flex: 1; text-align: center; position: relative; }
+.row-item + .row-item::before { content: ""; position: absolute; left: 0; top: 14%; height: 72%; width: 1px; background: #eef0f6; }
+.big-num {
+  font-size: 22px; font-weight: 800;
+  background: linear-gradient(135deg, #7C5CFF, #4D9BFF);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
 
-.menu { padding: 0 16px; }
+.menu { padding: 0 16px; background: #fff; border-radius: 20px; box-shadow: 0 6px 18px rgba(90,80,200,0.08); overflow: hidden; }
 .menu-item {
-  display: flex; align-items: center; gap: 12px;
-  padding: 14px 0;
-  border-bottom: 1px solid #eef0f4;
+  display: flex; align-items: center; gap: 12px; padding: 15px 0;
+  border-bottom: 1px solid #f3f4f9; font-size: 14.5px; font-weight: 600;
 }
 .menu-item:last-child { border-bottom: none; }
-.ico { font-size: 18px; }
-.spacer { flex: 1; text-align: right; font-size: 18px; }
+.menu-item .ico {
+  width: 34px; height: 34px; border-radius: 11px; display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: #fff; flex: 0 0 34px;
+}
+.spacer { flex: 1; text-align: right; font-size: 18px; color: #c8cde0; }
 
-.footer { text-align: center; padding: 24px 0; font-size: 11px; }
+.footer { text-align: center; padding: 24px 0; font-size: 11px; color: #b9bfd6; }

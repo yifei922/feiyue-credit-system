@@ -1,26 +1,29 @@
+/* feed.wxss - 青春版班级圈 */
 .publish-fab {
   position: fixed;
   right: 20px;
   bottom: 110px;
-  width: 52px; height: 52px;
+  width: 54px; height: 54px;
   border-radius: 50%;
-  background: #c8102e;
+  background: linear-gradient(135deg, #FF7EB3 0%, #FF758C 100%);
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 6px 20px rgba(200,16,46,0.3);
+  box-shadow: 0 10px 26px rgba(255,107,157,0.45);
   z-index: 10;
+  animation: fabPulse 2.2s infinite;
 }
+@keyframes fabPulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.08);} }
 .plus { color: #fff; font-size: 30px; font-weight: 300; }
 .center { text-align: center; padding: 30px; }
 
-.post { padding: 14px; }
+.post { padding: 15px; }
 .post-head { display: flex; align-items: center; margin-bottom: 8px; }
-.post-avatar { width: 40px; height: 40px; border-radius: 50%; background: #eef0f4; margin-right: 10px; }
-.post-name { font-size: 14px; font-weight: 600; }
-.post-time { font-size: 11px; }
+.post-avatar { width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg,#7C5CFF,#4D9BFF); margin-right: 10px; flex: 0 0 42px; }
+.post-name { font-size: 14px; font-weight: 700; }
+.post-time { font-size: 11px; color: #7a82a6; }
 .post-text { font-size: 14px; line-height: 1.6; margin: 6px 0; }
 .post-images { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
-.post-img { width: calc(33.33% - 3px); aspect-ratio: 1/1; border-radius: 4px; background: #eef0f4; }
-.post-actions { display: flex; gap: 24px; padding-top: 10px; margin-top: 6px; border-top: 1px solid #eef0f4; }
-.action { display: flex; align-items: center; gap: 6px; }
+.post-img { width: calc(33.33% - 3px); aspect-ratio: 1/1; border-radius: 12px; background: linear-gradient(135deg,#7C5CFF,#4D9BFF); }
+.post-actions { display: flex; gap: 24px; padding-top: 10px; margin-top: 6px; border-top: 1px solid #eef0f6; }
+.action { display: flex; align-items: center; gap: 6px; color: #7a82a6; font-size: 13px; }
 .ico { font-size: 18px; color: #8893ad; }
-.ico.liked { color: #c8102e; }
+.ico.liked { color: #ff6b9d; }
