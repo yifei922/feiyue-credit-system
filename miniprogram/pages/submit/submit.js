@@ -9,10 +9,14 @@ Page({
     files: [],          // {path, name, size, status, progress, compressedSize, attachmentId}
     uploading: false,
     submitting: false,
+    _navTimer: null,    // navigateBack 定时器引用
   },
   onLoad(opts) {
     this.setData({ taskId: Number(opts.taskId) });
     this.loadTask();
+  },
+  onUnload() {
+    if (this.data._navTimer) clearTimeout(this.data._navTimer);
   },
   async loadTask() {
     try {
@@ -21,18 +25,22 @@ Page({
     } catch (e) {}
   },
 
-  // 选文件
+  // 选文件（统一用 chooseMedia，兼容图片/视频/文件；旧版基础库回退 chooseMessageFile）
   chooseFile() {
-    wx.chooseMessageFile && wx.chooseMessageFile({ count: 5, success: (r) => this.appendFiles(r.tempFiles) });
-    // 同时支持 chooseImage 走图
-    wx.chooseMedia({
-      count: 5, mediaType: ['image','video','file'],
-      sourceType: ['album','camera','chat'],
-      success: (r) => {
-        const items = r.tempFiles.map((f) => ({ path: f.tempFilePath || f.path, name: f.file?.name || '文件', size: f.size }));
-        this.appendFiles(items);
-      },
-    });
+    if (wx.chooseMedia) {
+      wx.chooseMedia({
+        count: 5, mediaType: ['image', 'video', 'file'],
+        sourceType: ['album', 'camera', 'chat'],
+        success: (r) => {
+          const items = r.tempFiles.map((f) => ({ path: f.tempFilePath || f.path, name: f.file?.name || '文件', size: f.size }));
+          this.appendFiles(items);
+        },
+      });
+    } else if (wx.chooseMessageFile) {
+      wx.chooseMessageFile({ count: 5, success: (r) => this.appendFiles(r.tempFiles) });
+    } else {
+      wx.showToast({ title: '当前版本不支持选文件，请升级微信', icon: 'none' });
+    }
   },
 
   appendFiles(items) {
@@ -69,7 +77,7 @@ Page({
       try {
         await app.apiPost('/api/completion', { taskId: this.data.taskId, attachmentIds: this.data.files.map((f) => f.attachmentId) });
         wx.showToast({ title: '提交成功', icon: 'success' });
-        setTimeout(() => wx.navigateBack(), 800);
+        this.data._navTimer = setTimeout(() => wx.navigateBack(), 800);
       } catch (e) {
         wx.showToast({ title: e.message || '提交失败', icon: 'none' });
       }

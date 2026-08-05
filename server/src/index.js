@@ -1,3 +1,5 @@
+// 本地纯 Node 部署时加载 server/.env（Docker 环境由 compose 注入，此行为空操作）
+try { require('dotenv').config(); } catch (_) { /* dotenv 未安装时跳过 */ }
 const express = require('express');
 const path = require('path');
 const authRouter = require('./routes/auth');
@@ -59,6 +61,20 @@ api.use('/mp', mpFeedRouter);
 api.use('/mp', mpResourcesRouter);
 api.use('/mp', mpPointsRouter);
 app.use('/api', api);
+
+// ── /api 路径未匹配 → 返回 JSON 404（而非 HTML）──
+app.use('/api', (_req, res) => {
+  res.status(404).json({ code: 404, message: '接口不存在' });
+});
+
+// ── 全局错误中间件（防止异常返回 HTML 堆栈）──
+app.use((err, _req, res, _next) => {
+  console.error('[server]', err);
+  res.status(err.status || 500).json({
+    code: err.status || 500,
+    message: process.env.NODE_ENV === 'production' ? '服务器内部错误' : (err.message || '服务器错误'),
+  });
+});
 
 // 同源托管前端（单进程全栈，部署到免费平台只需这一个服务）
 const DIST = path.join(__dirname, '..', '..', 'frontend', 'dist');

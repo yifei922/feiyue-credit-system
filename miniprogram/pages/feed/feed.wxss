@@ -5,9 +5,9 @@
   bottom: 110px;
   width: 54px; height: 54px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #FF7EB3 0%, #FF758C 100%);
+  background: linear-gradient(135deg, #7C5CFF 0%, #4D9BFF 100%);
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 10px 26px rgba(255,107,157,0.45);
+  box-shadow: 0 10px 26px rgba(124,92,255,0.40);
   z-index: 10;
   animation: fabPulse 2.2s infinite;
 }

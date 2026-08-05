@@ -1,5 +1,5 @@
 // app.js - 全局入口与状态
-const { apiBase, getToken, setToken, clearAuth } = require('./utils/auth.js');
+const { getToken, setToken, clearAuth } = require('./utils/auth.js');
 
 App({
   globalData: {

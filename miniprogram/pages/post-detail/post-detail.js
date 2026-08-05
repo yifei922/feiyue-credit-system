@@ -1,11 +1,14 @@
 // pages/post-detail/post-detail.js - 动态详情 + 评论（同时复用为发布页 mode=publish）
 const app = getApp();
 Page({
-  data: { id: null, mode: 'view', post: null, comments: [], text: '' },
+  data: { id: null, mode: 'view', post: null, comments: [], text: '', _navTimer: null },
   onLoad(opts) {
     if (opts.mode === 'publish') { this.setData({ mode: 'publish' }); return; }
     this.setData({ id: Number(opts.id) });
     this.load();
+  },
+  onUnload() {
+    if (this.data._navTimer) clearTimeout(this.data._navTimer);
   },
   async load() {
     try {
@@ -35,7 +38,7 @@ Page({
     try {
       await app.apiPost('/api/mp/posts', { text, images: [] });
       wx.showToast({ title: '发布成功', icon: 'success' });
-      setTimeout(() => wx.switchTab({ url: '/pages/feed/feed' }), 600);
+      this.data._navTimer = setTimeout(() => wx.switchTab({ url: '/pages/feed/feed' }), 600);
     } catch (e) { wx.showToast({ title: e.message, icon: 'none' }); }
   },
 });

@@ -347,7 +347,7 @@ function migrate() {
   if (!existSuper) {
     db.prepare('INSERT INTO sys_user(username, password, name, role, class_id, student_id) VALUES(?,?,?,?,?,?)')
       .run(SUPER_USER, hashPassword('Feiyue@2026'), '超级管理员', 'ADMIN', CLASS_ID, null);
-    console.log('[migrate] 超级管理员账号已创建: superadmin / Feiyue@2026');
+    console.log('[migrate] 超级管理员账号已创建: superadmin / (密码已设置，请及时修改)');
   }
 
   // 2) 初中全科科目补齐（缺哪科补哪科，默认挂王老师 teacher_id=2）
