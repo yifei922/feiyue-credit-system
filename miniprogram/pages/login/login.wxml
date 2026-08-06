@@ -32,7 +32,7 @@
 
     <view wx:if="{{coldHint}}" class="cold-hint">⏱ {{coldHint}}免费服务器冷启动需 30–50 秒</view>
     <view class="bottom-hint">
-      <text class="muted">默认账号：teacher01 / rep01 / student01 / admin　·　密码 123456</text>
+      <text class="muted">测试账号：student01　·　密码 123456</text>
     </view>
     <view class="bottom-warn">
       <text class="muted">⚠ 首次打开可能需 30–50 秒（免费服务器冷启动），请稍候</text>
