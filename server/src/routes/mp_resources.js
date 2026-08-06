@@ -11,11 +11,20 @@ const router = express.Router();
 const { db } = require('../db');
 const { ok, fail } = require('../util');
 
-const FREE_DAILY_QUOTA = 3;          // 每天免费查看次数
-const AD_UNLOCK_DAILY_LIMIT = 20;    // 每天最多广告解锁次数（防刷）
+const VIEW_COST_POINTS = Number(process.env.RESOURCE_VIEW_COST) || 5; // 每次查阅/下载扣除积分
+const AD_DAILY_LIMIT = 20;              // 每天最多看广告解锁次数（防刷）
 
 function today() { return new Date().toISOString().slice(0, 10); }
 function isAdmin(u) { return u && (u.role === 'ADMIN' || u.role === 'TEACHER'); }
+function safeTags(t) { try { return JSON.parse(t || '[]'); } catch (_) { return []; } }
+function watchedAdToday(uid, rid) {
+  return db.prepare('SELECT COUNT(*) AS c FROM ad_view_log WHERE user_id=? AND resource_id=? AND day=?')
+    .get(uid, rid, today()).c > 0;
+}
+function balanceOf(uid) {
+  const r = db.prepare('SELECT points FROM user_points WHERE user_id=?').get(uid);
+  return r ? r.points : 0;
+}
 
 // ── 学生端 ──
 
@@ -31,64 +40,70 @@ router.get('/resources', (req, res) => {
                FROM resource ${where.length ? 'WHERE ' + where.join(' AND ') : ''}
                ORDER BY sort_order ASC, id DESC LIMIT ? OFFSET ?`;
   const list = db.prepare(sql).all(...args, lim, off);
-  // 解析 tags JSON
-  list.forEach((r) => { try { r.tags = JSON.parse(r.tags || '[]'); } catch (_) { r.tags = []; } });
-  ok(res, { list, hasMore: list.length === lim });
+  list.forEach((r) => { r.tags = safeTags(r.tags); });
+  ok(res, { list, hasMore: list.length === lim, viewCostPoints: VIEW_COST_POINTS });
 });
 
-// 详情：返回 url + 解锁状态
+// 详情：返回是否需看广告、积分是否足够等元信息（url 仅当天已看广告后才返回）
 router.get('/resources/:id', (req, res) => {
   const id = Number(req.params.id);
   const r = db.prepare('SELECT * FROM resource WHERE id=?').get(id);
   if (!r) return fail(res, 404, '资料不存在');
-  try { r.tags = JSON.parse(r.tags || '[]'); } catch (_) { r.tags = []; }
 
-  // 今日免费次数
-  const u = req.user;
-  const dv = db.prepare('SELECT view_count FROM user_daily_view WHERE user_id=? AND day=?')
-    .get(u.id, today());
-  const usedFree = dv ? dv.view_count : 0;
-  const freeLeft = Math.max(0, FREE_DAILY_QUOTA - usedFree);
-
-  // 是否已看过（不算解锁，仅免费配额）
-  const unlocksToday = db.prepare(`SELECT COUNT(*) AS c FROM ad_view_log WHERE user_id=? AND resource_id=? AND day=?`)
-    .get(u.id, id, today()).c;
-
-  // url 仅在 freeLeft > 0 或已解锁时返回
-  const accessible = freeLeft > 0;
-  if (!accessible) {
-    delete r.url; // 不返回 url，让前端弹广告
-  } else {
-    // 增加免费配额计数 + 资源总查看数
-    db.prepare(`INSERT INTO user_daily_view(user_id, day, view_count) VALUES(?,?,1)
-                ON CONFLICT(user_id, day) DO UPDATE SET view_count = view_count + 1`).run(u.id, today());
-    db.prepare('UPDATE resource SET view_count = view_count + 1 WHERE id=?').run(id);
-  }
-  ok(res, {
-    resource: r,
-    freeQuota: { used: usedFree + (accessible ? 1 : 0), total: FREE_DAILY_QUOTA, left: accessible ? freeLeft - 1 : 0 },
-    requiresAd: !accessible,
-    adUnlocksToday: unlocksToday,
-    adUnlockDailyLimit: AD_UNLOCK_DAILY_LIMIT,
-  });
+  const uid = req.user.id;
+  const adWatched = watchedAdToday(uid, id);
+  const balance = balanceOf(uid);
+  const out = {
+    id: r.id, grade: r.grade, subject: r.subject, title: r.title, cover: r.cover,
+    type: r.type, description: r.description, source: r.source, view_count: r.view_count,
+    tags: safeTags(r.tags),
+    requiresAd: !adWatched,          // 当天未看广告 → 需先看悬浮窗广告
+    pointsCost: VIEW_COST_POINTS,    // 每次查阅/下载扣积分
+    pointsBalance: balance,
+    canView: balance >= VIEW_COST_POINTS,
+  };
+  if (adWatched) out.url = r.url;    // 当天看过广告 → 可直接查阅（但仍会扣积分）
+  ok(res, { resource: out, adDailyLimit: AD_DAILY_LIMIT });
 });
 
-// 解锁（前端看完激励视频广告后回调）
-router.post('/resources/:id/unlock', (req, res) => {
+// 前端看完激励视频广告后回调：记录广告观看（当天该资源只记一次）
+router.post('/resources/:id/ad-done', (req, res) => {
   const id = Number(req.params.id);
-  const r = db.prepare('SELECT id FROM resource WHERE id=?').get(id);
-  if (!r) return fail(res, 404, '资料不存在');
-  const u = req.user;
-  const day = today();
-  const used = db.prepare(`SELECT COUNT(*) AS c FROM ad_view_log WHERE user_id=? AND day=?`).get(u.id, day).c;
-  if (used >= AD_UNLOCK_DAILY_LIMIT) {
-    return fail(res, 429, `今日广告解锁已达上限 ${AD_UNLOCK_DAILY_LIMIT} 次，明天再来`);
+  if (!db.prepare('SELECT id FROM resource WHERE id=?').get(id)) return fail(res, 404, '资料不存在');
+  const uid = req.user.id, day = today();
+  const used = db.prepare('SELECT COUNT(*) AS c FROM ad_view_log WHERE user_id=? AND resource_id IS NULL AND day=?').get(uid, day).c;
+  // 注意：此处只统计 resource_id IS NULL 的「每日广告奖励」计数，避免与资料解锁计数冲突
+  const adCount = db.prepare('SELECT COUNT(*) AS c FROM ad_view_log WHERE user_id=? AND day=?').get(uid, day).c;
+  if (adCount >= AD_DAILY_LIMIT) return fail(res, 429, `今日广告解锁已达上限 ${AD_DAILY_LIMIT} 次，明天再来`);
+  if (!watchedAdToday(uid, id)) {
+    db.prepare('INSERT INTO ad_view_log(user_id, resource_id, day) VALUES(?,?,?)').run(uid, id, day);
+    db.prepare('UPDATE resource SET unlock_count = unlock_count + 1 WHERE id=?').run(id);
   }
-  // 记录 + 返回 url
-  db.prepare('INSERT INTO ad_view_log(user_id, resource_id, day) VALUES(?,?,?)').run(u.id, id, day);
-  db.prepare('UPDATE resource SET unlock_count = unlock_count + 1 WHERE id=?').run(id);
-  const full = db.prepare('SELECT id, url, type, title FROM resource WHERE id=?').get(id);
-  ok(res, { url: full.url, type: full.type, title: full.title, unlocked: true });
+  ok(res, { ok: true, requiresAd: false });
+});
+
+// 实际查阅/下载：校验当天已看广告，并扣积分后返回 url
+router.post('/resources/:id/access', (req, res) => {
+  const id = Number(req.params.id);
+  const r = db.prepare('SELECT * FROM resource WHERE id=?').get(id);
+  if (!r) return fail(res, 404, '资料不存在');
+  const uid = req.user.id;
+  if (!watchedAdToday(uid, id)) return fail(res, 425, '请先看完广告再查看资料');
+  const balance = balanceOf(uid);
+  if (balance < VIEW_COST_POINTS) {
+    return fail(res, 402, `积分不足，查阅需 ${VIEW_COST_POINTS} 积分（当前 ${balance}）。去看广告或完成任务赚积分吧`);
+  }
+  // 扣积分
+  const cur = db.prepare('SELECT points, total_earned FROM user_points WHERE user_id=?').get(uid);
+  if (cur) {
+    db.prepare("UPDATE user_points SET points=points-?, updated_at=datetime('now') WHERE user_id=?")
+      .run(VIEW_COST_POINTS, uid);
+  } else {
+    db.prepare('INSERT INTO user_points(user_id, points, total_earned) VALUES(?,?,0)')
+      .run(uid, -VIEW_COST_POINTS);
+  }
+  db.prepare('UPDATE resource SET view_count = view_count + 1 WHERE id=?').run(id);
+  ok(res, { url: r.url, type: r.type, title: r.title, pointsLeft: balance - VIEW_COST_POINTS });
 });
 
 // ── 后台管理（ADMIN/TEACHER）──

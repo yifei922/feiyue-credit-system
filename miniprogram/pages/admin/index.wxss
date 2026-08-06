@@ -1,0 +1,30 @@
+.container { padding: 24rpx; min-height: 100vh; background: #f4f5fb; }
+
+.banner {
+  background: linear-gradient(135deg, #7C5CFF, #4D9BFF);
+  border-radius: 24rpx;
+  padding: 40rpx 32rpx;
+  color: #fff;
+  margin-bottom: 24rpx;
+}
+.role-badge { font-size: 40rpx; font-weight: 700; }
+.banner-sub { font-size: 24rpx; opacity: 0.9; margin-top: 8rpx; }
+
+.card { background: #fff; border-radius: 20rpx; padding: 24rpx; margin-bottom: 24rpx; }
+
+.stats { display: flex; }
+.stat { flex: 1; text-align: center; }
+.stat .num { font-size: 40rpx; font-weight: 700; color: #7C5CFF; }
+.stat .lbl { font-size: 22rpx; color: #888; margin-top: 6rpx; }
+
+.menu .menu-item {
+  display: flex; align-items: center; padding: 24rpx 8rpx; border-bottom: 1rpx solid #f0f0f0;
+}
+.menu .menu-item:last-child { border-bottom: none; }
+.ico { width: 72rpx; height: 72rpx; border-radius: 18rpx; color: #fff; font-size: 36rpx; display: flex; align-items: center; justify-content: center; margin-right: 24rpx; }
+.mi-text { flex: 1; }
+.mi-title { font-size: 30rpx; font-weight: 600; color: #333; }
+.mi-sub { font-size: 22rpx; color: #999; margin-top: 4rpx; }
+
+.footer { text-align: center; color: #aaa; font-size: 22rpx; margin-top: 16rpx; }
+.muted { color: #bbb; }

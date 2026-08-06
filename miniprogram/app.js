@@ -1,9 +1,10 @@
 // app.js - 全局入口与状态
 const { getToken, setToken, clearAuth } = require('./utils/auth.js');
+const { API_BASE } = require('./config/env.js');
 
 App({
   globalData: {
-    apiBase: 'https://feiyue-credit.onrender.com', // 后端地址（生产）
+    apiBase: API_BASE, // 后端地址（见 config/env.js）
     user: null,
     token: '',
     systemInfo: null,
@@ -57,6 +58,9 @@ App({
   apiGet(path, params, noToken = false) {
     const q = params ? '?' + Object.entries(params).map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&') : '';
     return this._api(path + q, 'GET', null, noToken);
+  },
+  apiDelete(path, data, noToken = false) {
+    return this._api(path, 'DELETE', data || null, noToken);
   },
 
   _api(path, method, data, noToken) {

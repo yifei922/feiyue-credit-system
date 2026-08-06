@@ -9,7 +9,11 @@
     "pages/submit/submit",
     "pages/resource-detail/resource-detail",
     "pages/post-detail/post-detail",
-    "pages/credits/credits"
+    "pages/credits/credits",
+    "pages/profile/profile",
+    "pages/admin/index",
+    "pages/admin/resources",
+    "pages/admin/users"
   ],
   "window": {
     "backgroundTextStyle": "light",

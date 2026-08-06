@@ -36,7 +36,11 @@ router.post('/wx-login', async (req, res) => {
       openid = r.openid;
     } catch (e) {
       if (e.code === 'WX_SECRET_MISSING') {
-        return res.status(503).json({ code: 503, message: '服务端未配置微信 AppSecret，请联系管理员' });
+        return res.status(503).json({
+          code: 503,
+          message: '服务端未配置微信 AppSecret。管理员请到微信公众平台「开发→开发设置」复制 AppSecret，'
+            + '填入 server/.env 的 WX_APP_SECRET（本地开发可设 WX_MOCK=1 临时预览）。'
+        });
       }
       return res.status(400).json({ code: 400, message: '微信登录失败：' + (e.message || '') });
     }
@@ -55,16 +59,22 @@ router.post('/wx-login', async (req, res) => {
     }
 
     // 2) 未绑定 → 自动建账号（临时用户名 = wx_<openid前10>），等用户去个人中心绑定学号
+    const INIT_POINTS = Number(process.env.INIT_POINTS) || 100; // 前期每人体赠积分
     const tmpUsername = 'wx_' + openid.slice(0, 10);
     const dup = db.prepare('SELECT id FROM sys_user WHERE username=?').get(tmpUsername);
+    let newUserId = null;
     if (dup) {
       // 极端冲突（极小概率）：把 openid 绑到这个账号
       db.prepare('UPDATE sys_user SET openid=? WHERE id=?').run(openid, dup.id);
     } else {
       const name = nickname || '微信用户';
-      db.prepare(`INSERT INTO sys_user(username, password, name, role, class_id, student_id, openid, avatar)
+      const info = db.prepare(`INSERT INTO sys_user(username, password, name, role, class_id, student_id, openid, avatar)
                   VALUES(?,?,?,?,?,?,?,?)`)
         .run(tmpUsername, '!wx_temp', name, 'STUDENT', 1, null, openid, avatarUrl || null);
+      newUserId = info.lastInsertRowid;
+      // 赠送初始积分
+      db.prepare('INSERT INTO user_points(user_id, points, total_earned) VALUES(?,?,?)')
+        .run(newUserId, INIT_POINTS, INIT_POINTS);
     }
     const u = db.prepare('SELECT * FROM sys_user WHERE openid=?').get(openid);
     const token = signToken(userPayload(u));

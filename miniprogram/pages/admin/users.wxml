@@ -1,0 +1,17 @@
+<view class="container">
+  <view class="tabs">
+    <view wx:for="{{ROLE_TABS}}" wx:key="value" class="tab {{roleFilter===item.value ? 'active' : ''}}" data-value="{{item.value}}" bindtap="onTab">{{item.label}}</view>
+  </view>
+
+  <view wx:if="{{loading}}" class="empty">加载中…</view>
+  <view wx:elif="{{list.length===0}}" class="empty">暂无用户</view>
+
+  <view wx:for="{{list}}" wx:key="id" class="item card">
+    <view class="item-main">
+      <view class="name">{{item.name}} <text class="role">{{item.roleLabel}}</text></view>
+      <view class="meta">账号：{{item.username}}　学号：{{item.studentId || '—'}}</view>
+      <view wx:if="{{item.subjectNames.length}}" class="meta">负责科目：{{item.subjectNames}}</view>
+    </view>
+    <view class="reset" data-id="{{item.id}}" data-name="{{item.name}}" bindtap="onReset">重置密码</view>
+  </view>
+</view>

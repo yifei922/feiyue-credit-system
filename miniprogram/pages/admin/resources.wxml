@@ -1,0 +1,52 @@
+<view class="container">
+  <view class="top-bar">
+    <text class="title">资料列表（{{list.length}}）</text>
+    <button class="add-btn" size="mini" bindtap="onAdd">+ 新增</button>
+  </view>
+
+  <view wx:if="{{loading}}" class="empty">加载中…</view>
+  <view wx:elif="{{list.length===0}}" class="empty">暂无资料，点右上角新增</view>
+
+  <view wx:for="{{list}}" wx:key="id" class="item card">
+    <view class="item-main">
+      <view class="item-title">{{item.title}}</view>
+      <view class="item-meta">
+        <text class="tag grade">{{item.grade}}</text>
+        <text class="tag subject">{{item.subject}}</text>
+        <text class="tag type">{{typeLabel[item.type]}}</text>
+      </view>
+    </view>
+    <view class="item-ops">
+      <text class="op edit" data-id="{{item.id}}" bindtap="onEdit">编辑</text>
+      <text class="op del" data-id="{{item.id}}" bindtap="onDelete">删除</text>
+    </view>
+  </view>
+
+  <!-- 新增/编辑 弹层 -->
+  <view wx:if="{{showForm}}" class="mask" bindtap="closeForm">
+    <view class="sheet" catchtap="noop">
+      <view class="sheet-title">{{editingId ? '编辑资料' : '新增资料'}}</view>
+      <scroll-view scroll-y class="sheet-body">
+        <view class="form-item"><text class="fl">标题*</text><input class="fi" value="{{form.title}}" data-key="title" bindinput="onField" placeholder="资料标题" /></view>
+        <view class="form-item"><text class="fl">年级</text>
+          <picker mode="selector" range="{{['初一','初二','初三']}}" value="{{['初一','初二','初三'].indexOf(form.grade)}}" bindchange="onGrade">
+            <view class="picker">{{form.grade}}</view>
+          </picker>
+        </view>
+        <view class="form-item"><text class="fl">科目</text>
+          <picker mode="selector" range="{{subjects}}" bindchange="onSubject"><view class="picker">{{form.subject}}</view></picker>
+        </view>
+        <view class="form-item"><text class="fl">类型</text>
+          <picker mode="selector" range="{{types}}" bindchange="onType"><view class="picker">{{typeLabel[form.type]}}</view></picker>
+        </view>
+        <view class="form-item"><text class="fl">链接*（图文/文档/视频/PDF 的网址）</text><input class="fi" value="{{form.url}}" data-key="url" bindinput="onField" placeholder="https://…" /></view>
+        <view class="form-item"><text class="fl">来源</text><input class="fi" value="{{form.source}}" data-key="source" bindinput="onField" placeholder="如：老师课件" /></view>
+        <view class="form-item"><text class="fl">简介</text><textarea class="fi ta" value="{{form.description}}" data-key="description" bindinput="onField" placeholder="选填" /></view>
+      </scroll-view>
+      <view class="sheet-ops">
+        <button class="cancel" bindtap="closeForm">取消</button>
+        <button class="ok" bindtap="onSubmit">保存</button>
+      </view>
+    </view>
+  </view>
+</view>

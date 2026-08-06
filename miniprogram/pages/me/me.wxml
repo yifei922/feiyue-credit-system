@@ -1,10 +1,12 @@
 <view class="container">
   <view class="me-card">
-    <image class="avatar" src="{{user.avatar || '/assets/avatar_default.png'}}"></image>
+    <image class="avatar" src="{{user.avatar || '/assets/avatar_default.png'}}" bindtap="goProfile"></image>
     <view class="me-info">
       <view class="name">{{user.name}}</view>
-      <view class="role muted">{{user.role === 'STUDENT' ? '学生' : user.role === 'TEACHER' ? '教师' : user.role === 'REP' ? '科代' : '其他'}}</view>
+      <view class="role muted">{{user.role === 'STUDENT' ? '学生' : user.role === 'TEACHER' ? '教师' : user.role === 'REP' ? '科代' : user.role === 'ADMIN' ? '管理员' : '其他'}}</view>
+      <view wx:if="{{user.studentId}}" class="muted sid">学号：{{user.studentId}}</view>
     </view>
+    <view class="edit-badge" bindtap="goProfile">编辑 ›</view>
   </view>
 
   <view class="row card">
@@ -23,6 +25,16 @@
   </view>
 
   <view class="menu card">
+    <view class="menu-item" bindtap="goProfile">
+      <view class="ico" style="background:linear-gradient(135deg,#7C5CFF,#4D9BFF)">👤</view>
+      <text>编辑资料（头像/姓名/学号）</text>
+      <text class="muted spacer">›</text>
+    </view>
+    <view wx:if="{{canManage}}" class="menu-item" bindtap="goAdmin">
+      <view class="ico" style="background:linear-gradient(135deg,#2DD4A7,#4D9BFF)">🛠</view>
+      <text>管理后台</text>
+      <text class="muted spacer">›</text>
+    </view>
     <view class="menu-item" bindtap="goPublish">
       <view class="ico" style="background:linear-gradient(135deg,#FF7EB3,#FF758C)">📝</view>
       <text>发动态</text>
@@ -40,5 +52,5 @@
     </view>
   </view>
 
-  <view class="footer muted">斐越科技 出品 · 班级学分管理小程序 v1.0</view>
+  <view class="footer muted">斐越科技 出品 · 班级学分管理小程序 v1.1</view>
 </view>

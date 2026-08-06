@@ -12,18 +12,21 @@
       <view wx:if="{{res.source}}" class="muted source">来源：{{res.source}}</view>
     </view>
 
-    <view wx:if="{{freeQuota}}" class="quota card">
-      <view class="muted">今日免费配额：{{freeQuota.used}} / {{freeQuota.total}}</view>
+    <view class="points-tip card">
+      <view class="muted">当前积分：<text class="pts">{{pointsBalance}}</text>　·　每次查阅/下载扣 <text class="pts">{{pointsCost}}</text> 积分</view>
     </view>
 
-    <view wx:if="{{requiresAd}}" class="ad-block card">
-      <view class="ad-title">🎬 今日免费次数已用完</view>
-      <view class="muted">看完一段 15 秒广告即可解锁 1 次（今日已解锁 {{adUnlocksToday}}/{{adDailyLimit}}）</view>
-      <button class="btn-primary" bindtap="onWatchAd">▶ 看广告解锁</button>
+    <!-- 当天未看广告：先看悬浮窗广告解锁 -->
+    <view wx:if="{{res.requiresAd}}" class="ad-block card">
+      <view class="ad-title">🎬 观看广告即可免费查看</view>
+      <view class="muted">打开资料前需先看一段广告（看完才能查看，且不重复扣费）。</view>
+      <button class="btn-primary" loading="{{viewing}}" bindtap="onView">▶ 看广告并查看资料</button>
     </view>
 
+    <!-- 已解锁：直接查看（每次仍扣积分） -->
     <view wx:else class="open-block card">
-      <button class="btn-primary" bindtap="onOpen">📖 查看资料</button>
+      <button class="btn-primary" loading="{{viewing}}" bindtap="onView" wx:if="{{canView}}">📖 查看 / 下载资料</button>
+      <view wx:else class="muted warn">⚠ 积分不足（需 {{pointsCost}}，当前 {{pointsBalance}}）。去看广告或完成任务赚积分后再来。</view>
     </view>
   </block>
 </view>

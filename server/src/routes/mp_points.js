@@ -29,7 +29,7 @@ router.post('/points/ad-reward', (req, res) => {
   // 累加积分
   const cur = db.prepare('SELECT points, total_earned FROM user_points WHERE user_id=?').get(u.id);
   if (cur) {
-    db.prepare('UPDATE user_points SET points=points+?, total_earned=total_earned+?, updated_at=datetime("now") WHERE user_id=?')
+    db.prepare("UPDATE user_points SET points=points+?, total_earned=total_earned+?, updated_at=datetime('now') WHERE user_id=?")
       .run(AD_REWARD_POINTS, AD_REWARD_POINTS, u.id);
   } else {
     db.prepare('INSERT INTO user_points(user_id, points, total_earned) VALUES(?,?,?)')

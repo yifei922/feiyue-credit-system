@@ -392,6 +392,15 @@ function migrate() {
   if (!userCols.some((c) => c.name === 'avatar')) {
     db.prepare("ALTER TABLE sys_user ADD COLUMN avatar TEXT").run();
   }
+
+  // 7) 初始积分赠送：给所有尚无 user_points 的用户赠送 INIT_POINTS（前期活动，默认 100）
+  const INIT_POINTS = Number(process.env.INIT_POINTS) || 100;
+  const noPoints = db.prepare('SELECT id FROM sys_user WHERE id NOT IN (SELECT user_id FROM user_points)').all();
+  if (noPoints.length) {
+    const insPts = db.prepare('INSERT INTO user_points(user_id, points, total_earned) VALUES(?,?,?)');
+    noPoints.forEach((u) => insPts.run(u.id, INIT_POINTS, INIT_POINTS));
+    console.log(`[migrate] 已为 ${noPoints.length} 位用户初始化赠送 ${INIT_POINTS} 积分`);
+  }
 }
 
 migrate();

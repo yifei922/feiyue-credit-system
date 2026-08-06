@@ -1,0 +1,33 @@
+<view class="container">
+  <view class="banner">
+    <view class="role-badge">{{roleLabel}}后台</view>
+    <view class="banner-sub">洛一高附中八（十）班 · 学分与资料管理</view>
+  </view>
+
+  <view class="stats card">
+    <view class="stat"><view class="num">{{stats.resources}}</view><view class="lbl">资料数</view></view>
+    <view class="stat"><view class="num">{{stats.users}}</view><view class="lbl">学生数</view></view>
+    <view class="stat"><view class="num">{{stats.todayViews}}</view><view class="lbl">今日广告解锁</view></view>
+    <view class="stat"><view class="num">{{stats.totalPoints}}</view><view class="lbl">总积分池</view></view>
+  </view>
+
+  <view class="menu card">
+    <view class="menu-item" bindtap="goResources">
+      <view class="ico" style="background:linear-gradient(135deg,#7C5CFF,#4D9BFF)">📚</view>
+      <view class="mi-text"><view class="mi-title">资料管理</view><view class="mi-sub">新增/编辑/删除课程资料</view></view>
+      <text class="muted">›</text>
+    </view>
+    <view wx:if="{{canManageUsers}}" class="menu-item" bindtap="goUsers">
+      <view class="ico" style="background:linear-gradient(135deg,#2DD4A7,#4D9BFF)">👥</view>
+      <view class="mi-text"><view class="mi-title">用户管理</view><view class="mi-sub">查看账号、重置密码</view></view>
+      <text class="muted">›</text>
+    </view>
+    <view class="menu-item" bindtap="goCredits">
+      <view class="ico" style="background:linear-gradient(135deg,#FF7EB3,#FF758C)">📊</view>
+      <view class="mi-text"><view class="mi-title">学分流水</view><view class="mi-sub">查看全员学分记录</view></view>
+      <text class="muted">›</text>
+    </view>
+  </view>
+
+  <view class="footer muted">管理操作会记录日志，请妥善使用</view>
+</view>

@@ -1,5 +1,7 @@
 // pages/index/index.js - Tab1 首页
 const app = getApp();
+const { showInterstitial, adCfg } = require('../../utils/ad.js');
+
 Page({
   data: {
     user: null,
@@ -16,7 +18,18 @@ Page({
     }
     this.setData({ user: app.globalData.user });
     this.loadResources();
+    this.maybeShowSplash();
   },
+
+  // 开屏广告：每天首次进入展示一次插屏广告（未配置广告位则跳过）
+  maybeShowSplash() {
+    if (!adCfg.hasSplash) return;
+    const key = 'splash_shown_' + new Date().toISOString().slice(0, 10);
+    if (wx.getStorageSync(key)) return;
+    wx.setStorageSync(key, 1);
+    showInterstitial(adCfg.SPLASH_AD_UNIT_ID);
+  },
+
 
   // 切换年级
   onGradeChange(e) {

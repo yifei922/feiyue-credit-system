@@ -1,0 +1,24 @@
+<view class="container">
+  <view class="card avatar-card">
+    <image class="avatar" src="{{avatar || '/assets/avatar_default.png'}}" mode="aspectFill" bindtap="onChooseAvatar"></image>
+    <view class="avatar-tip" bindtap="onChooseAvatar">{{uploading ? '上传中…' : '点击更换头像'}}</view>
+  </view>
+
+  <view class="card form">
+    <view class="field">
+      <text class="label">姓名</text>
+      <input class="input" placeholder="请输入真实姓名" value="{{name}}" bindinput="onName" maxlength="20" />
+    </view>
+    <view class="divider"></view>
+    <view class="field">
+      <text class="label">学号</text>
+      <input class="input" placeholder="请输入学号（选填）" type="number" value="{{studentId}}" bindinput="onStudentId" />
+    </view>
+  </view>
+
+  <view class="card hint">
+    填写真实姓名和学号，方便老师在后台识别和管理你的账号。资料仅老师和管理员可见。
+  </view>
+
+  <button class="save-btn" bindtap="onSave" loading="{{saving}}" disabled="{{saving}}">保存修改</button>
+</view>

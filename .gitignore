@@ -40,3 +40,18 @@ test_load/
 
 # Optional scripts（保活脚本按需部署，本机默认不需要）
 keep_alive.py
+
+# npm 本地缓存
+.npmcache/
+**/.npmcache/
+
+# 临时调试/测试脚本（_前缀）
+_*.py
+_*.bat
+mktree-*.input
+
+# 小程序图标生成脚本（输出已入库，源脚本不需入库）
+miniprogram/make_icons.py
+
+# 微信开发者工具私有配置（含本机路径，不入库）
+miniprogram/project.private.config.json
