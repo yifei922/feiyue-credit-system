@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>洛一高附中八（十）班 · 小程序视觉预览</title>
+<title>点滴进步 · 小程序视觉预览</title>
 <style>
   :root{
     --violet:#7C5CFF; --blue:#4D9BFF; --cyan:#4DD0FF;
@@ -323,21 +323,21 @@
             <div class="avatar">🦊</div>
             <div>
               <div class="nm">王梓涵</div>
-              <div class="cl">八（十）班 · 初二年级</div>
+              <div class="cl">初二年级</div>
             </div>
           </div>
           <div class="pill">🔥 连续打卡 12 天</div>
           <div class="hero-stats">
-            <div class="hstat"><div class="v">36</div><div class="l">我的学分</div></div>
+            <div class="hstat"><div class="v">36</div><div class="l">我的积分</div></div>
             <div class="hstat"><div class="v">1280</div><div class="l">积分余额</div></div>
-            <div class="hstat"><div class="v">No.3</div><div class="l">班级排名</div></div>
+            <div class="hstat"><div class="v">No.3</div><div class="l">成长排名</div></div>
           </div>
         </div>
 
         <div class="quick">
           <div class="q" onclick="goTab('tasks')"><div class="qi" style="background:var(--grad-sun)">📝</div><div class="qt">今日作业</div></div>
           <div class="q" onclick="goTab('study')"><div class="qi" style="background:var(--grad-brand)">📚</div><div class="qt">资料库</div></div>
-          <div class="q" onclick="goTab('feed')"><div class="qi" style="background:var(--grad-mint)">💬</div><div class="qt">班级圈</div></div>
+          <div class="q" onclick="goTab('feed')"><div class="qi" style="background:var(--grad-mint)">💬</div><div class="qt">成长圈</div></div>
           <div class="q" onclick="goTab('me')"><div class="qi" style="background:var(--grad-warm)">🏆</div><div class="qt">我的</div></div>
         </div>
 
@@ -422,7 +422,7 @@
 
       <!-- ===== TASKS ===== -->
       <section class="page" id="page-tasks">
-        <div class="topnav"><div><div class="t">作业</div><div class="sub">按时提交，学分 +1~+3</div></div></div>
+        <div class="topnav"><div><div class="t">作业</div><div class="sub">按时提交，积分 +1~+3</div></div></div>
         <div class="ttabs">
           <div class="tt on" onclick="ttab(this)">待完成 (3)</div>
           <div class="tt" onclick="ttab(this)">已完成</div>
@@ -432,19 +432,19 @@
         <div class="task" onclick="openSubmit('数学每日一练（第12周）','数学','2026-08-06 18:00')">
           <div class="bar" style="background:var(--violet)"></div>
           <div class="ttl">数学每日一练（第12周）</div>
-          <div class="tm"><span class="badge b-violet">数学</span><span class="badge b-mint">+2 学分</span><span class="dl">⏰ 截止 08-06</span></div>
+          <div class="tm"><span class="badge b-violet">数学</span><span class="badge b-mint">+2 积分</span><span class="dl">⏰ 截止 08-06</span></div>
           <div class="act">点此提交作业 →</div>
         </div>
         <div class="task" onclick="openSubmit('英语听力打卡 Day 30','英语','2026-08-05 20:00')">
           <div class="bar" style="background:var(--blue)"></div>
           <div class="ttl">英语听力打卡 Day 30</div>
-          <div class="tm"><span class="badge b-violet" style="background:#4D9BFF">英语</span><span class="badge b-mint">+1 学分</span><span class="dl">⏰ 截止 08-05</span></div>
+          <div class="tm"><span class="badge b-violet" style="background:#4D9BFF">英语</span><span class="badge b-mint">+1 积分</span><span class="dl">⏰ 截止 08-05</span></div>
           <div class="act">点此提交作业 →</div>
         </div>
         <div class="task" onclick="openSubmit('物理实验报告：浮力','物理','2026-08-07 18:00')">
           <div class="bar" style="background:var(--mint)"></div>
           <div class="ttl">物理实验报告：浮力</div>
-          <div class="tm"><span class="badge b-violet" style="background:#2DD4A7">物理</span><span class="badge b-mint">+3 学分</span><span class="dl">⏰ 截止 08-07</span></div>
+          <div class="tm"><span class="badge b-violet" style="background:#2DD4A7">物理</span><span class="badge b-mint">+3 积分</span><span class="dl">⏰ 截止 08-07</span></div>
           <div class="act">点此提交作业 →</div>
         </div>
         <div class="task ov" onclick="openSubmit('语文读书笔记','语文','2026-07-30 18:00')">
@@ -457,7 +457,7 @@
 
       <!-- ===== FEED ===== -->
       <section class="page" id="page-feed">
-        <div class="topnav"><div><div class="t">班级圈</div><div class="sub">分享日常 · 一起成长</div></div></div>
+        <div class="topnav"><div><div class="t">成长圈</div><div class="sub">分享日常 · 一起成长</div></div></div>
 
         <div class="post">
           <div class="ph"><div class="pa">🌟</div><div><div class="pn">李思源</div><div class="pt">2 小时前</div></div></div>
@@ -474,11 +474,11 @@
         </div>
 
         <div class="post">
-          <div class="ph"><div class="pa">🌈</div><div><div class="pn">班主任·王老师</div><div class="pt">今天 09:12</div></div></div>
-          <div class="ptxt">同学们，期中复习资料已上传到「学习」栏目，记得按时完成每日一练，有疑问随时在班级圈留言 💡</div>
+          <div class="ph"><div class="pa">🌈</div><div><div class="pn">管理员</div><div class="pt">今天 09:12</div></div></div>
+          <div class="ptxt">同学们，期中复习资料已上传到「学习」栏目，记得按时完成每日一练，有疑问随时在成长圈留言 💡</div>
           <div class="pact">
             <div class="a" onclick="like(this)"><span class="heart">♥</span><span class="lc">256</span></div>
-            <div class="a" onclick="openPost('班主任·王老师','今天 09:12','同学们，期中复习资料已上传到「学习」栏目，记得按时完成每日一练，有疑问随时在班级圈留言 💡')">💬 <span>63</span></div>
+            <div class="a" onclick="openPost('管理员','今天 09:12','同学们，期中复习资料已上传到「学习」栏目，记得按时完成每日一练，有疑问随时在成长圈留言 💡')">💬 <span>63</span></div>
           </div>
         </div>
 
@@ -499,12 +499,12 @@
         <div class="me-hero">
           <div class="mh">
             <div class="ma">🦊</div>
-            <div><div class="mn">王梓涵</div><div class="mr">学生 · 八（十）班</div></div>
+            <div><div class="mn">王梓涵</div><div class="mr">学生用户</div></div>
           </div>
         </div>
 
         <div class="me-stats">
-          <div class="ms"><div class="mv">36</div><div class="ml">学分明细</div></div>
+          <div class="ms"><div class="mv">36</div><div class="ml">积分明细</div></div>
           <div class="ms"><div class="mv">1280</div><div class="ml">积分余额</div></div>
           <div class="ms"><div class="mv">860</div><div class="ml">累计赚取</div></div>
         </div>
@@ -512,30 +512,30 @@
         <div class="badges">
           <div class="badge2"><div class="be">🔥</div><div class="bl">打卡达人</div></div>
           <div class="badge2"><div class="be">📚</div><div class="bl">好学之星</div></div>
-          <div class="badge2"><div class="be">🏆</div><div class="bl">学分前三</div></div>
+          <div class="badge2"><div class="be">🏆</div><div class="bl">积分达人</div></div>
         </div>
 
         <div class="menu">
           <div class="mitem" onclick="openPublish()"><div class="mi" style="background:var(--grad-warm)">📝</div><div class="mt">发动态</div><div class="mg">›</div></div>
-          <div class="mitem" onclick="openCredits()"><div class="mi" style="background:var(--grad-brand)">📊</div><div class="mt">学分流水</div><div class="mg">›</div></div>
+          <div class="mitem" onclick="openCredits()"><div class="mi" style="background:var(--grad-brand)">📊</div><div class="mt">积分流水</div><div class="mg">›</div></div>
           <div class="mitem" onclick="goTab('study')"><div class="mi" style="background:var(--grad-mint)">🎁</div><div class="mt">积分商城（看广告赚积分）</div><div class="mg">›</div></div>
           <div class="mitem" onclick="back()"><div class="mi" style="background:#ff5c7c">🚪</div><div class="mt" style="color:#ff5c7c">退出登录</div><div class="mg">›</div></div>
         </div>
-        <div class="center" style="font-size:11px;">斐越科技 出品 · 班级学分管理 v2.0</div>
+        <div class="center" style="font-size:11px;">个人开发者作品 · 班级学分管理 v2.0</div>
       </section>
 
       <!-- ============ SUB PAGES ============ -->
       <div class="subpage" id="sub-login">
         <div class="login">
           <div class="lg-card">
-            <div class="brand"><div class="logo">🎓</div><div><div class="lt">洛一高附中八（十）班</div><div class="ls">班级作业 · 学分管理</div></div></div>
-            <div class="pw">斐越科技 出品</div>
+            <div class="brand"><div class="logo">🎓</div><div><div class="lt">点滴进步</div><div class="ls">记录每天的小进步</div></div></div>
+            <div class="pw">个人开发者作品</div>
             <button class="btn-primary" onclick="toast('微信登录中…')">📱 微信一键登录</button>
             <div class="divider">或使用账号密码</div>
             <div class="inrow"><div class="il">用户名</div><input placeholder="如 student01"></div>
             <div class="inrow"><div class="il">密码</div><input type="password" placeholder="初始密码 123456"></div>
             <button class="btn-ghost" onclick="toast('登录中…')">登 录</button>
-            <div class="center" style="font-size:11px;padding:14px 0 0;">默认账号 teacher01 / rep01 / student01 / admin</div>
+            <div class="center" style="font-size:11px;padding:14px 0 0;">测试账号：student01 · 密码 123456</div>
           </div>
         </div>
       </div>
@@ -579,7 +579,7 @@
           </div>
           <div class="cmt"><div class="cn">陈悦</div><div class="ct">太厉害了！求实验笔记模板 🙏</div><div class="ct2">1 小时前</div></div>
           <div class="cmt"><div class="cn">王梓涵</div><div class="ct">下次组队叫上我呀～</div><div class="ct2">32 分钟前</div></div>
-          <div class="cmt"><div class="cn">班主任·王老师</div><div class="ct">为你们的探究精神点赞 👍</div><div class="ct2">12 分钟前</div></div>
+          <div class="cmt"><div class="cn">管理员</div><div class="ct">为你们的探究精神点赞 👍</div><div class="ct2">12 分钟前</div></div>
           <div class="cin"><input placeholder="写评论…"><button onclick="toast('评论成功')">发送</button></div>
         </div>
       </div>
@@ -599,12 +599,12 @@
             <div class="fx"><div class="fn">数学每日一练_王梓涵.pdf</div><div class="fs">2.4 MB → 已压缩 1.1 MB</div><div class="fpr"><i></i></div></div>
             <div class="fd">✓</div>
           </div>
-          <button class="btn-primary" style="margin-top:8px;" onclick="toast('提交成功，+2 学分 🎉')">📤 提交作业（1 个附件）</button>
+          <button class="btn-primary" style="margin-top:8px;" onclick="toast('提交成功，+2 积分 🎉')">📤 提交作业（1 个附件）</button>
         </div>
       </div>
 
       <div class="subpage" id="sub-credits">
-        <div class="topbar"><div class="nav-back" onclick="back()">‹</div>学分流水</div>
+        <div class="topbar"><div class="nav-back" onclick="back()">‹</div>积分流水</div>
         <div class="body">
           <div class="ct-item"><div class="ci" style="background:var(--mint)">✅</div><div class="cx"><div class="ctt">数学每日一练</div><div class="ctd">2026-08-03 18:20</div></div><div class="cam am-pos">+2</div></div>
           <div class="ct-item"><div class="ci" style="background:var(--mint)">✅</div><div class="cx"><div class="ctt">英语听力打卡 Day 29</div><div class="ctd">2026-08-02 20:05</div></div><div class="cam am-pos">+1</div></div>
@@ -633,7 +633,7 @@
       <div class="tb" onclick="goTab('tasks')" style="flex:1;text-align:center;padding-top:10px;cursor:pointer;color:#b9bfd6;font-weight:600;">
         <div style="font-size:22px;">📝</div><div style="font-size:11px;margin-top:2px;">作业</div></div>
       <div class="tb" onclick="goTab('feed')" style="flex:1;text-align:center;padding-top:10px;cursor:pointer;color:#b9bfd6;font-weight:600;">
-        <div style="font-size:22px;">💬</div><div style="font-size:11px;margin-top:2px;">班级圈</div></div>
+        <div style="font-size:22px;">💬</div><div style="font-size:11px;margin-top:2px;">成长圈</div></div>
       <div class="tb" onclick="goTab('me')" style="flex:1;text-align:center;padding-top:10px;cursor:pointer;color:#b9bfd6;font-weight:600;">
         <div style="font-size:22px;">🏆</div><div style="font-size:11px;margin-top:2px;">我的</div></div>
     </div>
@@ -643,7 +643,7 @@
 <!-- ============ LEGEND ============ -->
 <div class="legend">
   <h2>📱 小程序视觉预览</h2>
-  <p>洛一高附中八（十）班 · 青春版 UI。点击右侧手机内的卡片 / 底部 Tab 即可切换页面与功能。</p>
+  <p>点滴进步 · 青春版 UI。点击右侧手机内的卡片 / 底部 Tab 即可切换页面与功能。</p>
   <div style="font-size:12px;font-weight:700;margin-bottom:8px;">品牌色板</div>
   <div class="sw">
     <span style="background:linear-gradient(135deg,#7C5CFF,#4D9BFF)">极光紫蓝</span>
@@ -656,12 +656,12 @@
   <button class="navb" onclick="goTab('index')">🏠 首页 <small>用户卡 / 快捷入口 / 年级切换 / 推荐</small></button>
   <button class="navb" onclick="goTab('study')">📚 学习资料库 <small>搜索 / 学科筛选 / 合法来源</small></button>
   <button class="navb" onclick="goTab('tasks')">📝 作业 <small>待完成 / 已完成 / 逾期</small></button>
-  <button class="navb" onclick="goTab('feed')">💬 班级圈 <small>动态 / 点赞 / 评论 / 发布</small></button>
+  <button class="navb" onclick="goTab('feed')">💬 成长圈 <small>动态 / 点赞 / 评论 / 发布</small></button>
   <button class="navb" onclick="goTab('me')">🏆 我的 <small>学分 / 积分 / 徽章 / 菜单</small></button>
   <button class="navb" onclick="openRes('勾股定理重难点突破','数学','📐','图文','2.3万')">📄 资料详情 <small>广告解锁演示</small></button>
   <button class="navb" onclick="openPublish()">✍️ 发布动态</button>
   <button class="navb" onclick="openSubmit('数学每日一练（第12周）','数学','2026-08-06 18:00')">📤 提交作业</button>
-  <button class="navb" onclick="openCredits()">📊 学分流水</button>
+  <button class="navb" onclick="openCredits()">📊 积分流水</button>
   <button class="navb" onclick="document.getElementById('sub-login').classList.add('open')">🔑 登录页</button>
   <hr>
   <div class="tip">💡 设计要点：极光渐变主色 + 玻璃拟态卡片 + 学科色标签 + 微交互动效（点赞弹跳、FAB 呼吸、广告流光），整体偏年轻、清爽、有冲击力。</div>
