@@ -59,12 +59,15 @@ Page({
   // 打开预览/外链
   openUrl(url, type) {
     if (!url) return wx.showToast({ title: '暂未提供资源', icon: 'none' });
+    // 相对路径（/study/xxx.html）自动拼接后端域名，本地与线上通用
+    let full = url;
+    if (url.startsWith('/')) full = (getApp().globalData.apiBase || '') + url;
     if (type === 'article' || type === 'link') {
-      wx.setClipboardData({ data: url, success: () => wx.showToast({ title: '链接已复制，去浏览器打开', icon: 'none' }) });
+      wx.setClipboardData({ data: full, success: () => wx.showToast({ title: '链接已复制，去浏览器打开', icon: 'none' }) });
     } else {
       wx.showModal({
-        title: '资料链接', content: url, confirmText: '复制',
-        success: (r) => { if (r.confirm) wx.setClipboardData({ data: url }); },
+        title: '资料链接', content: full, confirmText: '复制',
+        success: (r) => { if (r.confirm) wx.setClipboardData({ data: full }); },
       });
     }
   },

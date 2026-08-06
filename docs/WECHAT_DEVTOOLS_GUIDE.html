@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>微信开发者工具 · 下载与使用图文指南</title>
+<style>
+  :root{
+    --violet:#7C5CFF; --blue:#4D9BFF; --mint:#2DD4A7; --green:#07c160;
+    --ink:#1f2330; --gray:#6b7280; --bg:#f5f6fb; --card:#fff; --line:#e7e9f3;
+    --warn:#ff8a3d; --danger:#ef4444; --ok:#2DD4A7;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);line-height:1.7}
+  .wrap{max-width:940px;margin:0 auto;padding:24px 18px 80px}
+  header.hero{background:linear-gradient(135deg,var(--green),#09a954);color:#fff;border-radius:22px;padding:36px 30px;box-shadow:0 18px 40px rgba(7,193,96,.25)}
+  header.hero h1{font-size:27px;font-weight:800;margin-bottom:8px}
+  header.hero p{opacity:.96;font-size:15px}
+  .badge{display:inline-block;background:rgba(255,255,255,.22);padding:4px 12px;border-radius:20px;font-size:13px;margin-top:14px;margin-right:8px}
+  .toc{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 22px;margin:22px 0}
+  .toc h3{font-size:15px;color:var(--gray);margin-bottom:10px}
+  .toc a{color:var(--green);text-decoration:none;display:block;padding:5px 0;font-size:15px}
+  .toc a:hover{text-decoration:underline}
+  section{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:28px 26px;margin:20px 0;scroll-margin-top:20px}
+  h2{font-size:22px;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+  h2 .num{background:linear-gradient(135deg,var(--green),#0a9c52);color:#fff;width:34px;height:34px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:17px;flex:0 0 auto}
+  .lead{color:var(--gray);font-size:14px;margin:8px 0 18px}
+  .step{border:1px solid var(--line);border-radius:14px;padding:18px 20px 18px;margin:14px 0;position:relative;background:#fcfdff;padding-top:26px}
+  .step .s{position:absolute;top:-12px;left:16px;background:var(--green);color:#fff;font-size:13px;font-weight:700;padding:3px 12px;border-radius:12px}
+  .step h4{font-size:16px;margin:4px 0 8px}
+  .step p{font-size:14px;color:#374151}
+  code{background:#eafaf1;color:#067a3a;padding:2px 7px;border-radius:6px;font-size:13px;font-family:"SF Mono",Consolas,monospace}
+  .path{background:#0f1226;color:#a9ffd0;padding:12px 16px;border-radius:10px;font-family:Consolas,monospace;font-size:13px;margin:10px 0;overflow-x:auto;white-space:nowrap}
+  .tip{background:#ecfdf5;border-left:4px solid var(--mint);padding:12px 16px;border-radius:0 10px 10px 0;font-size:14px;margin:12px 0;color:#065f46}
+  .warn{background:#fff7ed;border-left:4px solid var(--warn);padding:12px 16px;border-radius:0 10px 10px 0;font-size:14px;margin:12px 0;color:#9a3412}
+  .danger{background:#fef2f2;border-left:4px solid var(--danger);padding:12px 16px;border-radius:0 10px 10px 0;font-size:14px;margin:12px 0;color:#991b1b}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+  @media(max-width:680px){.grid2,.grid3{grid-template-columns:1fr}}
+  .mini{background:#f0fdf5;border:1px solid #d1fae5;border-radius:12px;padding:14px;text-align:center;font-size:13px}
+  .mini b{display:block;color:var(--green);font-size:15px;margin-bottom:4px}
+  figure{margin:18px 0;text-align:center}
+  figcaption{color:var(--gray);font-size:13px;margin-top:8px}
+  .kbd{background:#fff;border:1px solid #d1d5db;border-bottom-width:2px;border-radius:6px;padding:1px 8px;font-size:13px;font-family:Consolas,monospace}
+  .btn{display:inline-block;background:linear-gradient(135deg,var(--green),#0a9c52);color:#fff;padding:6px 14px;border-radius:8px;font-size:13px;font-weight:600}
+  .btn.gray{background:#e5e7eb;color:#374151}
+  .btn.blue{background:linear-gradient(135deg,var(--violet),var(--blue));color:#fff}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:10px 12px;text-align:left}
+  th{background:#f0fdf5;color:#065f46}
+  footer{text-align:center;color:var(--gray);font-size:13px;margin-top:30px}
+  .big{font-size:32px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <h1>🛠️ 微信开发者工具 · 下载与使用图文指南</h1>
+  <p>零基础也能看懂：从官网下载 → 安装 → 扫二维码 → 导入项目 → 日常使用</p>
+  <span class="badge">本教程配手绘示意图，照着点就行</span>
+  <span class="badge">适用于 Windows 电脑</span>
+</header>
+
+<div class="toc">
+  <h3>📑 目录（点击跳转到对应步骤）</h3>
+  <a href="#d">一、下载（去哪下、下哪个版本）</a>
+  <a href="#i">二、安装（一路下一步）</a>
+  <a href="#l">三、首次启动 & 微信扫码登录</a>
+  <a href="#im">四、导入本项目（填目录和 AppID）</a>
+  <a href="#ui">五、认识界面（4 个区域各干什么）</a>
+  <a href="#u">六、日常怎么用（编译/预览/上传/改代码）</a>
+  <a href="#p">七、新手避坑 & 常见问题</a>
+</div>
+
+<!-- ===== 一、下载 ===== -->
+<section id="d">
+  <h2><span class="num">1</span>下载：去哪下、下哪个版本</h2>
+  <p class="lead">只用<strong>官网</strong>，别去第三方软件管家下（容易带广告或旧版）。</p>
+
+  <div class="step">
+    <span class="s">第 1 步</span>
+    <h4>🌐 打开官方下载页</h4>
+    <p>在浏览器地址栏输入（复制粘贴最保险）：</p>
+    <div class="path">https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html</div>
+    <p>回车后看到如下页面（示意）：</p>
+    <figure>
+      <svg width="560" height="220" viewBox="0 0 560 220" style="max-width:100%">
+        <rect x="0" y="0" width="560" height="220" rx="12" fill="#f0fdf5" stroke="#a7f3d0"/>
+        <rect x="20" y="18" width="180" height="30" rx="6" fill="#07c160"/>
+        <text x="110" y="38" font-size="14" fill="#fff" text-anchor="middle" font-weight="700">微信开发者工具</text>
+        <text x="20" y="76" font-size="13" fill="#374151">请选择适合你的版本：</text>
+        <!-- 稳定版 -->
+        <rect x="20" y="92" width="160" height="100" rx="10" fill="#fff" stroke="#07c160" stroke-width="3"/>
+        <text x="100" y="120" font-size="14" fill="#07c160" text-anchor="middle" font-weight="800">⭐ 稳定版</text>
+        <text x="100" y="142" font-size="11" fill="#374151" text-anchor="middle">Stable Build</text>
+        <text x="100" y="162" font-size="11" fill="#6b7280" text-anchor="middle">最稳、推荐新手</text>
+        <text x="100" y="182" font-size="12" fill="#067a3a" text-anchor="middle" font-weight="700">Windows 64位 ▼</text>
+        <!-- 预发布 -->
+        <rect x="200" y="92" width="160" height="100" rx="10" fill="#fff" stroke="#e5e7eb"/>
+        <text x="280" y="120" font-size="14" fill="#6b7280" text-anchor="middle" font-weight="700">预发布版</text>
+        <text x="280" y="142" font-size="11" fill="#6b7280" text-anchor="middle">Preview</text>
+        <text x="280" y="162" font-size="11" fill="#9ca3af" text-anchor="middle">有bug风险</text>
+        <text x="280" y="182" font-size="12" fill="#9ca3af" text-anchor="middle">Windows 64位 ▼</text>
+        <!-- 老版 -->
+        <rect x="380" y="92" width="160" height="100" rx="10" fill="#fff" stroke="#e5e7eb"/>
+        <text x="460" y="120" font-size="14" fill="#6b7280" text-anchor="middle" font-weight="700">老版本</text>
+        <text x="460" y="142" font-size="11" fill="#6b7280" text-anchor="middle">Retrofit</text>
+        <text x="460" y="162" font-size="11" fill="#9ca3af" text-anchor="middle">一般不用</text>
+        <text x="460" y="182" font-size="12" fill="#9ca3af" text-anchor="middle">Windows 64位 ▼</text>
+      </svg>
+      <figcaption>✅ 选左边绿色边框的「稳定版 Stable Build」→ 点「Windows 64位」下载</figcaption>
+    </figure>
+  </div>
+
+  <div class="step">
+    <span class="s">第 2 步</span>
+    <h4>💾 下载 & 确认文件</h4>
+    <p>点「Windows 64位」后浏览器开始下载，得到一个安装包（名字类似）：</p>
+    <div class="path">wechat_devtools_1.06.xxxxx_x64.exe</div>
+    <div class="tip">💡 下载很慢是正常的（官网有时限速）。如果卡住，换浏览器或挂网络重试，不要从百度搜的"高速下载"下。</div>
+  </div>
+
+  <div class="warn">⚠️ 怎么知道自己是 64 位还是 32 位？<br>
+  桌面「此电脑」右键 →「属性」→ 看「系统类型」：写"64 位"就选 64 位；老电脑写"32 位"才选 32 位（现在极少）。拿不准就选 <strong>64 位</strong>。</div>
+</section>
+
+<!-- ===== 二、安装 ===== -->
+<section id="i">
+  <h2><span class="num">2</span>安装：一路"下一步"</h2>
+  <p class="lead">装到哪都行，默认 C 盘最省事。</p>
+  <div class="step">
+    <span class="s">步骤</span>
+    <h4>🔧 双击安装包</h4>
+    <p>双击下载好的 <code>.exe</code> → 弹出安装向导：</p>
+    <div class="grid2">
+      <div class="mini"><b>① 同意协议</b>勾"我已阅读"→ 点「下一步」</div>
+      <div class="mini"><b>② 选路径</b>默认 C 盘，直接「下一步」</div>
+      <div class="mini"><b>③ 快捷方式</b>默认打钩 →「下一步」</div>
+      <div class="mini"><b>④ 安装</b>点「安装」，等进度条跑完</div>
+    </div>
+    <p style="margin-top:12px">进度条走完 → 点「完成」→ 桌面出现绿色图标 <span class="btn">微信开发者工具</span>，双击就能打开。</p>
+    <div class="tip">💡 若提示"是否允许此应用更改设备"，点「是」。杀毒软件弹窗也一律「允许/信任」。</div>
+  </div>
+</section>
+
+<!-- ===== 三、首次启动 ===== -->
+<section id="l">
+  <h2><span class="num">3</span>首次启动 & 微信扫码登录</h2>
+  <p class="lead">第一次打开会让你用微信扫码，这一步就是"个人身份证实名"的入口。</p>
+  <div class="step">
+    <span class="s">登录</span>
+    <h4>📱 用你自己的微信扫码</h4>
+    <div class="grid2">
+      <div>
+        <p>① 打开工具后，出现二维码界面</p>
+        <p>② 拿出<strong>你自己的手机微信</strong> → 扫一扫</p>
+        <p>③ 手机上点「登录」→ 电脑自动进入</p>
+        <div class="tip">💡 用谁的微信扫码，这个小程序就归谁。要发布到自己名下，就用你自己的微信。</div>
+      </div>
+      <div style="text-align:center">
+        <svg width="170" height="170" viewBox="0 0 170 170">
+          <rect x="10" y="10" width="150" height="150" rx="12" fill="#fff" stroke="#07c160" stroke-width="3"/>
+          <!-- 伪二维码 -->
+          <g fill="#1f2330">
+            <rect x="28" y="28" width="34" height="34"/><rect x="34" y="34" width="22" height="22" fill="#fff"/><rect x="40" y="40" width="10" height="10" fill="#1f2330"/>
+            <rect x="108" y="28" width="34" height="34"/><rect x="114" y="34" width="22" height="22" fill="#fff"/><rect x="120" y="40" width="10" height="10" fill="#1f2330"/>
+            <rect x="28" y="108" width="34" height="34"/><rect x="34" y="114" width="22" height="22" fill="#fff"/><rect x="40" y="120" width="10" height="10" fill="#1f2330"/>
+            <rect x="74" y="30" width="8" height="8"/><rect x="90" y="46" width="8" height="8"/><rect x="74" y="62" width="8" height="8"/>
+            <rect x="30" y="74" width="8" height="8"/><rect x="62" y="90" width="8" height="8"/><rect x="90" y="74" width="8" height="8"/>
+            <rect x="110" y="90" width="8" height="8"/><rect x="126" y="110" width="8" height="8"/><rect x="74" y="126" width="8" height="8"/>
+            <rect x="110" y="126" width="8" height="8"/><rect x="126" y="74" width="8" height="8"/>
+          </g>
+          <text x="85" y="166" font-size="9" fill="#6b7280" text-anchor="middle">微信扫一扫登录</text>
+        </svg>
+      </div>
+    </div>
+    <p>登录后进入「项目列表」页（暂时是空的，因为我们还没导入项目）。</p>
+  </div>
+</section>
+
+<!-- ===== 四、导入项目 ===== -->
+<section id="im">
+  <h2><span class="num">4</span>导入本项目（关键步骤）</h2>
+  <p class="lead">把电脑里的小程序代码"装"进工具里。目录和 AppID 千万别填错。</p>
+
+  <div class="step">
+    <span class="s">填写</span>
+    <h4>📂 点「导入项目」并填 3 项</h4>
+    <div class="grid2">
+      <div>
+        <p><strong>① 目录</strong>（最重要，精确到 miniprogram 那层）：</p>
+        <div class="path" style="font-size:11px;white-space:normal">C:\Users\20242\WorkBuddy\feiyue-credit\miniprogram</div>
+        <p style="margin-top:8px"><strong>② AppID</strong>：</p>
+        <div class="path" style="font-size:12px">wx0fe78d74fdc47c1b</div>
+        <p style="margin-top:8px"><strong>③ 项目名称</strong>：随便写，如 <code>飞越学分</code></p>
+      </div>
+      <div style="text-align:center">
+        <svg width="230" height="180" viewBox="0 0 230 180">
+          <rect x="10" y="10" width="210" height="160" rx="10" fill="#fff" stroke="#07c160" stroke-width="2"/>
+          <text x="115" y="34" font-size="14" fill="#07c160" text-anchor="middle" font-weight="700">导入项目</text>
+          <text x="24" y="58" font-size="11" fill="#6b7280">目录</text>
+          <rect x="24" y="64" width="182" height="26" rx="6" fill="#f0fdf5" stroke="#a7f3d0"/>
+          <text x="32" y="81" font-size="9" fill="#374151">…\feiyue-credit\miniprogram</text>
+          <text x="24" y="108" font-size="11" fill="#6b7280">AppID</text>
+          <rect x="24" y="114" width="182" height="26" rx="6" fill="#f0fdf5" stroke="#a7f3d0"/>
+          <text x="32" y="131" font-size="9" fill="#374151">wx0fe78d74fdc47c1b</text>
+          <rect x="135" y="150" width="67" height="22" rx="6" fill="#07c160"/>
+          <text x="168" y="165" font-size="11" fill="#fff" text-anchor="middle">导入</text>
+        </svg>
+      </div>
+    </div>
+    <div class="danger">🚫 <strong>目录填错是最常见的新手错误！</strong><br>
+    • ❌ 错：<code>C:\Users\20242\WorkBuddy\feiyue-credit</code>（根目录，不含 app.json）<br>
+    • ✅ 对：<code>…\feiyue-credit\miniprogram</code>（含 app.json 的那层）<br>
+    填错会提示"不是小程序项目"或打开空白。</div>
+  </div>
+
+  <div class="step">
+    <span class="s">必勾</span>
+    <h4>✅ 开发阶段先勾「不校验合法域名」</h4>
+    <p>导入后如果登录/提交报错（"url not in domain list"），是因为工具默认只允许连备案过的 HTTPS 域名。开发时：</p>
+    <p>右侧点 <span class="btn blue">详情</span> → 「本地设置」→ 勾选 <strong>✅ 不校验合法域名、web-view（真机调试时也勾）</strong>。</p>
+    <div class="tip">💡 这个选项只影响你本地开发。正式发布上线时，要去公众平台配"服务器域名"白名单（见上一份指南第 3 节）。</div>
+  </div>
+</section>
+
+<!-- ===== 五、认识界面 ===== -->
+<section id="ui">
+  <h2><span class="num">5</span>认识界面：4 个区域各干什么</h2>
+  <p class="lead">第一次打开可能觉得乱，其实就是"上工具栏 + 左手机 + 中代码 + 下调试"。</p>
+  <figure>
+    <svg width="680" height="400" viewBox="0 0 680 400" style="max-width:100%">
+      <!-- 整体窗口 -->
+      <rect x="6" y="6" width="668" height="388" rx="14" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+      <!-- 顶部工具栏 -->
+      <rect x="6" y="6" width="668" height="44" rx="14" fill="#f3f4f6"/>
+      <rect x="6" y="34" width="668" height="16" fill="#f3f4f6"/>
+      <circle cx="26" cy="28" r="6" fill="#ef4444"/><circle cx="46" cy="28" r="6" fill="#f59e0b"/><circle cx="66" cy="28" r="6" fill="#22c55e"/>
+      <rect x="120" y="16" width="64" height="24" rx="6" fill="#07c160"/><text x="152" y="32" font-size="11" fill="#fff" text-anchor="middle">编译</text>
+      <rect x="192" y="16" width="64" height="24" rx="6" fill="#fff" stroke="#9ca3af"/><text x="224" y="32" font-size="11" fill="#374151" text-anchor="middle">预览</text>
+      <rect x="264" y="16" width="80" height="24" rx="6" fill="#fff" stroke="#9ca3af"/><text x="304" y="32" font-size="11" fill="#374151" text-anchor="middle">真机调试</text>
+      <rect x="352" y="16" width="64" height="24" rx="6" fill="#fff" stroke="#9ca3af"/><text x="384" y="32" font-size="11" fill="#374151" text-anchor="middle">上传</text>
+      <rect x="600" y="16" width="58" height="24" rx="6" fill="#7C5CFF"/><text x="629" y="32" font-size="11" fill="#fff" text-anchor="middle">详情</text>
+      <text x="470" y="32" font-size="10" fill="#9ca3af">模拟器 编辑器 调试器</text>
+
+      <!-- 左侧模拟器（手机） -->
+      <rect x="14" y="58" width="250" height="330" rx="8" fill="#f8fafc" stroke="#e5e7eb"/>
+      <text x="139" y="76" font-size="11" fill="#6b7280" text-anchor="middle">① 模拟器（手机预览）</text>
+      <rect x="64" y="92" width="150" height="270" rx="18" fill="#1f2330"/>
+      <rect x="72" y="100" width="134" height="254" rx="12" fill="#fff"/>
+      <rect x="72" y="100" width="134" height="22" rx="0" fill="#7C5CFF"/>
+      <rect x="84" y="138" width="110" height="40" rx="8" fill="#f3f0ff"/>
+      <rect x="84" y="190" width="52" height="36" rx="6" fill="#eef2ff"/>
+      <rect x="146" y="190" width="52" height="36" rx="6" fill="#ecfdf5"/>
+      <rect x="72" y="332" width="134" height="22" rx="0" fill="#f8f9ff"/>
+      <line x1="72" y1="332" x2="206" y2="332" stroke="#e7e9f3"/>
+
+      <!-- 中间编辑器 -->
+      <rect x="272" y="58" width="396" height="330" rx="8" fill="#fff" stroke="#e5e7eb"/>
+      <text x="290" y="76" font-size="11" fill="#6b7280">② 编辑器（代码）</text>
+      <!-- 文件树 -->
+      <rect x="280" y="86" width="120" height="290" rx="6" fill="#f8fafc" stroke="#e5e7eb"/>
+      <text x="288" y="104" font-size="10" fill="#374151">📁 miniprogram</text>
+      <text x="298" y="122" font-size="10" fill="#6b7280">📄 app.js</text>
+      <text x="298" y="138" font-size="10" fill="#6b7280">📄 app.json</text>
+      <text x="298" y="154" font-size="10" fill="#07c160">📄 app.wxss</text>
+      <text x="298" y="170" font-size="10" fill="#6b7280">📁 pages</text>
+      <text x="308" y="188" font-size="10" fill="#6b7280">📁 login</text>
+      <text x="308" y="204" font-size="10" fill="#6b7280">📁 feed</text>
+      <text x="298" y="222" font-size="10" fill="#6b7280">📁 utils</text>
+      <!-- 代码区 -->
+      <rect x="408" y="86" width="252" height="290" rx="6" fill="#0f1226"/>
+      <text x="418" y="106" font-size="9" fill="#a9b4ff">Page({</text>
+      <text x="428" y="122" font-size="9" fill="#c4b5fd">data: { name: '八(十)班' },</text>
+      <text x="428" y="138" font-size="9" fill="#c4b5fd">onLoad() { ... }</text>
+      <text x="418" y="154" font-size="9" fill="#a9b4ff">})</text>
+      <text x="418" y="176" font-size="9" fill="#67e8f9">/* 改这里变颜色 */</text>
+      <text x="428" y="192" font-size="9" fill="#fca5a5">.title{ color:#7C5CFF }</text>
+
+      <!-- 底部调试器 -->
+      <rect x="14" y="392" width="0" height="0"/>
+    </svg>
+    <figcaption>🧭 微信开发者工具主界面分区示意</figcaption>
+  </figure>
+
+  <table>
+    <tr><th>区域</th><th>它干嘛用</th><th>你平时怎么用</th></tr>
+    <tr><td>🔝 顶部工具栏</td><td>编译/预览/上传/详情</td><td>改完代码点「编译」刷新；要手机看就点「预览」</td></tr>
+    <tr><td>📱 ① 模拟器</td><td>手机画面，真实效果</td><td>点底部 tab、点按钮，试用你的小程序</td></tr>
+    <tr><td>⌨️ ② 编辑器</td><td>左侧文件树 + 右侧代码</td><td>双击文件打开，改文字/颜色，<span class="kbd">Ctrl</span>+<span class="kbd">S</span> 保存</td></tr>
+    <tr><td>🐞 ③ 调试器</td><td>Console 报错 / Network 请求</td><td>出错了看这里红字；登录失败看 Network 请求</td></tr>
+  </table>
+</section>
+
+<!-- ===== 六、日常使用 ===== -->
+<section id="u">
+  <h2><span class="num">6</span>日常怎么用（最常用 4 个动作）</h2>
+
+  <div class="step">
+    <span class="s">动作 1</span>
+    <h4>🔄 改了代码怎么看效果</h4>
+    <p>在编辑器里改完 → 按 <span class="kbd">Ctrl</span>+<span class="kbd">S</span> 保存 → 工具<strong>自动编译</strong>，左边手机立刻变样。没变就点顶部 <span class="btn">编译</span>。</p>
+  </div>
+
+  <div class="step">
+    <span class="s">动作 2</span>
+    <h4>👀 想用真手机看 → 点「预览」</h4>
+    <p>顶部点 <span class="btn">预览</span> → 生成一个二维码 → 手机微信扫码 → 小程序跑在你真手机上。适合发给别人试。</p>
+  </div>
+
+  <div class="step">
+    <span class="s">动作 3</span>
+    <h4>🐞 出错了去「调试器」看原因</h4>
+    <p>底部「调试器」切到 <strong>Console</strong> 看红色报错；切到 <strong>Network</strong> 看请求是否成功（正常是绿色 200）。把红字截图发我，我帮你定位。</p>
+    <div class="tip">💡 如果 Network 里请求是红色/失败，多半是后端没启动（双击 run-node.bat）或没勾"不校验合法域名"。</div>
+  </div>
+
+  <div class="step">
+    <span class="s">动作 4</span>
+    <h4>🚀 要发布了 → 点「上传」</h4>
+    <p>开发完成、自测没问题 → 顶部点 <span class="btn">上传</span> → 填版本号（如 1.0.0）→ 去公众平台后台「提交审核」。（详细见上一份指南第 3 节）</p>
+  </div>
+</section>
+
+<!-- ===== 七、避坑 ===== -->
+<section id="p">
+  <h2><span class="num">7</span>新手避坑 & 常见问题</h2>
+  <div class="step">
+    <span class="s">Q1</span>
+    <h4>安装时一直转圈 / 卡住？</h4>
+    <p>关掉杀毒/电脑管家再装；或右键安装包「以管理员身份运行」。阿里电脑管家有时会拦，先退出它。</p>
+  </div>
+  <div class="step">
+    <span class="s">Q2</span>
+    <h4>打开工具提示"微信未安装"？</h4>
+    <p>电脑上得先装<strong>电脑版微信</strong>并登录。去 <code>https://weixin.qq.com</code> 下载安装微信 Windows 版，登录后再开工具。</p>
+  </div>
+  <div class="step">
+    <span class="s">Q3</span>
+    <h4>导入后界面空白 / 提示不是小程序？</h4>
+    <p>目录填错了。确认选到 <code>…\feiyue-credit\miniprogram</code>（里面要有 <code>app.json</code>）。</p>
+  </div>
+  <div class="step">
+    <span class="s">Q4</span>
+    <h4>预览/真机扫码打开是白屏？</h4>
+    <p>后端没连上。先双击 <code>run-node.bat</code> 确认服务器起来，再在「详情→本地设置」勾"不校验合法域名"。</p>
+  </div>
+  <div class="step">
+    <span class="s">Q5</span>
+    <h4>工具卡顿、反应慢？</h4>
+    <p>顶部「清缓存」→「全部清除」；或关掉「调试器」「编辑器」中不用的面板（点工具栏对应文字切换显示/隐藏）。</p>
+  </div>
+  <div class="danger">🚨 记住：工具里看到的画面 = 手机上的样子。只要模拟器里能正常登录、发帖、提交，就说明代码没问题，可以放心往上发。</div>
+</section>
+
+<footer>
+  📗 微信开发者工具 · 下载与使用指南 &nbsp;|&nbsp; 配套还有《小程序新手图文指南》<br>
+  项目路径：C:\Users\20242\WorkBuddy\feiyue-credit
+</footer>
+
+</div>
+</body>
+</html>

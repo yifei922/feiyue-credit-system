@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Docker Desktop 重启图文指南 · 飞越信用</title>
+<style>
+  :root{
+    --v1:#7C5CFF; --v2:#4D9BFF; --mint:#2DD4A7;
+    --ink:#1b1f2a; --muted:#6b7392; --line:#e7eaf3;
+    --bg:#f6f7fb; --card:#fff;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:linear-gradient(160deg,#f3f1ff 0%,#eef6ff 55%,#f6f7fb 100%);color:var(--ink);line-height:1.7;}
+  .wrap{max-width:880px;margin:0 auto;padding:32px 20px 64px;}
+  header{background:linear-gradient(120deg,var(--v1),var(--v2));color:#fff;border-radius:24px;
+    padding:30px 32px;box-shadow:0 18px 40px rgba(77,155,255,.28);}
+  header h1{margin:0 0 8px;font-size:26px;letter-spacing:.5px;}
+  header p{margin:0;opacity:.92;font-size:14px;}
+  .pill{display:inline-block;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);
+    padding:3px 12px;border-radius:999px;font-size:12px;margin-top:12px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px 26px;
+    margin-top:22px;box-shadow:0 6px 18px rgba(27,31,42,.05);}
+  .card h2{margin:0 0 4px;font-size:19px;display:flex;align-items:center;gap:10px;}
+  .num{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--v1),var(--v2));
+    color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex:0 0 auto;}
+  .card .sub{color:var(--muted);font-size:13px;margin:0 0 16px;}
+  .steps{display:flex;flex-direction:column;gap:14px;}
+  .step{display:flex;gap:12px;align-items:flex-start;}
+  .dot{width:24px;height:24px;border-radius:50%;background:#eef1ff;color:var(--v1);flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;margin-top:2px;}
+  .step b{color:var(--ink);}
+  .step span{color:var(--muted);font-size:14px;}
+  .code{background:#11131a;color:#e6e9f2;border-radius:12px;padding:14px 16px;font-family:"SFMono-Regular",Consolas,Menlo,monospace;
+    font-size:13px;overflow-x:auto;margin:12px 0 4px;line-height:1.8;}
+  .code .c{color:#7f8aa3;} .code .k{color:#8be9c6;} .code .s{color:#ffd479;}
+  .box{background:#f0f4ff;border-left:4px solid var(--v2);border-radius:10px;padding:12px 16px;margin-top:14px;font-size:14px;}
+  .warn{background:#fff4ec;border-left:4px solid #ff8a4c;border-radius:10px;padding:12px 16px;margin-top:14px;font-size:14px;}
+  .rec{background:#eafff6;border-left:4px solid var(--mint);border-radius:10px;padding:12px 16px;margin-top:14px;font-size:14px;}
+  svg{display:block;max-width:100%;height:auto;}
+  .fig{background:#fbfcff;border:1px solid var(--line);border-radius:14px;padding:14px;margin:14px 0 4px;text-align:center;}
+  .fig .cap{font-size:12px;color:var(--muted);margin-top:8px;}
+  table{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px;}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);}
+  th{background:#f6f8ff;color:var(--muted);font-weight:600;font-size:13px;}
+  .ok{color:var(--mint);font-weight:700;} .bad{color:#ff6b6b;font-weight:700;}
+  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:34px;}
+  .btn{display:inline-block;margin-top:14px;background:linear-gradient(120deg,var(--v1),var(--v2));color:#fff;
+    padding:11px 22px;border-radius:12px;font-weight:600;box-shadow:0 10px 24px rgba(77,155,255,.3);text-decoration:none;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>🐳 Docker Desktop 重启图文指南</h1>
+  <p>针对「构建时守护进程崩溃 (use of closed network connection)」的 4 种重启法 + 验证 + 后续部署</p>
+  <span class="pill">适用：Windows 10/11 + Docker Desktop 4.x</span>
+</header>
+
+<!-- 背景 -->
+<div class="card">
+  <h2><span class="num">!</span> 为什么会需要重启？</h2>
+  <p class="sub">本次阶段四部署卡在 Docker Desktop 的 WSL 引擎管道中途崩溃，与代码无关</p>
+  <div class="warn">
+    ⚠️ 报错特征：<code style="background:#fff;border-radius:6px;padding:1px 6px">http2: server: error reading preface from client //./pipe/dockerDesktopLinuxEngine: file has already been closed</code>
+    —— 这是 <b>Docker Desktop 守护进程不稳定</b>，不是你的 Dockerfile / compose 有问题（它们已通过 <code style="background:#fff;border-radius:6px;padding:1px 6px">docker compose config</code> 校验，前端 build 也已 CACHED 验证）。
+    重启守护进程即可恢复。
+  </div>
+  <div class="rec">✅ 推荐顺序：先试 <b>方法二（wsl --shutdown 彻底重启）</b>，它对 WSL 引擎崩溃最有效；若不方便用命令行再用方法一。</div>
+</div>
+
+<!-- 方法一 -->
+<div class="card">
+  <h2><span class="num">1</span> 方法一：系统托盘右键重启（最快）</h2>
+  <p class="sub">适合：临时卡顿、图标转圈、右键菜单还能点出来</p>
+  <div class="fig">
+    <!-- 任务栏托盘示意 -->
+    <svg viewBox="0 0 680 220" width="680" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="bar" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#1f2430"/><stop offset="1" stop-color="#0f1218"/>
+        </linearGradient>
+        <linearGradient id="menu" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f5fa"/>
+        </linearGradient>
+      </defs>
+      <!-- 任务栏 -->
+      <rect x="0" y="150" width="680" height="70" fill="url(#bar)"/>
+      <!-- 托盘区 -->
+      <circle cx="610" cy="185" r="13" fill="#2b3140" stroke="#3b4252"/>
+      <path d="M610 178 a7 7 0 1 0 0.1 0 M610 178 v14 M603 185 h14" stroke="#8be9c6" stroke-width="2" fill="none"/>
+      <text x="610" y="212" fill="#9aa3b5" font-size="11" text-anchor="middle">系统托盘</text>
+      <!-- 右键菜单 -->
+      <rect x="500" y="40" width="160" height="100" rx="10" fill="url(#menu)" stroke="#dfe3ee"/>
+      <rect x="512" y="50" width="136" height="22" rx="5" fill="#eef4ff"/>
+      <text x="520" y="66" fill="#3a4256" font-size="12">🐳 Docker Desktop</text>
+      <line x1="512" y1="78" x2="648" y2="78" stroke="#e3e7f0"/>
+      <text x="520" y="96" fill="#1b1f2a" font-size="12">↻ 重启 (Restart)</text>
+      <text x="520" y="116" fill="#6b7392" font-size="12">⏻ 退出 (Quit)</text>
+      <!-- 指针 -->
+      <path d="M580 150 L572 108" stroke="#ff8a4c" stroke-width="2" stroke-dasharray="4 3"/>
+      <circle cx="572" cy="108" r="4" fill="#ff8a4c"/>
+    </svg>
+    <div class="cap">右下角任务栏找到鲸鱼图标 → 右键 → 选「Restart / 重启」</div>
+  </div>
+  <div class="steps">
+    <div class="step"><div class="dot">1</div><div><b>看右下角系统托盘</b> <span>（任务栏右侧的 ^ 小箭头展开后，找到 🐳 鲸鱼图标）。若图标在转圈，说明守护进程卡住。</span></div></div>
+    <div class="step"><div class="dot">2</div><div><b>右键鲸鱼图标</b> <span>→ 在弹出菜单中点击「<b>Restart（重启）</b>」。Docker 会先退出再自动拉起。</span></div></div>
+    <div class="step"><div class="dot">3</div><div><b>等待鲸鱼变静止</b> <span>图标从旋转变为静止，托盘提示 “Docker Desktop is running” 即成功。</span></div></div>
+  </div>
+  <div class="box">💡 若右键菜单里只有「Quit / 退出」，点退出后用 <b>开始菜单 → Docker Desktop</b> 重新打开也可达到同样效果。</div>
+</div>
+
+<!-- 方法二 -->
+<div class="card">
+  <h2><span class="num">2</span> 方法二：<code>wsl --shutdown</code> 彻底重启（★推荐）</h2>
+  <p class="sub">适合：本次 WSL 引擎管道崩溃 —— 它强制关闭底层 WSL 虚拟机，最干净</p>
+  <div class="fig">
+    <svg viewBox="0 0 680 230" width="680" xmlns="http://www.w3.org/2000/svg">
+      <defs><linearGradient id="term" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a1d27"/><stop offset="1" stop-color="#0d0f15"/></linearGradient></defs>
+      <rect x="40" y="20" width="600" height="170" rx="14" fill="url(#term)"/>
+      <circle cx="62" cy="42" r="6" fill="#ff5f56"/><circle cx="82" cy="42" r="6" fill="#ffbd2e"/><circle cx="102" cy="42" r="6" fill="#27c93f"/>
+      <text x="300" y="46" fill="#6b7392" font-size="12" text-anchor="middle">管理员 PowerShell</text>
+      <text x="60" y="92" fill="#8be9c6" font-size="14" font-family="Consolas,monospace">PS C:\&gt; wsl --shutdown</text>
+      <text x="60" y="118" fill="#9aa3b5" font-size="13" font-family="Consolas,monospace">（等待 5~10 秒，WSL 虚拟机完全停止）</text>
+      <text x="60" y="146" fill="#ffd479" font-size="14" font-family="Consolas,monospace">PS C:\&gt; 从开始菜单 打开 Docker Desktop</text>
+      <text x="60" y="172" fill="#9aa3b5" font-size="13" font-family="Consolas,monospace">→ 鲸鱼静止 = 守护进程已重拉</text>
+    </svg>
+    <div class="cap">图：管理员 PowerShell 执行 wsl --shutdown，再从开始菜单打开 Docker Desktop</div>
+  </div>
+  <div class="code"><span class="c"># 1) 以管理员身份打开 PowerShell（Win+X → 终端(管理员) 或 Windows PowerShell(管理员)）</span>
+<span class="k">wsl --shutdown</span>          <span class="c"># 强制关闭 WSL2 虚拟机，清掉崩溃的 docker 引擎</span>
+<span class="c"># 2) 等 5~10 秒，确认无残留：</span>
+<span class="k">wsl -l -v</span>                <span class="c"># 应显示 STOPPED 或无 docker-desktop 条目</span>
+<span class="c"># 3) 从「开始菜单 → Docker Desktop」重新打开，等鲸鱼图标变静止</span></div>
+  <div class="rec">✅ 这是解决 “use of closed network connection” 的最有效手段，因为它把整个 WSL 网络栈都重建了。</div>
+</div>
+
+<!-- 方法三 -->
+<div class="card">
+  <h2><span class="num">3</span> 方法三：任务管理器强杀进程</h2>
+  <p class="sub">适合：Docker Desktop 界面无响应、右键菜单都点不出来</p>
+  <div class="fig">
+    <svg viewBox="0 0 680 210" width="680" xmlns="http://www.w3.org/2000/svg">
+      <rect x="40" y="20" width="600" height="150" rx="12" fill="#fbfcff" stroke="#dfe3ee"/>
+      <text x="60" y="46" fill="#1b1f2a" font-size="14" font-weight="700">任务管理器 · 详细信息</text>
+      <rect x="60" y="64" width="560" height="26" rx="6" fill="#eef4ff"/>
+      <text x="72" y="82" fill="#3a4256" font-size="12">Docker Desktop.exe</text>
+      <text x="320" y="82" fill="#6b7392" font-size="12">CPU 12% · 内存 1.2 GB</text>
+      <rect x="60" y="98" width="560" height="26" rx="6" fill="#fff4ec"/>
+      <text x="72" y="116" fill="#b34a1f" font-size="12">Docker Desktop Backend.exe</text>
+      <text x="320" y="116" fill="#6b7392" font-size="12">（右键 → 结束任务）</text>
+      <rect x="500" y="134" width="92" height="26" rx="6" fill="#ff6b6b"/>
+      <text x="546" y="151" fill="#fff" font-size="12" text-anchor="middle">结束任务</text>
+    </svg>
+    <div class="cap">图：任务管理器里结束 Docker Desktop / Backend 进程</div>
+  </div>
+  <div class="steps">
+    <div class="step"><div class="dot">1</div><div><b>Ctrl+Shift+Esc</b> <span>打开任务管理器 → 切到「详细信息」选项卡。</span></div></div>
+    <div class="step"><div class="dot">2</div><div><b>结束进程</b> <span>找到 <b>Docker Desktop.exe</b> 与 <b>Docker Desktop Backend.exe</b>，逐个右键 → 「结束任务」。</span></div></div>
+    <div class="step"><div class="dot">3</div><div><b>重新打开</b> <span>开始菜单 → Docker Desktop，等鲸鱼静止。</span></div></div>
+  </div>
+</div>
+
+<!-- 方法四 -->
+<div class="card">
+  <h2><span class="num">4</span> 方法四：Windows 服务重启</h2>
+  <p class="sub">适合：Docker 以 Windows 服务方式安装、且前面方法都不奏效</p>
+  <div class="code"><span class="c"># 管理员 PowerShell</span>
+<span class="k">Restart-Service</span> <span class="s">"com.docker.service"</span>   <span class="c"># 重启 Docker 服务</span>
+<span class="c"># 或等价命令：</span>
+<span class="k">net</span> stop com.docker.service <span class="c"># 停止</span>
+<span class="k">net</span> start com.docker.service <span class="c"># 启动</span></div>
+  <div class="box">💡 服务名一般为 <code style="background:#eef1ff;border-radius:6px;padding:1px 6px">com.docker.service</code>。若提示“服务不存在”，说明你用的是 WSL 后端而非 Hyper-V/服务后端，请用方法二。</div>
+</div>
+
+<!-- 验证 -->
+<div class="card">
+  <h2><span class="num">✓</span> 重启后验证是否真的恢复</h2>
+  <p class="sub">两条命令，看到 ServerVersion 输出版本号即代表守护进程已活</p>
+  <div class="code"><span class="k">docker info</span>        <span class="c"># 正常会打印 Server Version、Containers、Images 等信息</span>
+<span class="k">docker version</span>     <span class="c"># 同时显示 Client 与 Server 版本，Server 不再报错即为成功</span></div>
+  <table>
+    <tr><th>现象</th><th>判断</th></tr>
+    <tr><td>docker info 打印版本号，无报错</td><td class="ok">✅ 守护进程已恢复，可继续部署</td></tr>
+    <tr><td>仍报 “cannot connect to the Docker daemon”</td><td class="bad">❌ 没起来，重做方法二 / 重启电脑</td></tr>
+    <tr><td>鲸鱼图标静止 + 托盘提示 running</td><td class="ok">✅ GUI 层面已就绪</td></tr>
+  </table>
+</div>
+
+<!-- 后续部署 -->
+<div class="card">
+  <h2><span class="num">▶</span> 守护进程恢复后：一键部署</h2>
+  <p class="sub">在 feiyue-credit 项目根目录执行</p>
+  <div class="code"><span class="k">cd</span> feiyue-credit
+<span class="k">cp</span> .env.example .env          <span class="c"># 填入 WX_APP_SECRET / JWT_SECRET</span>
+<span class="k">docker compose</span> up -d --build  <span class="c"># 构建并后台启动 frontend + backend</span>
+<span class="c"># 浏览器打开 http://localhost:8080</span></div>
+  <div class="rec">✅ 届时前端（nginx:80→宿主机8080）会反代到 backend:8080，SQLite 数据落在 <code style="background:#eafff6;border-radius:6px;padding:1px 6px">backend-data</code> 卷，重启容器不丢数据。</div>
+  <a class="btn" href="http://localhost:8080" target="_blank">打开部署后的应用 ↗</a>
+</div>
+
+<!-- 排查 -->
+<div class="card">
+  <h2><span class="num">?</span> 还是不行？快速排查表</h2>
+  <table>
+    <tr><th>症状</th><th>处理</th></tr>
+    <tr><td>重启后立刻又崩溃</td><td>升级 Docker Desktop 到最新版（Settings → Check for Updates）；旧版 WSL 引擎有已知 bug</td></tr>
+    <tr><td>wsl --shutdown 报错“没有权限”</td><td>必须用<b>管理员</b> PowerShell 运行；普通终端会失败</td></tr>
+    <tr><td>Docker 一直 “Starting…” 卡住</td><td>Settings → Resources → WSL Integration 关掉再开；或重置为出厂（Settings → Reset）</td></tr>
+    <tr><td>公司电脑装了安全软件拦截</td><td>把 Docker Desktop 加入白名单；必要时联系 IT 放行 WSL/虚拟化</td></tr>
+    <tr><td>BIOS 未开虚拟化</td><td>进 BIOS 开启 Intel VT-x / AMD-V，否则 Docker 无法运行</td></tr>
+  </table>
+  <div class="warn">⚠️ 若反复崩溃且影响工作，最稳的是：方法二彻底重启 → 仍不行就<b>重启整台电脑</b>，绝大多数 Docker 守护进程故障都能这样解决。</div>
+</div>
+
+<footer>飞越信用 · 阶段四部署配套指南 · 与 docker-compose.yml / server-Dockerfile 配合使用</footer>
+</div>
+</body>
+</html>

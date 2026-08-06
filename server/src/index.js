@@ -84,9 +84,16 @@ app.use((err, _req, res, _next) => {
 const DIST = path.join(__dirname, '..', '..', 'frontend', 'dist');
 app.use(express.static(DIST));
 
+// 课程资料静态托管（自托管复习资料 HTML，供小程序复制链接后在浏览器打开）
+// url 在库中存为相对路径 /study/<id>.html，小程序端会自动拼接后端域名
+const STUDY_DIR = path.join(__dirname, '..', 'study-content');
+app.use('/study', express.static(STUDY_DIR));
+
 // 非 /api 请求回退到 index.html（前端使用 hash 路由，路径恒为 /）
 app.use((req, res, next) => {
   if (req.path.startsWith('/api')) return next();
+  // /study 下缺失的资料文件返回 404，而非兜底返回首页（避免复制失效链接却打开首页）
+  if (req.path.startsWith('/study')) return res.status(404).send('资料不存在');
   res.sendFile(path.join(DIST, 'index.html'));
 });
 

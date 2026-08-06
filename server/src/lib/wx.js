@@ -12,7 +12,9 @@ const APP_SECRET = process.env.WX_APP_SECRET;
 
 const SECRET_MISSING = !APP_SECRET || APP_SECRET.includes('请替换');
 const IS_PROD = process.env.NODE_ENV === 'production';
-const MOCK_MODE = !IS_PROD || process.env.WX_MOCK === '1';
+// 生产环境(NODE_ENV=production)一律关闭 MOCK，避免「漏配 AppSecret + 漏设 NODE_ENV」时被任意 code 登录；
+// 本地(非 production)在「未配真实 AppSecret 或显式 WX_MOCK=1」时启用 MOCK，方便预览。
+const MOCK_MODE = !IS_PROD && (process.env.WX_MOCK === '1' || SECRET_MISSING);
 
 function mockOpenid(code) {
   const h = crypto.createHash('sha256').update('mock:' + (code || 'x')).digest('hex').slice(0, 24);

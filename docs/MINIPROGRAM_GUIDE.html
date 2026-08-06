@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>飞越学分系统 · 小程序新手图文指南</title>
+<style>
+  :root{
+    --violet:#7C5CFF; --blue:#4D9BFF; --mint:#2DD4A7;
+    --ink:#1f2330; --gray:#6b7280; --bg:#f5f6fb; --card:#fff;
+    --line:#e7e9f3; --warn:#ff8a3d; --danger:#ef4444; --ok:#2DD4A7;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);line-height:1.7}
+  .wrap{max-width:920px;margin:0 auto;padding:24px 18px 80px}
+  header.hero{background:linear-gradient(135deg,var(--violet),var(--blue));color:#fff;border-radius:22px;padding:38px 30px;box-shadow:0 18px 40px rgba(124,92,255,.28)}
+  header.hero h1{font-size:28px;font-weight:800;margin-bottom:8px}
+  header.hero p{opacity:.95;font-size:15px}
+  .badge{display:inline-block;background:rgba(255,255,255,.2);padding:4px 12px;border-radius:20px;font-size:13px;margin-top:14px}
+  .toc{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 22px;margin:22px 0}
+  .toc h3{font-size:15px;color:var(--gray);margin-bottom:10px}
+  .toc a{color:var(--violet);text-decoration:none;display:block;padding:5px 0;font-size:15px}
+  .toc a:hover{text-decoration:underline}
+  section{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:28px 26px;margin:20px 0;scroll-margin-top:20px}
+  h2{font-size:22px;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+  h2 .num{background:linear-gradient(135deg,var(--violet),var(--blue));color:#fff;width:34px;height:34px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:17px;flex:0 0 auto}
+  .lead{color:var(--gray);font-size:14px;margin:8px 0 20px}
+  .step{border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:14px 0;position:relative;background:#fcfcff}
+  .step .s{position:absolute;top:-12px;left:16px;background:var(--violet);color:#fff;font-size:13px;font-weight:700;padding:3px 12px;border-radius:12px}
+  .step h4{font-size:16px;margin:6px 0 8px}
+  .step p{font-size:14px;color:#374151}
+  code{background:#eef0fb;color:#5b3df5;padding:2px 7px;border-radius:6px;font-size:13px;font-family:"SF Mono",Consolas,monospace}
+  .path{background:#0f1226;color:#a9b4ff;padding:12px 16px;border-radius:10px;font-family:Consolas,monospace;font-size:13px;margin:10px 0;overflow-x:auto;white-space:nowrap}
+  .tip{background:#ecfdf5;border-left:4px solid var(--mint);padding:12px 16px;border-radius:0 10px 10px 0;font-size:14px;margin:12px 0;color:#065f46}
+  .warn{background:#fff7ed;border-left:4px solid var(--warn);padding:12px 16px;border-radius:0 10px 10px 0;font-size:14px;margin:12px 0;color:#9a3412}
+  .danger{background:#fef2f2;border-left:4px solid var(--danger);padding:12px 16px;border-radius:0 10px 10px 0;font-size:14px;margin:12px 0;color:#991b1b}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+  @media(max-width:680px){.grid2,.grid3{grid-template-columns:1fr}}
+  .mini{background:#f8f9ff;border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center;font-size:13px}
+  .mini b{display:block;color:var(--violet);font-size:15px;margin-bottom:4px}
+  .phone{width:240px;margin:0 auto;display:block}
+  figcaption{text-align:center;color:var(--gray);font-size:13px;margin-top:8px}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:10px 12px;text-align:left}
+  th{background:#f3f4ff;color:#4338ca}
+  .pill{display:inline-block;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:700}
+  .pill.ok{background:#dcfce7;color:#166534}
+  .pill.no{background:#fee2e2;color:#991b1b}
+  .pill.mid{background:#fef9c3;color:#854d0e}
+  .flow{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;margin:18px 0}
+  .flow .box{background:linear-gradient(135deg,var(--violet),var(--blue));color:#fff;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600}
+  .flow .arr{color:var(--violet);font-size:20px;font-weight:700}
+  footer{text-align:center;color:var(--gray);font-size:13px;margin-top:30px}
+  .kbd{background:#fff;border:1px solid #d1d5db;border-bottom-width:2px;border-radius:6px;padding:1px 8px;font-size:13px;font-family:Consolas,monospace}
+  .big-emoji{font-size:34px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <h1>📱 飞越学分系统 · 小程序新手图文指南</h1>
+  <p>写给零基础小白的"查看 → 试用 → 修改 → 认证"全流程手册</p>
+  <span class="badge">项目路径：C:\Users\20242\WorkBuddy\feiyue-credit\miniprogram</span>
+  <span class="badge">AppID：wx0fe78d74fdc47c1b（个人小程序）</span>
+</header>
+
+<div class="toc">
+  <h3>📑 目录（点击跳转）</h3>
+  <a href="#s0">概览：你手上有什么</a>
+  <a href="#s1">① 怎么"看"和"试用"小程序（3 种方法，由易到难）</a>
+  <a href="#s2">② 怎么"修改"小程序（改文字/颜色/页面）</a>
+  <a href="#s3">③ 下一步"认证"怎么做（个人身份证认证）</a>
+  <a href="#s4">④ 常见问题 & 避坑</a>
+</div>
+
+<!-- ============ 概览 ============ -->
+<section id="s0">
+  <h2><span class="num">★</span>概览：你手上有什么</h2>
+  <p class="lead">这个学分系统是"三件套"，先搞清楚它们的关系，后面就不乱了：</p>
+  <div class="grid3">
+    <div class="mini"><b>📱 小程序端</b>学生/老师用的手机界面，原生微信小程序代码，在 <code>miniprogram/</code></div>
+    <div class="mini"><b>🖥️ 后端服务</b>存数据、算学分的"大脑"，Node.js 程序，在 <code>server/</code>，本机跑在 <code>localhost:3001</code></div>
+    <div class="mini"><b>🌐 网页后台</b>管理用网页，Vue 程序，在 <code>frontend/</code></div>
+  </div>
+  <div class="flow">
+    <div class="box">📱 小程序</div><span class="arr">→ 请求 →</span>
+    <div class="box">🖥️ 后端 localhost:3001</div><span class="arr">↔ 读写</span>
+    <div class="box">🗄️ 数据库</div>
+  </div>
+  <div class="tip">💡 本指南只讲<strong>小程序端</strong>。后端和网页已经帮你部署好（双击 <code>run-node.bat</code> 就能跑，端口 3001）。</div>
+</section>
+
+<!-- ============ 1. 查看试用 ============ -->
+<section id="s1">
+  <h2><span class="num">1</span>怎么"看"和"试用"小程序</h2>
+  <p class="lead">给你 3 种方法，从"不用装任何东西"到"真机预览"，难度递增。</p>
+
+  <!-- 方法A -->
+  <div class="step">
+    <span class="s">方法 A · 最简单</span>
+    <h4>🖥️ 直接看"网页版手机原型"（无需安装）</h4>
+    <p>项目里已经做好了一个<strong>可以点击的手机模拟页面</strong>，用浏览器打开就能点各个栏目看效果，完全不需要微信工具。</p>
+    <div class="path">C:\Users\20242\WorkBuddy\feiyue-credit\miniprogram\preview\index.html</div>
+    <p>👉 双击这个 <code>index.html</code> 用浏览器打开 → 看到一个紫色手机 → 点底部 5 个 tab（首页/学分/班级圈/资源/我的）切换页面。</p>
+    <div class="tip">这是<strong>静态预览</strong>，点进去看布局用，不能真正登录/提交数据。</div>
+  </div>
+
+  <!-- 方法B -->
+  <div class="step">
+    <span class="s">方法 B · 推荐</span>
+    <h4>🔧 用「微信开发者工具」真机模拟（能登录、能提交）</h4>
+    <p>这是开发小程序的正规工具，装一次，以后天天用。步骤如下：</p>
+    <p><strong>第 1 步：下载安装</strong></p>
+    <p>打开官网 <code>https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html</code> → 选<strong>稳定版 Stable Build</strong> → 下载 Windows 64 位 → 双击安装。</p>
+    <p><strong>第 2 步：扫码登录</strong></p>
+    <p>打开工具 → 用<strong>你自己的微信</strong>扫码登录（这就是"个人身份证认证"的入口，后面第 3 节细讲）。</p>
+    <p><strong>第 3 步：导入项目</strong></p>
+    <div class="grid2">
+      <div>
+        <p>① 点「导入项目」</p>
+        <p>② 目录选：</p>
+        <div class="path" style="font-size:12px">C:\Users\20242\WorkBuddy\feiyue-credit\miniprogram</div>
+        <p>③ AppID 填：</p>
+        <div class="path" style="font-size:12px">wx0fe78d74fdc47c1b</div>
+        <p>④ 点「导入」</p>
+      </div>
+      <div style="text-align:center">
+        <!-- 导入界面模拟 -->
+        <svg width="220" height="150" viewBox="0 0 220 150">
+          <rect x="10" y="10" width="200" height="130" rx="10" fill="#fff" stroke="#7C5CFF" stroke-width="2"/>
+          <text x="110" y="34" font-size="13" fill="#7C5CFF" text-anchor="middle" font-weight="700">导入项目</text>
+          <rect x="24" y="48" width="172" height="26" rx="6" fill="#f3f4ff" stroke="#cbd5e1"/>
+          <text x="32" y="65" font-size="10" fill="#6b7280">目录：…\miniprogram</text>
+          <rect x="24" y="82" width="172" height="26" rx="6" fill="#f3f4ff" stroke="#cbd5e1"/>
+          <text x="32" y="99" font-size="10" fill="#374151">AppID：wx0fe78d74…</text>
+          <rect x="120" y="116" width="70" height="22" rx="6" fill="#7C5CFF"/>
+          <text x="155" y="131" font-size="11" fill="#fff" text-anchor="middle">导入</text>
+        </svg>
+      </div>
+    </div>
+    <p><strong>第 4 步：看到真机界面 & 试用</strong></p>
+    <p>导入后左边是<strong>手机模拟器</strong>（能看到小程序实际样子），右边是代码。现在就能：</p>
+    <div class="grid3">
+      <div class="mini"><b>👆 点 tab</b>切换首页/学分/班级圈等</div>
+      <div class="mini"><b>🔑 登录</b>点"我的"→ 用账号密码登录（superadmin / 见 server/.env）</div>
+      <div class="mini"><b>📝 提交</b>点班级圈发帖、点任务去提交作业</div>
+    </div>
+    <div class="warn">⚠️ 如果登录/提交报错 "url not in domain list" 或网络错误，是因为手机模拟器默认要连真实后端域名。开发阶段请勾选：<br>
+    右侧「详情」→「本地设置」→ 勾选 <strong>✅ 不校验合法域名、web-view（真机调试时也勾）</strong>。这样就能连你本机的 <code>localhost:3001</code> 了。</div>
+  </div>
+
+  <!-- 方法C -->
+  <div class="step">
+    <span class="s">方法 C · 最真实</span>
+    <h4>📲 真机扫码预览（手机微信里看）</h4>
+    <p>在微信开发者工具顶部点 <strong>「预览」</strong> 按钮 → 生成一个二维码 → 用手机微信扫码 → 小程序就跑在你真手机上了。</p>
+    <div class="tip">真机预览同样需要后端地址可达。本机调试时，手机和电脑要在同一 WiFi，且后端地址得换成你电脑的局域网 IP（详见第 2 节"改后端地址"）。</div>
+  </div>
+
+  <!-- 手机原型图 -->
+  <figure>
+    <svg class="phone" viewBox="0 0 240 480">
+      <rect x="20" y="10" width="200" height="460" rx="30" fill="#1f2330"/>
+      <rect x="30" y="20" width="180" height="440" rx="22" fill="#fff"/>
+      <!-- 状态栏 -->
+      <rect x="30" y="20" width="180" height="26" rx="0" fill="#7C5CFF"/>
+      <text x="46" y="38" font-size="11" fill="#fff">9:41</text>
+      <text x="170" y="38" font-size="11" fill="#fff">● ● ●</text>
+      <!-- 内容区 -->
+      <rect x="42" y="56" width="156" height="80" rx="12" fill="#f3f0ff"/>
+      <text x="60" y="92" font-size="13" fill="#7C5CFF" font-weight="700">八（十）班 学分榜</text>
+      <text x="60" y="114" font-size="10" fill="#6b7280">我的学分：128 分</text>
+      <rect x="42" y="146" width="74" height="54" rx="10" fill="#eef2ff"/>
+      <text x="56" y="178" font-size="10" fill="#4338ca">📊 学分</text>
+      <rect x="124" y="146" width="74" height="54" rx="10" fill="#ecfdf5"/>
+      <text x="138" y="178" font-size="10" fill="#065f46">📝 任务</text>
+      <rect x="42" y="210" width="74" height="54" rx="10" fill="#fff7ed"/>
+      <text x="54" y="242" font-size="10" fill="#9a3412">💬 班级圈</text>
+      <rect x="124" y="210" width="74" height="54" rx="10" fill="#faf5ff"/>
+      <text x="138" y="242" font-size="10" fill="#7e22ce">📚 资源</text>
+      <!-- 底部 tab -->
+      <rect x="30" y="424" width="180" height="36" rx="0" fill="#f8f9ff"/>
+      <line x1="30" y1="424" x2="210" y2="424" stroke="#e7e9f3"/>
+      <text x="58" y="446" font-size="9" fill="#7C5CFF" text-anchor="middle">首页</text>
+      <text x="98" y="446" font-size="9" fill="#9ca3af" text-anchor="middle">学分</text>
+      <text x="138" y="446" font-size="9" fill="#9ca3af" text-anchor="middle">班级圈</text>
+      <text x="178" y="446" font-size="9" fill="#9ca3af" text-anchor="middle">我的</text>
+    </svg>
+    <figcaption>📱 小程序手机界面示意（极光紫主题）</figcaption>
+  </figure>
+</section>
+
+<!-- ============ 2. 修改 ============ -->
+<section id="s2">
+  <h2><span class="num">2</span>怎么"修改"小程序</h2>
+  <p class="lead">小程序的页面 = 4 个同名文件。改哪里、怎么改，下面一张图讲清。</p>
+
+  <div class="grid2">
+    <div class="mini"><b>📄 .wxml</b>页面长什么样（像 HTML）</div>
+    <div class="mini"><b>🎨 .wxss</b>页面样式/颜色（像 CSS）</div>
+    <div class="mini"><b>⚙️ .js</b>页面逻辑/按钮点击</div>
+    <div class="mini"><b>📋 .json</b>页面配置（一般不用动）</div>
+  </div>
+
+  <div class="step">
+    <span class="s">改文字</span>
+    <h4>✏️ 改页面上显示的字</h4>
+    <p>打开对应页面的 <code>.wxml</code> 文件，直接改里面的中文就行。例如改登录页标题：</p>
+    <div class="path">miniprogram/pages/login/login.wxml</div>
+    <p>找到 <code>&lt;text&gt;欢迎登录&lt;/text&gt;</code> 改成你想写的字。</p>
+  </div>
+
+  <div class="step">
+    <span class="s">改颜色</span>
+    <h4>🌈 把主题色从紫改成你喜欢的色</h4>
+    <p>全站主色定义在 <code>miniprogram/app.wxss</code>。把下面两处颜色换掉，整个小程序就换色了：</p>
+    <div class="path">miniprogram/app.wxss</div>
+    <p>搜索 <code>#7C5CFF</code>（极光紫）替换成你的颜色，例如淘宝橙 <code>#ff5000</code>。</p>
+    <div class="tip">💡 改完保存，开发者工具会自动刷新（热更新），左边手机立刻变样。</div>
+  </div>
+
+  <div class="step">
+    <span class="s">改后端地址</span>
+    <h4>🔗 让小程序连上你的后端（重要！）</h4>
+    <p>小程序默认连生产地址。要连你本机调试的后端，改这一行：</p>
+    <div class="path">miniprogram/app.js &nbsp; （第 6 行附近）</div>
+    <pre class="path" style="white-space:pre-wrap">// 本机调试：改成下面这行
+apiBase: 'http://localhost:3001'
+// 生产环境：
+// apiBase: 'https://feiyue-credit.onrender.com'</pre>
+    <div class="warn">⚠️ 真机预览时手机访问不了 <code>localhost</code>（那是电脑自己）。要把 localhost 换成电脑局域网 IP，例如 <code>http://192.168.1.100:3001</code>，且后端要勾"不校验合法域名"才能连 HTTP。</div>
+  </div>
+
+  <div class="step">
+    <span class="s">加一个页面</span>
+    <h4>➕ 新增页面（进阶）</h4>
+    <p>① 在 <code>miniprogram/pages/</code> 新建文件夹和 4 个文件；② 在 <code>app.json</code> 的 <code>"pages"</code> 数组里加上新页面路径，保存即生效。</p>
+  </div>
+
+  <div class="danger">🚫 <strong>小白别乱改的地方：</strong><code>project.config.json</code>（项目配置）、<code>utils/</code> 里的请求封装、<code>sitemap.json</code>。改错会导致整个项目打不开。</div>
+</section>
+
+<!-- ============ 3. 认证 ============ -->
+<section id="s3">
+  <h2><span class="num">3</span>下一步"认证"怎么做（个人身份证认证）</h2>
+  <p class="lead">你已经确认走<strong>个人认证</strong>（用身份证，不用营业执照）。下面讲清"个人"能做什么、不能做什么、下一步怎么走。</p>
+
+  <div class="flow">
+    <div class="box">① 微信扫码登录工具</div><span class="arr">→</span>
+    <div class="box">② 公众平台实名（身份证）</div><span class="arr">→</span>
+    <div class="box">③ 配置服务器域名</div><span class="arr">→</span>
+    <div class="box">④ 提交审核发布</div>
+  </div>
+
+  <div class="step">
+    <span class="s">关键认知</span>
+    <h4>🔑 个人小程序 ≠ 企业认证，这是正常路线</h4>
+    <table>
+      <tr><th>能力</th><th>个人小程序</th><th>说明</th></tr>
+      <tr><td>用身份证注册/实名</td><td><span class="pill ok">✅ 可以</span></td><td>在 mp.weixin.qq.com 用微信+身份证</td></tr>
+      <tr><td>wx.login 拿 openid 登录</td><td><span class="pill ok">✅ 可以</span></td><td>本项目用的就是这个，已支持</td></tr>
+      <tr><td>微信支付</td><td><span class="pill no">❌ 不行</span></td><td>支付必须企业主体</td></tr>
+      <tr><td>微信认证（蓝V，交300元）</td><td><span class="pill no">❌ 不行</span></td><td>那是企业/组织专属，个人做不了</td></tr>
+      <tr><td>普通发布、审核上线</td><td><span class="pill ok">✅ 可以</span></td><td>功能类小程序个人可发布</td></tr>
+    </table>
+    <div class="tip">✅ 你的学分系统<strong>不需要支付、不需要企业认证</strong>，用"个人 + 身份证实名"完全够用，登录也已用 openid 方案做好了。</div>
+  </div>
+
+  <div class="step">
+    <span class="s">下一步 ①</span>
+    <h4>🪪 在微信公众平台完成身份证实名</h4>
+    <p>打开 <code>https://mp.weixin.qq.com</code> → 用你扫码的那个微信登录 → 如果还没注册小程序，点「立即注册」→ 选「小程序」→ 填邮箱、验证码 → 进后台。</p>
+    <p>进后台后：<strong>「管理」→「基本信息」→ 主体信息「去完善」</strong> → 上传<strong>身份证</strong>、人脸核验 → 完成个人实名。</p>
+    <div class="tip">💡 AppID <code>wx0fe78d74fdc47c1b</code> 已经是个人类型，如果这是你自己的号，直接去完善实名即可；如果是别人的号，需要重新用你自己的微信注册一个。</div>
+  </div>
+
+  <div class="step">
+    <span class="s">下一步 ②</span>
+    <h4>🌐 配置「服务器域名」（小程序能联网的前提）</h4>
+    <p>小程序上线后，<code>wx.request</code> 只能请求<strong>白名单里的 HTTPS 域名</strong>。设置路径：</p>
+    <p>公众平台后台 → <strong>「开发」→「开发管理」→「开发设置」→「服务器域名」</strong> → 在 <code>request 合法域名</code> 里加上：</p>
+    <div class="path">https://feiyue-credit.onrender.com</div>
+    <div class="warn">⚠️ 白名单<strong>只收 HTTPS、且要 ICP 备案</strong>的域名。本机 <code>localhost</code> 不能填进去。所以：<br>
+    • 开发调试 → 用开发者工具勾"不校验合法域名"即可；<br>
+    • 正式发布 → 必须有一个 HTTPS+备案 的后端域名（如 onrender 提供的，或你自己的服务器）。</div>
+  </div>
+
+  <div class="step">
+    <span class="s">下一步 ③</span>
+    <h4>🚀 提交审核 & 发布</h4>
+    <p>在微信开发者工具点顶部 <strong>「上传」</strong> → 填版本号（如 1.0.0）和备注 → 去公众平台后台 <strong>「版本管理」→「提交审核」</strong> → 等 1~2 天审核 → 通过后点「发布」。</p>
+    <div class="tip">📌 审核前务必：勾掉"不校验合法域名"、确认服务器域名已配置、用真机扫码自己先测一遍主要流程。</div>
+  </div>
+
+  <div class="danger">🚨 <strong>重要安全提醒：</strong>AppSecret 是小程序的最高密钥，<strong>绝不能发给任何人、不能写进代码、不能发到群里</strong>。如怀疑泄露，立即在公众平台「开发设置」里<strong>重置 AppSecret</strong>。</div>
+</section>
+
+<!-- ============ 4. 常见问题 ============ -->
+<section id="s4">
+  <h2><span class="num">4</span>常见问题 & 避坑</h2>
+  <div class="step">
+    <span class="s">Q1</span>
+    <h4>开发者工具打开项目是空白/报错？</h4>
+    <p>90% 是目录选错。目录必须精确到 <code>…\miniprogram</code>（包含 <code>app.json</code> 那层），不能选到 <code>feiyue-credit</code> 根目录。</p>
+  </div>
+  <div class="step">
+    <span class="s">Q2</span>
+    <h4>登录/发帖一直转圈或报网络错误？</h4>
+    <p>后端没启动，或没勾"不校验合法域名"。先确认你双击过 <code>run-node.bat</code> 且窗口显示"已启动：http://localhost:3001"，再在工具里勾对应选项。</p>
+  </div>
+  <div class="step">
+    <span class="s">Q3</span>
+    <h4>改了代码手机没变化？</h4>
+    <p>保存一下文件（Ctrl+S），开发者工具会自动编译。若还不行，点工具栏「编译」按钮，或「清缓存」→「全部清除」。</p>
+  </div>
+  <div class="step">
+    <span class="s">Q4</span>
+    <h4>个人小程序能接"微信登录手机号"吗？</h4>
+    <p>不能，<code>getPhoneNumber</code> 需要企业认证。本项目已用 <code>wx.login → openid</code> 方案替代，个人完全可用，无需手机号。</p>
+  </div>
+  <div class="step">
+    <span class="s">Q5</span>
+    <h4>AppID 填不上 / 提示无权限？</h4>
+    <p>说明这个 AppID 不是你微信名下的。用你自己的微信去 mp.weixin.qq.com 注册一个属于你的小程序，拿到新 AppID 再导入。</p>
+  </div>
+</section>
+
+<footer>
+  📘 飞越学分系统 · 新手指南 &nbsp;|&nbsp; 有问题把报错截图发给我即可<br>
+  项目路径：C:\Users\20242\WorkBuddy\feiyue-credit
+</footer>
+
+</div>
+</body>
+</html>

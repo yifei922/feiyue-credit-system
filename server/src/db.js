@@ -401,6 +401,9 @@ function migrate() {
     noPoints.forEach((u) => insPts.run(u.id, INIT_POINTS, INIT_POINTS));
     console.log(`[migrate] 已为 ${noPoints.length} 位用户初始化赠送 ${INIT_POINTS} 积分`);
   }
+
+  // 8) 课程资料自动播种：仅当 resource 表为空时填充示例资料（与数据库 id 解耦，刷新/新环境均可复现）
+  require('./seed_resources').seedResources(db);
 }
 
 migrate();

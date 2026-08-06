@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>飞跃学分小程序 · 上线前分步图文指南（小白版）</title>
+<style>
+  :root{ --purple:#7C5CFF; --blue:#4D9BFF; --ink:#1f2233; --muted:#6b7280; --bg:#f6f5ff; --ok:#16a34a; --warn:#d97706; --bad:#dc2626; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; background:linear-gradient(160deg,#f3f0ff,#eef4ff); color:var(--ink); line-height:1.75; }
+  .wrap{ max-width:900px; margin:0 auto; padding:24px 18px 80px; }
+  .hero{ background:linear-gradient(135deg,var(--purple),var(--blue)); color:#fff; border-radius:20px; padding:30px 26px; box-shadow:0 12px 36px rgba(124,92,255,.35); }
+  .hero .kicker{ background:rgba(255,255,255,.22); display:inline-block; padding:5px 14px; border-radius:999px; font-size:13px; margin-bottom:12px; }
+  .hero h1{ margin:6px 0 10px; font-size:27px; }
+  .hero p{ margin:0; opacity:.95; font-size:14px; }
+  .note{ background:#fff7e6; border:1px solid #ffe1a8; color:#8a5b00; border-radius:12px; padding:12px 16px; font-size:13.5px; margin:18px 0; }
+  .ok{ color:var(--ok); font-weight:700; }
+  .warn{ color:var(--warn); font-weight:700; }
+  .bad{ color:var(--bad); font-weight:700; }
+  .step{ background:#fff; border-radius:16px; padding:20px 22px; margin-top:20px; box-shadow:0 6px 20px rgba(31,34,51,.07); }
+  .step h2{ font-size:19px; margin:0 0 6px; color:var(--purple); display:flex; align-items:center; gap:10px; }
+  .badge{ background:var(--purple); color:#fff; width:30px; height:30px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:15px; flex:none; }
+  .step .goal{ color:var(--muted); font-size:13.5px; margin:0 0 12px; }
+  .step ol{ margin:8px 0 0; padding-left:22px; }
+  .step li{ margin:8px 0; }
+  code{ background:#f1efff; color:#5b3df5; padding:2px 7px; border-radius:6px; font-size:13px; }
+  .file{ background:#0f1117; color:#d6d3ff; border-radius:10px; padding:12px 14px; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12.5px; overflow:auto; white-space:pre; margin:10px 0; }
+    .file .c{ color:#8a8fa3; }
+  table{ width:100%; border-collapse:collapse; margin:10px 0; font-size:13.5px; }
+  th,td{ border:1px solid #e6e2ff; padding:8px 10px; text-align:left; }
+  th{ background:#f3f0ff; }
+  .done{ background:#ecfdf5; border:1px solid #a7f3d0; color:#065f46; border-radius:12px; padding:14px 18px; margin-top:20px; }
+  .done h2{ color:#047857; margin-top:0; }
+  .checklist{ list-style:none; padding:0; margin:10px 0; }
+  .checklist li{ padding:8px 0 8px 34px; position:relative; border-bottom:1px dashed #eee; }
+  .checklist li:before{ content:"☐"; position:absolute; left:6px; top:8px; font-size:18px; color:var(--purple); }
+  .pill{ display:inline-block; background:#eef2ff; color:#4338ca; font-size:12px; padding:2px 10px; border-radius:999px; margin:2px 4px 2px 0; }
+  svg{ max-width:100%; height:auto; display:block; margin:14px auto; }
+  .foot{ text-align:center; color:var(--muted); font-size:12.5px; margin-top:30px; }
+  .tip{ background:#eef6ff; border:1px solid #bfe0ff; color:#075985; border-radius:10px; padding:10px 14px; font-size:13px; margin-top:10px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="kicker">飞跃学分 · 洛一高附中八（十）班</div>
+    <h1>小程序上线前 · 分步图文指南（小白版）</h1>
+    <p>本指南把"从你现在能跑的代码"到"同学们能在微信里搜到并使用"之间的每一步，拆成 10 个可照做的动作。每一步都标了"要做什么 / 在哪做 / 做完长什么样"。</p>
+  </div>
+
+  <div class="note">
+    📌 你今天已经完成的 3 件事（详见文末"已为你完成"）：<b>① 初一/初二/初三资料已全部填充（共 22 条）</b>；<b>② 端口与所有接口已实测通过</b>；<b>③ 修了两个会影响上线的隐患</b>。下面只讲"还差什么、怎么上线"。
+  </div>
+
+  <!-- 总览图 -->
+  <div class="step">
+    <h2><span class="badge">0</span>先看清全貌：上线要过哪几关</h2>
+    <p class="goal">不用死记，记住这条链路就行：<b>配广告 → 配密钥 → 绑域名 → 部署后端 → 上传小程序 → 验证</b>。</p>
+    <svg viewBox="0 0 680 230" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif">
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#7C5CFF"/><stop offset="1" stop-color="#4D9BFF"/>
+        </linearGradient>
+        <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+          <path d="M0,0 L7,3 L0,6 Z" fill="#7C5CFF"/>
+        </marker>
+      </defs>
+      <g fill="url(#g)" stroke="none">
+        <rect x="10" y="90" width="96" height="50" rx="12"/><rect x="132" y="90" width="96" height="50" rx="12"/>
+        <rect x="254" y="90" width="96" height="50" rx="12"/><rect x="376" y="90" width="96" height="50" rx="12"/>
+        <rect x="498" y="90" width="96" height="50" rx="12"/><rect x="610" y="90" width="64" height="50" rx="12"/>
+      </g>
+      <g fill="#fff" font-size="12.5" font-weight="700" text-anchor="middle">
+        <text x="58" y="120">① 流量主</text>
+        <text x="180" y="120">② 密钥</text>
+        <text x="302" y="120">③ 域名</text>
+        <text x="424" y="120">④ 部署</text>
+        <text x="546" y="120">⑤ 上传</text>
+        <text x="642" y="120">⑥ 验证</text>
+      </g>
+      <g stroke="#7C5CFF" stroke-width="2" marker-end="url(#ar)">
+        <line x1="106" y1="115" x2="128" y2="115"/><line x1="228" y1="115" x2="250" y2="115"/>
+        <line x1="350" y1="115" x2="372" y2="115"/><line x1="472" y1="115" x2="494" y2="115"/>
+        <line x1="594" y1="115" x2="606" y2="115"/>
+      </g>
+      <text x="58" y="60" fill="#6b7280" font-size="12" text-anchor="middle">微信公众平台</text>
+      <text x="302" y="60" fill="#6b7280" font-size="12" text-anchor="middle">服务器 / 小程序</text>
+      <text x="546" y="60" fill="#6b7280" font-size="12" text-anchor="middle">微信开发者工具</text>
+      <text x="340" y="180" fill="#16a34a" font-size="13.5" font-weight="700" text-anchor="middle">✅ 同学们微信里搜到小程序，看资料、赚积分、看广告</text>
+      <line x1="340" y1="165" x2="340" y2="148" stroke="#16a34a" stroke-width="2" marker-end="url(#ar)"/>
+    </svg>
+  </div>
+
+  <!-- 步骤1 流量主 -->
+  <div class="step">
+    <h2><span class="badge">1</span>申请微信"流量主"广告位</h2>
+    <p class="goal">目标：拿到两个广告位 ID，填进小程序，这样开屏和"看广告看资料"才出现真实广告（产生收益）。</p>
+    <ol>
+      <li>电脑浏览器打开 <code>mp.weixin.qq.com</code> → 用你的小程序管理员微信扫码登录。</li>
+      <li>左侧菜单 <b>流量主</b> → <b>广告位管理</b> → 分别创建：
+        <ul>
+          <li><b>插屏广告</b>（对应开屏广告）→ 记下 <code>adunit-xxxx</code></li>
+          <li><b>激励视频广告</b>（对应"看广告解锁资料"）→ 记下 <code>adunit-xxxx</code></li>
+        </ul>
+      </li>
+      <li>打开小程序项目里的文件 <code>miniprogram/config/ad-config.js</code>，把两个占位符替换成真实 ID：
+        <div class="file"><span class="c">// 改前</span>
+const SPLASH_AD_UNIT_ID = '__WX_AD_SPLASH__';
+const REWARD_AD_UNIT_ID = '__WX_AD_REWARD__';
+<span class="c">// 改后（举例）</span>
+const SPLASH_AD_UNIT_ID = 'adunit-1a2b3c4d5e6f';
+const REWARD_AD_UNIT_ID = 'adunit-7g8h9i0j1k2l';</div>
+      </li>
+    </ol>
+    <div class="tip">⚠️ 门槛提醒：个人主体需"累计独立访客 ≥ 1000"才能开通流量主。没达标前，小程序里的广告位会自动"放行"（不弹广告也能看资料），<b>不影响使用</b>，只是没收益。达标后再填 ID 即可。</div>
+  </div>
+
+  <!-- 步骤2 AppSecret -->
+  <div class="step">
+    <h2><span class="badge">2</span>填入真实微信 AppSecret（让真实微信用户能登录）</h2>
+    <p class="goal">目标：把占位符换成你小程序的真实密钥，否则同学们用自己微信登录会失败。</p>
+    <ol>
+      <li>在 <code>mp.weixin.qq.com</code> 左侧 <b>开发 → 开发设置 → 开发者ID</b> 找到 <b>AppSecret</b>，点"重置/获取"（需管理员扫码），复制那串密钥。</li>
+      <li>打开服务器配置 <code>server/.env</code>（你本地这份），把：
+        <div class="file">WX_APP_SECRET=请替换为重置后的真实AppSecret
+<span class="c"># 改成：</span>
+WX_APP_SECRET=你复制的真实密钥</div>
+      </li>
+      <li>同一文件里，<b>务必删除或注释掉</b> <code>WX_MOCK=1</code> 这一行（它只是本地预览用，留着会让"任意 code 都能登录"，有安全风险）。
+        <div class="file"><span class="c"># 删掉这行（或前面加 # 注释）：</span>
+# WX_MOCK=1</div>
+      </li>
+    </ol>
+    <div class="tip">🔒 安全说明：系统已做加固——只要服务器设置了 <code>NODE_ENV=production</code>（下一步），即使你忘记删 WX_MOCK，真实环境也<b>不会</b>开启假登录。但养成良好的习惯：上线就删掉它。</div>
+  </div>
+
+  <!-- 步骤3 JWT -->
+  <div class="step">
+    <h2><span class="badge">3</span>设置 JWT 登录签名密钥</h2>
+    <p class="goal">目标：给"用户登录后发的令牌"换一把只有你知道的锁，防止被伪造。</p>
+    <ol>
+      <li>在 <code>server/.env</code> 里，把 <code>JWT_SECRET</code> 从占位符换成一段随机长串。</li>
+      <li>最简生成法（在终端执行，把输出结果抄进去）：
+        <div class="file">node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"</div>
+      </li>
+      <li>把得到的 64 位十六进制串填进去：
+        <div class="file">JWT_SECRET=这里粘贴生成的随机串</div>
+      </li>
+    </ol>
+  </div>
+
+  <!-- 步骤4 域名 -->
+  <div class="step">
+    <h2><span class="badge">4</span>配置服务器域名白名单（小程序才能联网）</h2>
+    <p class="goal">目标：告诉微信"允许这个小程序去哪个网址请求数据"。不配，真机打开小程序会报"不在合法域名"而无法登录/看资料。</p>
+    <ol>
+      <li>准备一个 <b>https</b> 域名（部署后你就有了，例如 <code>https://feiyue.xxx.com</code>）。</li>
+      <li>在 <code>mp.weixin.qq.com</code> → <b>开发 → 开发设置 → 服务器域名</b>：
+        <ul>
+          <li><b>request 合法域名</b>：添加你的 https 域名，例如 <code>https://feiyue.xxx.com</code></li>
+          <li><b>uploadFile / downloadFile 合法域名</b>：同样加上（用于上传头像等）</li>
+        </ul>
+      </li>
+      <li class="warn">业务域名：本系统资料是用"复制链接→浏览器打开"，<b>不依赖 web-view</b>，所以业务域名可暂不填。若以后想在小程序内直接打开网页，再配"业务域名"并下载校验文件放到服务器根目录。</li>
+    </ol>
+    <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif">
+      <rect x="10" y="14" width="540" height="172" rx="14" fill="#fff" stroke="#e6e2ff"/>
+      <text x="28" y="38" font-size="14" font-weight="700" fill="#7C5CFF">微信公众平台 · 开发设置 · 服务器域名（示意图）</text>
+      <line x1="28" y1="50" x2="532" y2="50" stroke="#eee"/>
+      <text x="28" y="78" font-size="13" fill="#333">request 合法域名：</text>
+      <text x="200" y="78" font-size="13" fill="#4338ca" font-family="monospace">https://feiyue.xxx.com</text>
+      <text x="28" y="108" font-size="13" fill="#333">uploadFile 合法域名：</text>
+      <text x="230" y="108" font-size="13" fill="#4338ca" font-family="monospace">https://feiyue.xxx.com</text>
+      <text x="28" y="138" font-size="13" fill="#333">downloadFile 合法域名：</text>
+      <text x="240" y="138" font-size="13" fill="#4338ca" font-family="monospace">https://feiyue.xxx.com</text>
+      <text x="28" y="172" font-size="11.5" fill="#6b7280">（把上面三处都填成你自己的 https 域名即可）</text>
+    </svg>
+  </div>
+
+  <!-- 步骤5 部署 -->
+  <div class="step">
+    <h2><span class="badge">5</span>部署后端到服务器（3 种方式任选）</h2>
+    <p class="goal">目标：让后端 7×24 小时在线，同学随时能访问。选你最顺手的一种。</p>
+    <ol>
+      <li><b>方式 A（最简单，自有电脑/轻量服务器）</b>：把整个项目文件夹拷过去，双击 <code>run-node.bat</code> 即可。它会自动装依赖、构建、启动在 <code>3001</code> 端口。记得在 <code>server/.env</code> 里加一行 <code>NODE_ENV=production</code>（安全必须）。</li>
+      <li><b>方式 B（推荐·免费·Render）</b>：把代码推到 GitHub，在 Render 新建 Web Service 连仓库，Build 命令 <code>npm install</code>、Start 命令 <code>node server/src/index.js</code>，并在环境变量里设 <code>NODE_ENV=production</code>、<code>WX_APP_SECRET</code>、<code>JWT_SECRET</code>、<code>PORT=8080</code>。Render 会给你一个 <code>https://xxx.onrender.com</code> 域名。</li>
+      <li><b>方式 C（Docker）</b>：项目已带 <code>docker-compose.yml</code>，在有 Docker 的机器上 <code>docker compose up -d</code> 即可。</li>
+    </ol>
+    <div class="tip">🌐 无论哪种方式，最终你会得到一个 <b>https 域名</b>。这个域名要回填到：① 步骤4 的微信白名单；② 小程序里的 API 地址（下一步）。</div>
+  </div>
+
+  <!-- 步骤6 小程序上传 -->
+  <div class="step">
+    <h2><span class="badge">6</span>小程序端：改地址 → 上传 → 提交审核</h2>
+    <p class="goal">目标：让小程序知道去哪个网址取数据，并把它提交到微信审核、发布。</p>
+    <ol>
+      <li>打开 <code>miniprogram/config/env.js</code>，把 API 地址改成你的 https 域名：
+        <div class="file"><span class="c">// 改前（本地）</span>
+API_BASE: 'http://localhost:3001',
+<span class="c">// 改后（线上）</span>
+API_BASE: 'https://feiyue.xxx.com',</div>
+      </li>
+      <li>打开 <b>微信开发者工具</b> → 导入项目（选 <code>miniprogram</code> 文件夹）→ 填你的 <b>AppID：<code>wx0fe78d74fdc47c1b</code></b>。</li>
+      <li>点右上角 <b>上传</b>，填版本号（如 <code>1.0.0</code>）和备注 → 上传成功。</li>
+      <li>回到 <code>mp.weixin.qq.com</code> → <b>版本管理 → 开发版本</b> 点"提交审核" → 按提示填写功能页面与类目（选"教育-在线教育"类）→ 提交。</li>
+      <li>审核通过（通常 1–2 天）后，在 <b>版本管理 → 线上版本</b> 点"发布"。发布后，微信里搜小程序名即可搜到。</li>
+    </ol>
+    <svg viewBox="0 0 600 150" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif">
+      <defs><marker id="b" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#4D9BFF"/></marker></defs>
+      <g fill="#4D9BFF">
+        <rect x="20" y="55" width="120" height="42" rx="10"/><rect x="200" y="55" width="120" height="42" rx="10"/>
+        <rect x="380" y="55" width="120" height="42" rx="10"/><rect x="530" y="55" width="60" height="42" rx="10"/>
+      </g>
+      <g fill="#fff" font-size="12.5" font-weight="700" text-anchor="middle">
+        <text x="80" y="80">改 env.js</text><text x="260" y="80">开发者工具上传</text>
+        <text x="440" y="80">提交审核</text><text x="560" y="80">发布</text>
+      </g>
+      <g stroke="#4D9BFF" stroke-width="2" marker-end="url(#b)">
+        <line x1="140" y1="76" x2="196" y2="76"/><line x1="320" y1="76" x2="376" y2="76"/><line x1="500" y1="76" x2="526" y2="76"/>
+      </g>
+    </svg>
+  </div>
+
+  <!-- 步骤7 验证 -->
+  <div class="step">
+    <h2><span class="badge">7</span>上线后验证：每个端口/链接是否可用</h2>
+    <p class="goal">目标：确认真实域名下，登录、看资料、广告、管理端都能跑通。</p>
+    <ol>
+      <li>项目里已附验证脚本 <code>tools/endpoint_test.mjs</code>。把里面的地址换成你的域名即可跑：
+        <div class="file">node tools/endpoint_test.mjs https://feiyue.xxx.com</div>
+      </li>
+      <li>它会逐一检查：健康检查、各角色登录、初一/初二/初三资料列表、资料详情、管理端、资料 HTML 是否能打开。</li>
+      <li>你今天在本地（端口 3001）已跑过一遍，结果如下（✅=正常）：</li>
+    </ol>
+    <table>
+      <thead><tr><th>检查项</th><th>结果</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>端口 & 健康检查 <code>/api/health</code></td><td class="ok">✅ 200</td><td>服务器在监听</td></tr>
+        <tr><td>各角色登录（admin/teacher/rep/student/superadmin）</td><td class="ok">✅ 全部 200</td><td>鉴权链路正常</td></tr>
+        <tr><td>资料列表 初一</td><td class="ok">✅ 7 条</td><td>已填充</td></tr>
+        <tr><td>资料列表 初二</td><td class="ok">✅ 8 条</td><td>已填充</td></tr>
+        <tr><td>资料列表 初三</td><td class="ok">✅ 7 条</td><td>已填充</td></tr>
+        <tr><td>资料详情（含看广告/扣积分元信息）</td><td class="ok">✅ 200</td><td>requiresAd=true, canView=true</td></tr>
+        <tr><td>管理端 / 管理端统计</td><td class="ok">✅ 200</td><td>resources=22</td></tr>
+        <tr><td>资料 HTML <code>/study/&lt;slug&gt;.html</code></td><td class="ok">✅ 200</td><td>浏览器可打开</td></tr>
+        <tr><td>缺失资料 <code>/study/999999.html</code></td><td class="ok">✅ 404</td><td>修复：不再误返回首页</td></tr>
+        <tr><td>微信登录端点</td><td class="ok">✅ 可达</td><td>本地走 MOCK；线上走真实</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 步骤8 资料管理 -->
+  <div class="step">
+    <h2><span class="badge">8</span>以后怎么增删资料（老师/管理员用）</h2>
+    <p class="goal">目标：资料不用找程序员，老师自己就能在小程序里加、改、删。</p>
+    <ol>
+      <li>小程序"我的"页 → 若你是老师/管理员，会出现 <b>"管理后台"</b> 入口 → 进入 <b>资料管理</b>。</li>
+      <li>点 <b>新增</b>，选年级（初一/初二/初三）、科目，填标题、类型、链接（或上传文件后取链接），保存即可，立刻在"学习"页出现。</li>
+      <li><b>默认资料从哪来</b>：系统首次启动会自动播种 22 条示例资料（初一重点回顾 / 初二预习 / 初三中考复习），无需手动导入；老师可在管理端随意增删改。若想整套替换默认内容，编辑 <code>server/src/seed_resources.js</code> 里的知识库后重启服务器即可（仅当资料库为空时才重写，不影响你后续添加的内容）。</li>
+    </ol>
+    <div class="tip">💡 今天生成的 22 条资料定位是"示例/骨架"：初一以<b>重点回顾</b>为主、初二以<b>上学期预习</b>为主、初三以<b>中考复习</b>为主。老师可按本校教材版本在管理端替换或补充更贴合的内容。</div>
+  </div>
+
+  <!-- 步骤9 账号 -->
+  <div class="step">
+    <h2><span class="badge">9</span>账号与初始积分（发给同学前先知道）</h2>
+    <p class="goal">目标：知道初始账号，以及"每人赠送 100 积分"已生效。</p>
+    <table>
+      <thead><tr><th>角色</th><th>账号</th><th>密码</th><th>用途</th></tr></thead>
+      <tbody>
+        <tr><td>超级管理员</td><td><code>superadmin</code></td><td><code>Feiyue@2026</code></td><td>最高权限，建议改密</td></tr>
+        <tr><td>管理员</td><td><code>admin</code></td><td><code>123456</code></td><td>日常管理</td></tr>
+        <tr><td>老师</td><td><code>teacher01</code></td><td><code>123456</code></td><td>录资料/任务</td></tr>
+        <tr><td>课代表</td><td><code>rep01 / rep02</code></td><td><code>123456</code></td><td>协助管理</td></tr>
+        <tr><td>学生(示例)</td><td><code>student01~06</code></td><td><code>123456</code></td><td>同学用微信一键登录即可</td></tr>
+      </tbody>
+    </table>
+    <div class="tip">🎁 每位用户首次登录即自动获赠 <b>100 积分</b>（已配置 <code>INIT_POINTS=100</code>）。同学看资料每次扣 5 分、看广告可赚分。上线前请在各账号改掉默认密码。</div>
+  </div>
+
+  <!-- 步骤10 常见坑 -->
+  <div class="step">
+    <h2><span class="badge">10</span>常见坑 & 排查清单</h2>
+    <p class="goal">上线不顺时，按顺序自查：</p>
+    <ul class="checklist">
+      <li>真机打开小程序报"不在合法域名" → 步骤4 的 request 域名没配或没填 https</li>
+      <li>微信登录提示"服务器端未配置微信" → 步骤2 的 AppSecret 没填真实值 / WX_MOCK 没删</li>
+      <li>看资料一直说"需看广告"却没广告弹 → 流量主未开通，属正常（开发阶段自动放行），开通后填步骤1 的 ID</li>
+      <li>资料点开是空白/打不开 → 确认后端 <code>/study</code> 静态目录已随项目部署（server/study-content）</li>
+      <li>改完小程序地址不生效 → 改的是 <code>miniprogram/config/env.js</code>，改完要重新"上传"版本</li>
+      <li>本地能跑、线上 404 → 检查线上是否设了 <code>NODE_ENV=production</code> 且后端进程在跑</li>
+    </ul>
+  </div>
+
+  <!-- 已为你完成 -->
+  <div class="done">
+    <h2>✅ 今天已为你完成的工作（无需你再做）</h2>
+    <ol>
+      <li><b>资料填充</b>：生成 22 条自托管复习资料（初一 7 / 初二 8 / 初三 7），极光紫主题 HTML，覆盖语数英及各科；已写入数据库并在 <code>server/study-content/</code> 落地。</li>
+      <li><b>访问链路打通</b>：新增 <code>/study</code> 静态路由托管资料；小程序端支持"相对链接自动拼域名"，本地(3001)与线上(https域名)通用。</li>
+      <li><b>端口/接口全验证</b>：启动本地等效生产环境，跑通健康检查、5 类角色登录、三年级资料列表、详情、管理端、资料 HTML 访问（见步骤7 表格）。</li>
+      <li><b>修了两个上线隐患</b>：① 缺失资料文件从"误返首页(200)"改为正确 404；② 收紧微信登录 MOCK 逻辑——<b>只要线上设了 NODE_ENV=production，任意 code 都无法冒名登录</b>。</li>
+      <li><b>交付脚本</b>：<code>server/src/seed_resources.js</code>（首次启动自动播种资料，单一数据源）、<code>tools/endpoint_test.mjs</code>（上线验证）。</li>
+    </ol>
+    <p style="margin-bottom:0">📦 下一步建议：把以上改动 <b>提交并推送到 Git</b>（服务器与管理端都要更新），然后按本指南步骤 1–6 上线。需要我帮你提交代码或填真实配置，随时说。</p>
+  </div>
+
+  <div class="foot">洛一高附中八（十）班 · 飞跃学分 · 上线前分步图文指南（由 WorkBuddy 生成）</div>
+</div>
+</body>
+</html>

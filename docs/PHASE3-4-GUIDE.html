@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>阶段三·指令6/7 与 阶段四 · 操作指南</title>
+<style>
+  :root{
+    --brand:#7C5CFF; --brand2:#4D9BFF; --green:#2DD4A7; --amber:#F5A623;
+    --red:#FF6B6B; --ink:#1f2433; --soft:#6b7280; --line:#e7e9f0;
+    --bg:#f6f7fb; --card:#fff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.7;padding-bottom:60px}
+  .hero{background:linear-gradient(120deg,#7C5CFF,#4D9BFF);color:#fff;padding:42px 28px 34px}
+  .hero h1{font-size:26px;font-weight:800;letter-spacing:.5px}
+  .hero p{margin-top:10px;opacity:.95;max-width:900px}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+  .verdict{background:#eefcf6;border:1px solid #bdeedd;color:#0f7a52;
+    border-radius:14px;padding:16px 18px;margin:24px 0;font-weight:600}
+  .verdict b{color:#0a5c3c}
+  section{background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:24px;margin:22px 0;box-shadow:0 4px 18px rgba(31,36,51,.04)}
+  h2{font-size:20px;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+  h2 .tag{font-size:12px;font-weight:700;color:#fff;background:var(--brand);
+    padding:3px 10px;border-radius:999px}
+  h3{font-size:15px;margin:18px 0 8px;color:var(--ink)}
+  p{color:#374151;margin:8px 0}
+  .muted{color:var(--soft);font-size:13px}
+  .grid{display:grid;gap:14px}
+  .status-board{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-top:14px}
+  .sb{border:1px solid var(--line);border-radius:12px;padding:14px;background:#fbfcff}
+  .sb .ph{font-size:12px;color:var(--soft)}
+  .sb .nm{font-weight:700;margin:4px 0 8px}
+  .chip{display:inline-block;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px}
+  .done{background:#e6f9ef;color:#0f9d58}
+  .partial{background:#fff4e0;color:#d98a00}
+  .todo{background:#ffeaea;color:#e04848}
+  pre{background:#0f1320;color:#e6edf3;border-radius:12px;padding:14px 16px;
+    overflow:auto;font-size:12.5px;line-height:1.55;margin:10px 0}
+  code{font-family:"SF Mono",Consolas,Menlo,monospace}
+  .inline{background:#eef0f6;color:#3a3f55;padding:1px 6px;border-radius:6px;font-size:12.5px}
+  .fileref{color:var(--brand);font-weight:600}
+  .callout{border-left:4px solid var(--amber);background:#fff8ec;padding:12px 14px;
+    border-radius:0 10px 10px 0;margin:12px 0;font-size:13.5px}
+  .callout.blue{border-color:var(--brand);background:#f1edff}
+  .callout.red{border-color:var(--red);background:#fff0f0}
+  ul{margin:8px 0 8px 20px} li{margin:5px 0}
+  .mock{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:12px 0;background:#fbfcff}
+  .mock .bar{background:linear-gradient(120deg,#7C5CFF,#4D9BFF);color:#fff;
+    padding:9px 14px;font-weight:600;font-size:13px}
+  .mock .body{padding:14px}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}
+  th,td{border:1px solid var(--line);padding:7px 10px;text-align:left}
+  th{background:#f3f5fb}
+  .kbd{display:inline-block;background:#1f2433;color:#fff;border-radius:6px;
+    padding:2px 8px;font-size:12px;font-family:monospace;margin:0 2px}
+  .flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0}
+  .node{background:#eef0ff;border:1px solid #cdd3ff;color:#3a3f8a;
+    padding:6px 12px;border-radius:10px;font-size:13px;font-weight:600}
+  .arrow{color:var(--soft)}
+  .check{list-style:none;margin-left:0!important}
+  .check li{padding-left:26px;position:relative}
+  .check li:before{content:"✓";position:absolute;left:0;top:0;color:#0f9d58;font-weight:800}
+  svg{display:block;max-width:100%}
+  .foot{text-align:center;color:var(--soft);font-size:12px;margin-top:30px}
+  .btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .btn{background:var(--brand);color:#fff;border:none;border-radius:10px;
+    padding:10px 16px;font-weight:700;cursor:pointer;font-size:14px}
+  .btn.ghost{background:#eef0ff;color:var(--brand)}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>阶段三 · 指令 6 / 7 与 阶段四 · 操作指南</h1>
+  <p>洛一高附中八（十）班 · 班级作业学分管理系统（Vue3 + Node/Express + node:sqlite）。
+  本指南先澄清「已就绪」的功能，再给出阶段四（自动化测试 + Docker 化部署）的逐项图文步骤。</p>
+</div>
+
+<div class="wrap">
+
+  <div class="verdict">
+    ✅ <b>结论先行：指令 6（操作日志查询页）和指令 7（全局快捷键 + 模板）在代码里已经实现完成</b>，
+    无需重建。你真正要推进的是 <b>阶段四：自动化测试（后端缺运行器）与 Docker 化部署（缺 backend 镜像与 compose）</b>。
+  </div>
+
+  <!-- 状态看板 -->
+  <section>
+    <h2><span class="tag">全景</span>路线图状态看板</h2>
+    <p class="muted">绿色 = 已实现；琥珀 = 部分实现（脚手架在，待补齐）；红色 = 待做。</p>
+    <div class="grid status-board">
+      <div class="sb">
+        <div class="ph">阶段三 · 指令 6</div>
+        <div class="nm">操作日志查询页</div>
+        <span class="chip done">已就绪 ✅</span>
+      </div>
+      <div class="sb">
+        <div class="ph">阶段三 · 指令 7</div>
+        <div class="nm">全局快捷键 + 模板</div>
+        <span class="chip done">已就绪 ✅</span>
+      </div>
+      <div class="sb">
+        <div class="ph">阶段四 · 测试</div>
+        <div class="nm">自动化测试</div>
+        <span class="chip partial">前端在 / 后端缺 ⚠️</span>
+      </div>
+      <div class="sb">
+        <div class="ph">阶段四 · 部署</div>
+        <div class="nm">Docker 化部署</div>
+        <span class="chip partial">前端在 / 缺 compose ⚠️</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 指令6 -->
+  <section>
+    <h2><span class="tag">指令 6</span>操作日志查询页 · 已就绪，位置在这里</h2>
+    <p>后端已落 <span class="inline">operate_log</span> 表，写入前后快照；前端查询页就在<b>「系统设置 → 操作日志」标签页</b>里，不是独立路由，但功能完整。</p>
+    <div class="grid" style="grid-template-columns:1fr 1fr">
+      <div>
+        <h3>代码落点（可直接点开核对）</h3>
+        <ul>
+          <li>后端路由：<span class="fileref">server/src/routes/operateLog.js</span>（按操作人/类型/时间筛选，返回 <span class="inline">before/after_snapshot</span>）</li>
+          <li>写入服务：<span class="fileref">server/src/services/log.js</span> 的 <span class="inline">recordLog()</span></li>
+          <li>路由挂载：<span class="fileref">server/src/index.js:55</span> <span class="inline">/api/operate-logs</span></li>
+          <li>前端 API：<span class="fileref">frontend/src/api/operateLog.js</span></li>
+          <li>查询页 UI：<span class="fileref">frontend/src/views/SystemSettings.vue</span> 第 113–156 行（标签页）+ 194–204 行（快照弹窗）</li>
+          <li>单测：<span class="fileref">frontend/tests/unit/mock.test.js:55</span> 已覆盖 listOperateLogs 筛选</li>
+        </ul>
+      </div>
+      <div>
+        <h3>页面长这样（UI 示意）</h3>
+        <div class="mock">
+          <div class="bar">系统设置 · 操作日志</div>
+          <div class="body">
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+              <span class="inline">操作人 ▢</span><span class="inline">类型 ▾</span>
+              <span class="inline">时间范围 ▾</span><span class="btn" style="padding:4px 10px;font-size:12px">查询</span>
+            </div>
+            <table>
+              <tr><th>操作人</th><th>类型</th><th>数据表</th><th>时间</th><th>操作</th></tr>
+              <tr><td>科代表小李</td><td><span class="chip done">UPDATE</span></td><td>completion_record</td><td>07-18 09:12</td><td>快照</td></tr>
+              <tr><td>杨老师</td><td><span class="chip done">INSERT</span></td><td>task</td><td>07-15 10:05</td><td>快照</td></tr>
+            </table>
+            <p class="muted">点「快照」弹窗显示 修改前 / 修改后 两份 JSON。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="callout blue">
+      💡 若你希望它<b>更显眼</b>（独立菜单项而非藏在系统设置里），只需在 <span class="inline">router/index.js</span> 加一条 <span class="inline">/logs</span> 路由，把 SystemSettings 里 113–204 行的模板抽成独立 <span class="inline">views/OperateLog.vue</span> 即可。这是「体验优化」，不是「补功能」。
+    </div>
+  </section>
+
+  <!-- 指令7 -->
+  <section>
+    <h2><span class="tag">指令 7</span>全局快捷键 + 模板 · 已就绪</h2>
+    <div class="grid" style="grid-template-columns:1fr 1fr">
+      <div>
+        <h3>快捷键事件流</h3>
+        <div class="flow">
+          <span class="node">用户按 Ctrl+S</span><span class="arrow">→</span>
+          <span class="node">useShortcuts 拦截</span><span class="arrow">→</span>
+          <span class="node">广播 app:save</span>
+        </div>
+        <div class="flow">
+          <span class="node">用户按 Ctrl+A</span><span class="arrow">→</span>
+          <span class="node">仅 /completion 页拦截</span><span class="arrow">→</span>
+          <span class="node">广播 app:select-all</span>
+        </div>
+        <p class="muted">各页自行监听事件，互不耦合：</p>
+        <ul>
+          <li><span class="fileref">App.vue:6</span> 全局调用 <span class="inline">useShortcuts()</span></li>
+          <li><span class="fileref">composables/useShortcuts.js</span> 全局 keydown 监听</li>
+          <li><span class="kbd">Ctrl+S</span> 被监听页面：完成登记、学生端、任务管理</li>
+          <li><span class="kbd">Ctrl+A</span> 仅在「完成登记页」拦截默认全选</li>
+        </ul>
+      </div>
+      <div>
+        <h3>模板功能（已在任务页）</h3>
+        <ul>
+          <li><span class="fileref">TaskList.vue:8-9</span> 「从模板创建」按钮</li>
+          <li><span class="fileref">TaskList.vue:30</span> 每行「存为模板」</li>
+          <li><span class="fileref">TaskList.vue:66-75</span> 模板选择弹窗</li>
+          <li><span class="fileref">TaskList.vue:127-143</span> <span class="inline">saveAsTemplate / createFromTemplate</span> 调用</li>
+          <li><span class="fileref">TaskList.vue:163-172</span> 监听 <span class="inline">app:save</span> 自动打开新建</li>
+        </ul>
+        <div class="callout">
+          ⚠️ 注意：<b>Ctrl+A 目前只在「完成登记页」生效</b>。若你希望任务页也用 Ctrl+A 触发「从模板创建」，在 <span class="inline">useShortcuts.js</span> 的 Ctrl+A 分支加 <span class="inline">route.path === '/tasks'</span> 并广播 <span class="inline">app:template</span>，再让 TaskList 监听即可（约 5 行改动）。
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 阶段四：测试 -->
+  <section>
+    <h2><span class="tag">阶段四 A</span>自动化测试</h2>
+
+    <div class="callout red">
+      🚫 <b>关于「JUnit」：你的后端是 Node/Express（node:sqlite），不是 Java，JUnit 不适用。</b>
+      请改用 <b>Vitest（node 模式）</b> 或 Node 内置 <span class="inline">node:test</span>。前端继续用已有的 Vitest。
+    </div>
+
+    <svg width="100%" height="220" viewBox="0 0 720 220">
+      <defs>
+        <linearGradient id="g1" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#7C5CFF"/><stop offset="1" stop-color="#4D9BFF"/>
+        </linearGradient>
+      </defs>
+      <text x="20" y="28" font-size="14" font-weight="700" fill="#1f2433">测试金字塔（阶段四目标）</text>
+      <!-- pyramid -->
+      <polygon points="360,50 250,170 470,170" fill="url(#g1)" opacity="0.15"/>
+      <polygon points="360,80 290,150 430,150" fill="url(#g1)" opacity="0.30"/>
+      <polygon points="360,110 330,150 390,150" fill="url(#g1)" opacity="0.55"/>
+      <text x="360" y="68" text-anchor="middle" font-size="12" fill="#5b4bb0">E2E（少量）</text>
+      <text x="360" y="112" text-anchor="middle" font-size="12" fill="#5b4bb0">集成（路由/服务）</text>
+      <text x="360" y="146" text-anchor="middle" font-size="12" fill="#3a3270">单元（最多）</text>
+      <!-- side cards -->
+      <rect x="20" y="120" width="180" height="78" rx="10" fill="#fff" stroke="#e7e9f0"/>
+      <text x="34" y="142" font-size="12.5" font-weight="700" fill="#7C5CFF">前端（已就绪）</text>
+      <text x="34" y="162" font-size="11" fill="#6b7280">Vitest + jsdom</text>
+      <text x="34" y="180" font-size="11" fill="#6b7280">tests/unit ×3，阈值 80%</text>
+      <rect x="520" y="120" width="180" height="78" rx="10" fill="#fff" stroke="#e7e9f0"/>
+      <text x="534" y="142" font-size="12.5" font-weight="700" fill="#F5A623">后端（待建）</text>
+      <text x="534" y="162" font-size="11" fill="#6b7280">Vitest node 模式</text>
+      <text x="534" y="180" font-size="11" fill="#6b7280">services + routes 单测</text>
+    </svg>
+
+    <h3>A1. 前端（已就绪，只需跑起来）</h3>
+    <pre><code># 在 frontend/ 目录
+npm run test:run      # 单次跑（CI 用）
+npm run coverage      # 带覆盖率（阈值 lines 80%，见 vitest.config.js）
+# 现有用例：credit.test.js / CreditBadge.spec.js / mock.test.js</code></pre>
+    <p class="muted">建议补充：<span class="inline">useShortcuts.spec.js</span>（模拟 keydown 验证广播）、<span class="inline">operateLog 筛选逻辑</span>。</p>
+
+    <h3>A2. 后端（新增运行器）</h3>
+    <p>在 <span class="fileref">server/</span> 加 Vitest（node 模式）+ 一个示例测试，让 <span class="inline">npm test</span> 可用。</p>
+    <p><b>① 改 <span class="inline">server/package.json</span> 的 scripts，加 devDependencies：</b></p>
+    <pre><code>{
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.9",
+    "supertest": "^7.0.0"
+  }
+}</code></pre>
+    <p><b>② 新建 <span class="inline">server/vitest.config.js</span>：</b></p>
+    <pre><code>import { defineConfig } from 'vitest/config'
+export default defineConfig({
+  test: { environment: 'node', include: ['tests/**/*.test.js'] }
+})</code></pre>
+    <p><b>③ 示例用例 <span class="inline">server/tests/log.test.js</span>（验证快照写入）：</b></p>
+    <pre><code>import { describe, it, expect, beforeAll } from 'vitest'
+import { recordLog } from '../src/services/log.js'
+import { db } from '../src/db.js'
+
+describe('operate_log 快照', () => {
+  it('recordLog 写入前后快照', () => {
+    recordLog({ id: 0, name: 'tester' }, 'UPDATE', 'task', 99,
+      { title: '旧' }, { title: '新' })
+    const row = db.prepare(
+      'SELECT * FROM operate_log WHERE table_name=? AND record_id=? ORDER BY id DESC'
+    ).get('task', 99)
+    expect(row).toBeTruthy()
+    expect(JSON.parse(row.before_snapshot).title).toBe('旧')
+    expect(JSON.parse(row.after_snapshot).title).toBe('新')
+  })
+})</code></pre>
+    <p class="muted">⚠️ 后端测试会真实写 <span class="inline">server/data/*.sqlite</span>，建议在 CI 用临时 DB 或测试前清空 operate_log。</p>
+  </section>
+
+  <!-- 阶段四：Docker -->
+  <section>
+    <h2><span class="tag">阶段四 B</span>Docker 化部署</h2>
+    <p>现状：<span class="fileref">frontend/Dockerfile</span> + <span class="fileref">frontend/nginx.conf</span> 已存在，nginx 把 <span class="inline">/api</span> 反代到 <span class="inline">backend:8080</span>。
+    但<b>没有 backend 镜像、没有 docker-compose</b>，所以现在这套 Docker 跑不起来。补两个文件即可。</p>
+
+    <svg width="100%" height="190" viewBox="0 0 720 190">
+      <defs><linearGradient id="g2" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#4D9BFF"/><stop offset="1" stop-color="#2DD4A7"/></linearGradient></defs>
+      <text x="20" y="26" font-size="14" font-weight="700" fill="#1f2433">Docker 拓扑（docker-compose）</text>
+      <rect x="300" y="44" width="120" height="40" rx="10" fill="#fff" stroke="#cdd3ff"/>
+      <text x="360" y="69" text-anchor="middle" font-size="12" fill="#3a3f8a">浏览器</text>
+      <text x="360" y="108" text-anchor="middle" font-size="20" fill="#6b7280">↓ :80</text>
+      <rect x="280" y="120" width="160" height="44" rx="10" fill="url(#g2)" opacity=".18" stroke="#2DD4A7"/>
+      <text x="360" y="147" text-anchor="middle" font-size="12" font-weight="700" fill="#0f7a52">frontend (nginx)</text>
+      <text x="360" y="184" text-anchor="middle" font-size="11" fill="#6b7280">静态 SPA + 反代 /api → backend:8080</text>
+      <text x="520" y="147" text-anchor="middle" font-size="20" fill="#6b7280">→ :8080</text>
+      <rect x="560" y="120" width="150" height="44" rx="10" fill="#fff" stroke="#cdd3ff"/>
+      <text x="635" y="142" text-anchor="middle" font-size="12" font-weight="700" fill="#7C5CFF">backend (node)</text>
+      <text x="635" y="160" text-anchor="middle" font-size="10.5" fill="#6b7280">Express + node:sqlite</text>
+    </svg>
+
+    <h3>B1. 新建 <span class="inline">server/Dockerfile</span></h3>
+    <pre><code>FROM node:22-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci || npm install
+COPY . .
+# node:sqlite 需 Node≥22.5（node:22-alpine 满足）
+ENV NODE_ENV=production PORT=8080
+EXPOSE 8080
+CMD ["node", "src/index.js"]</code></pre>
+
+    <h3>B2. 新建根目录 <span class="inline">docker-compose.yml</span></h3>
+    <pre><code>services:
+  backend:
+    build: ./server
+    container_name: feiyue-backend
+    ports: ["8080:8080"]
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      - JWT_SECRET=${JWT_SECRET:-please-change}
+      - WX_APP_ID=${WX_APP_ID:-}
+      - WX_APP_SECRET=${WX_APP_SECRET:-}
+    volumes:
+      - ./server/data:/app/data      # 持久化 sqlite，避免容器重建丢数据
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: feiyue-frontend
+    ports: ["80:80"]
+    depends_on: [backend]
+    restart: unless-stopped</code></pre>
+    <div class="callout blue">
+      📌 关键点：<b>后端 <span class="inline">index.js:73</span> 监听 <span class="inline">process.env.PORT || 3001</span></b>，
+      在 compose 里设 <span class="inline">PORT=8080</span> 即可与 nginx 反代对齐。sqlite 文件在 <span class="inline">server/data</span>，用 volume 挂载才不会随容器消失。
+    </div>
+
+    <h3>B3. 一键构建运行</h3>
+    <pre><code>docker compose up -d --build
+# 验收：http://localhost  → 前端；  http://localhost/api/health → {"status":"ok"}</code></pre>
+    <p class="muted">免费平台（Render）仍是单进程部署（见 <span class="inline">render.yaml</span>，构建前端 + 跑 node 服务同时托管 dist）。Docker 方案适合你自有服务器 / 内网部署。</p>
+  </section>
+
+  <!-- 下一步清单 -->
+  <section>
+    <h2><span class="tag">动作</span>下一步操作清单</h2>
+    <p>按优先级排序，全部可复制执行：</p>
+    <ul class="check">
+      <li><b>核对指令 6 / 7（5 分钟）</b>：本地 <span class="inline">npm run dev</span> 打开系统设置→操作日志，按 Ctrl+S 看是否触发保存。</li>
+      <li><b>跑前端测试（2 分钟）</b>：<span class="inline">cd frontend &amp;&amp; npm run coverage</span>，确认绿色且 ≥80%。</li>
+      <li><b>补后端测试运行器（15 分钟）</b>：按上面 A2 加 <span class="inline">vitest.config.js</span> + <span class="inline">package.json</span> test 脚本 + 1 个示例用例，跑 <span class="inline">npm test</span>。</li>
+      <li><b>补 Docker（10 分钟）</b>：新建 <span class="inline">server/Dockerfile</span> 与根 <span class="inline">docker-compose.yml</span>，<span class="inline">docker compose up -d --build</span> 验收。</li>
+      <li><b>（可选）体验优化</b>：把操作日志抽成独立路由 / 让任务页也支持 Ctrl+A 模板。</li>
+    </ul>
+    <div class="btnrow">
+      <button class="btn" onclick="alert('在对话框回复：开始执行阶段四，帮我创建 server/Dockerfile、docker-compose.yml、后端 vitest 脚手架并跑测试')">▶ 让我直接帮你落地阶段四</button>
+      <button class="btn ghost" onclick="window.print()">🖨 打印 / 存 PDF</button>
+    </div>
+  </section>
+
+  <div class="foot">洛一高附中八（十）班 · 学分管理系统 · 阶段三/四 操作指南（自动生成）</div>
+</div>
+</body>
+</html>
