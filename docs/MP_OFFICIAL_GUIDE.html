@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>测试号转正式个人小程序 · 上线联调实操指南</title>
+<style>
+  :root{
+    --violet:#7C5CFF;
+    --violet-d:#5b3fd6;
+    --violet-l:#f1ecff;
+    --ink:#1f2330;
+    --sub:#5b6172;
+    --line:#e7e9f0;
+    --ok:#1fb86b;
+    --warn:#ff8a3d;
+    --danger:#ff4d4f;
+    --bg:#f6f7fb;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);line-height:1.7}
+  .wrap{max-width:960px;margin:0 auto;padding:28px 20px 80px}
+  header{background:linear-gradient(135deg,var(--violet),#9d83ff);color:#fff;border-radius:18px;padding:30px 28px;box-shadow:0 12px 30px rgba(124,92,255,.28)}
+  header h1{margin:0 0 8px;font-size:25px}
+  header p{margin:0;opacity:.92;font-size:14px}
+  .badge{display:inline-block;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);padding:3px 10px;border-radius:999px;font-size:12px;margin-top:12px}
+  h2{font-size:20px;margin:38px 0 14px;padding-left:12px;border-left:5px solid var(--violet)}
+  h3{font-size:16px;margin:22px 0 10px;color:var(--violet-d)}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin:14px 0;box-shadow:0 4px 14px rgba(31,35,48,.04)}
+  .step{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px dashed var(--line)}
+  .step:last-child{border-bottom:none}
+  .num{flex:0 0 30px;height:30px;border-radius:50%;background:var(--violet);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+  .step b{color:var(--ink)}
+  code{background:var(--violet-l);color:var(--violet-d);padding:2px 7px;border-radius:6px;font-size:13px;font-family:Consolas,Menlo,monospace}
+  pre{background:#1f2330;color:#e9e9f5;padding:14px 16px;border-radius:10px;overflow:auto;font-size:13px;line-height:1.6}
+  pre .c{color:#8a8fb5}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:14px;background:#fff}
+  th,td{border:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}
+  th{background:var(--violet-l);color:var(--violet-d);font-weight:700}
+  .tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:700}
+  .t-ok{background:#e4f8ee;color:var(--ok)}
+  .t-no{background:#ffeaea;color:var(--danger)}
+  .t-warn{background:#fff2e6;color:var(--warn)}
+  .box{display:flex;gap:10px;padding:14px 16px;border-radius:10px;margin:12px 0;font-size:14px}
+  .box .i{font-size:18px}
+  .info{background:#eaf2ff;color:#2656b5;border-left:4px solid #4a90e2}
+  .danger{background:#ffeaea;color:#b3261e;border-left:4px solid var(--danger)}
+  .warn{background:#fff5e6;color:#a85d00;border-left:4px solid var(--warn)}
+  .okbox{background:#e9f9f0;color:#1a7a4a;border-left:4px solid var(--ok)}
+  ul.tight li{margin:4px 0}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0}
+  .flow .node{background:#fff;border:1px solid var(--violet);color:var(--violet-d);padding:8px 12px;border-radius:10px;font-size:13px;font-weight:600}
+  .flow .arrow{color:var(--sub);font-weight:700}
+  .checklist li{margin:8px 0}
+  .kbd{background:#fff;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:1px 7px;font-size:12px;font-family:Consolas,monospace}
+  footer{text-align:center;color:var(--sub);font-size:12px;margin-top:40px}
+  .pin{position:sticky;top:0;background:var(--violet-d);color:#fff;padding:10px 16px;border-radius:0 0 12px 12px;font-size:13px;z-index:9;margin-bottom:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>📱 测试号 → 正式个人小程序 · 上线联调实操指南</h1>
+  <p>面向小白：从「微信开发者工具测试号」转到能正式发布、能开流量主、真实用户可登录的小程序，以及上线后必须人工联调的全部事项。</p>
+  <span class="badge">配套文件：server/.env · miniprogram/project.config.json · miniprogram/config/env.js</span>
+</header>
+
+<div class="pin">⚠️ 读完「一、现状诊断」再动手 —— 你现在用的极可能是「测试号」，测试号永远无法正式发布！</div>
+
+<!-- ============ 一、现状诊断 ============ -->
+<h2>一、现状诊断：你现在是「测试号」</h2>
+<div class="card">
+  <p>从你发的截图二可以看到，浏览器地址是：</p>
+  <pre>https://mp.weixin.qq.com/wxamp/wadevelopcode/<b>sandbox</b>?token=...&lang=zh_CN</pre>
+  <p>页面标题是 <b>「小程序测试号」</b>，AppID 是 <code>wx0fe78d74fdc47c1b</code>。</p>
+  <div class="box danger">
+    <span class="i">🚫</span>
+    <div><b>这是测试号（sandbox），不是正式小程序。</b>测试号只能在「微信开发者工具」里用，<b>不能发布、不能被真实用户搜索到、不能开流量主、真实微信用户 wx.login 拿不到 openid</b>。你之前能用，是因为本地开了 MOCK 模式。</div>
+  </div>
+  <div class="box warn">
+    <span class="i">⚠️</span>
+    <div>截图一里开发者工具只显示「欢迎使用微信开发者工具」默认页，说明小程序代码没被当作当前项目编译——多半是 <code>project.config.json</code> 里的 AppID 和当前工具打开的项目不匹配，或还没「导入项目」。这不影响注册流程，但上线前必须解决（见第五节）。</div>
+  </div>
+</div>
+
+<table>
+  <thead><tr><th>对比项</th><th>❌ 你现在：测试号</th><th>✅ 目标：正式个人小程序</th></tr></thead>
+  <tbody>
+    <tr><td>入口地址</td><td>mp.weixin.qq.com / ... / <b>sandbox</b></td><td>mp.weixin.qq.com（无 sandbox）</td></tr>
+    <tr><td>真实用户能登录</td><td class="t-no">不能（仅工具内）</td><td class="t-ok">能（wx.login → openid）</td></tr>
+    <tr><td>能否发布上线</td><td class="t-no">永远不能</td><td class="t-ok">审核通过后发布</td></tr>
+    <tr><td>能否开流量主（广告赚钱）</td><td class="t-no">不能</td><td class="t-ok">满 1000 累积用户可申请</td></tr>
+    <tr><td>AppSecret 用于生产</td><td class="t-no">无效</td><td class="t-ok">有效</td></tr>
+    <tr><td>服务器域名白名单</td><td>工具内临时填，不生效于真机</td><td class="t-ok">真机生效</td></tr>
+  </tbody>
+</table>
+
+<!-- ============ 二、转正式个人小程序实操 ============ -->
+<h2>二、转正式个人小程序：分步实操（全人工）</h2>
+<div class="box info"><span class="i">💡</span><div>「个人主体」小程序用你本人的微信 + 身份证就能注册，<b>注册免费</b>。注意：个人主体<b>不能做微信支付</b>、部分类目受限，但你的「班级学分管理 + 资料 + 广告」完全够用。流量主对个人主体开放。</div></div>
+
+<div class="card">
+  <div class="step"><div class="num">1</div><div><b>用电脑浏览器打开注册页</b><br>访问 <code>https://mp.weixin.qq.com/</code> → 右上角点「<b>注册</b>」。不要用你截图里那个带 <code>sandbox</code> 的测试号地址。</div></div>
+  <div class="step"><div class="num">2</div><div><b>选账号类型</b><br>填邮箱（建议用新邮箱，别和测试号混）→ 验证码 → 密码。邮箱会收到激活链接，点开激活。</div></div>
+  <div class="step"><div class="num">3</div><div><b>选择「小程序」类型</b><br>激活后会让选账号类型，务必选 <b>小程序</b>（不是公众号/服务号）。</div></div>
+  <div class="step"><div class="num">4</div><div><b>主体信息登记 = 个人</b><br>主体类型选「<b>个人</b>」→ 填你的姓名、身份证号 → 用<b>你本人微信扫码</b>完成实名（扫码的微信号就是该小程序的「管理员」）。<br><span class="tag t-warn">注意</span> 一个身份证只能注册 1 个个人小程序；一个微信号最多管 5 个小程序。</div></div>
+  <div class="step"><div class="num">5</div><div><b>填写小程序基本信息</b><br>登录后进入后台 → 左侧「<b>设置 → 基本设置</b>」：<br>• 名称：如「飞跃学分」或「洛一高附中八⑩班」<br>• 图标：传一张 144×144 的 logo<br>• 类目：选「教育 → 学校教育」或「工具 → 信息查询」（个人主体建议选工具类更稳过审）<br><span class="tag t-ok">免费</span> 个人小程序基础信息登记免费，<b>不用交 300 元认证费</b>（那是企业主体的微信认证）。</div></div>
+  <div class="step"><div class="num">6</div><div><b>拿到正式 AppID 和 AppSecret</b><br>左侧「<b>开发 → 开发管理 → 开发设置</b>」：<br>• 复制 <b>AppID（wx 开头，和测试号不同！）</b><br>• 点「<b>生成 / 重置 AppSecret</b>」→ 扫码 → <b>立即复制保存</b>（只显示一次！）<br><span class="tag t-danger" style="background:#ffeaea;color:#b3261e">关键</span> 这个 AppSecret 才是能用于生产的，你之前给的 <code>cfa72807…</code> 是测试号的，生产无效。</div></div>
+  <div class="step"><div class="num">7</div><div><b>配置服务器域名（真机生效）</b><br>同一页「<b>服务器域名</b>」板块 → 点「修改」→ 用管理员微信扫码：<br>• <b>request 合法域名</b> 添加：<code>https://feiyue-credit.onrender.com</code><br>• uploadFile / downloadFile 合法域名：同样加 <code>https://feiyue-credit.onrender.com</code><br>• socket 合法域名：留空即可<br><span class="tag t-ok">已做</span> 你测试号里其实已填过这个域名，但那是测试环境，正式号必须<b>重新在正式后台填一遍</b>。</div></div>
+</div>
+
+<div class="flow">
+  <span class="node">注册 mp.weixin.qq.com</span><span class="arrow">→</span>
+  <span class="node">主体=个人+实名</span><span class="arrow">→</span>
+  <span class="node">填基本信息</span><span class="arrow">→</span>
+  <span class="node">拿 AppID/AppSecret</span><span class="arrow">→</span>
+  <span class="node">配服务器域名</span><span class="arrow">→</span>
+  <span class="node">改项目文件</span><span class="arrow">→</span>
+  <span class="node">上传+审核+发布</span>
+</div>
+
+<!-- ============ 三、配置迁移 ============ -->
+<h2>三、拿到正式 AppID 后：改 3 个文件</h2>
+
+<h3>① miniprogram/project.config.json</h3>
+<pre><span class="c">// 把 appid 从测试号换成正式号（示例，换成你真实的）</span>
+"appid": "wxXXXXXXXXXXXXXXXX",   <span class="c">// ← 改成第二节第6步复制的正式 AppID</span></pre>
+
+<h3>② miniprogram/config/env.js</h3>
+<pre><span class="c">// 本地预览用 localhost；但「上传代码」发布时要用线上域名</span>
+module.exports = {
+  API_BASE: 'https://feiyue-credit.onrender.com',  <span class="c">// ← 改成你的线上地址（和域名白名单一致）</span>
+};</pre>
+<div class="box warn"><span class="i">⚠️</span><div>发布版必须用 <code>https://</code> 域名，不能用 <code>localhost</code>。如果你平时要在本地调试，可临时改回 localhost，上传前再改回线上域名。</div></div>
+
+<h3>③ server/.env（后端，见第四节）</h3>
+
+<!-- ============ 四、server/.env 真实配置 ============ -->
+<h2>四、server/.env 填真实配置（后端生产）</h2>
+<div class="card">
+<p>打开 <code>server/.env</code>，把下面几项改成真实值：</p>
+<pre># 微信小程序凭证（换成正式小程序的，不是测试号！）
+WX_APP_ID=wxXXXXXXXXXXXXXXXX
+WX_APP_SECRET=你第二节第6步复制的正式AppSecret
+
+# ❌ 删除这一行（否则生产仍走 MOCK，真实用户登录会失败）
+<span style="text-decoration:line-through;color:#ff6b6b">WX_MOCK=1</span>
+
+# JWT 密钥：必须改成随机长字符串（生成命令见文件内注释）
+JWT_SECRET=把这里换成 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))" 的输出
+
+# 积分规则（保持）
+INIT_POINTS=100
+RESOURCE_VIEW_COST=5
+
+# 生产环境标记（Render/Docker 部署时务必加）
+NODE_ENV=production</pre>
+<div class="box okbox"><span class="i">✅</span><div>改好后：<b>删掉 <code>WX_MOCK=1</code></b> 并设 <code>NODE_ENV=production</code>，微信登录就关闭 MOCK、强制走真实 <code>code2Session</code>，真实用户才能登录。</div></div>
+</div>
+
+<!-- ============ 五、重新部署 ============ -->
+<h2>五、重新部署上线</h2>
+<div class="card">
+<ol class="tight">
+  <li><b>推代码到 GitHub</b>（Render 会自动重新构建部署）：
+    <pre>git add -A
+git commit -m "生产配置：正式AppID+关MOCK+NODE_ENV=production"
+git push</pre>
+  </li>
+  <li><b>在 Render 后台确认环境变量</b>：登录 render.com → 你的 Web Service → <b>Environment</b> → 确保 <code>WX_APP_ID</code>、<code>WX_APP_SECRET</code>、<code>JWT_SECRET</code>、<code>NODE_ENV=production</code> 都已填（Render 上填的会覆盖仓库里的 .env）。</li>
+  <li><b>等部署完成</b>：Render 显示 「Live」后，访问 <code>https://feiyue-credit.onrender.com/api/health</code> 应返回 <code>{"ok":true}</code>。</li>
+  <li><b>微信开发者工具「上传」代码</b>：打开项目（AppID 已改正式号）→ 右上「上传」→ 填版本号（如 1.0.0）和备注 → 提交。</li>
+  <li><b>提审 + 发布</b>：回正式小程序后台 → 「<b>管理 → 版本管理 → 开发版本</b>」→ 提交审核 → 等 1~3 天审核 → 通过后点「发布」。</li>
+</ol>
+<div class="box info"><span class="i">💡</span><div>审核期间不影响你本地测试；审核通过后用户才能在微信里搜到并使用。</div></div>
+</div>
+
+<!-- ============ 六、上线后联调联试清单 ============ -->
+<h2>六、上线后必须人工联调联试的全部事项</h2>
+<p>以下这些<b>无法自动化、必须你本人操作或真机验证</b>。建议逐项打勾：</p>
+
+<div class="card">
+<h3>🔐 A. 认证 / 登录（最关键）</h3>
+<ul class="checklist">
+  <li>☐ <b>真机扫码登录</b>：用另一部手机（或退出开发者工具）微信扫小程序码，点「微信一键登录」，应能成功进入、看到「我的」页有用户信息。 <span class="tag t-warn">人工</span></li>
+  <li>☐ <b>确认没走 MOCK</b>：登录后，后端日志不应出现 <code>[wx] MOCK</code> 字样；或看数据库 <code>user</code> 表 openid 是真实 <code>oXXXX</code> 而非 <code>mock_xxx</code>。 <span class="tag t-warn">人工+日志</span></li>
+  <li>☐ <b>新用户赠 100 积分</b>：真机首次登录后，「我的」页积分应为 100。 <span class="tag t-warn">人工</span></li>
+</ul>
+
+<h3>🌐 B. 域名 / 网络（真机才暴露）</h3>
+<ul class="checklist">
+  <li>☐ <b>request 域名生效</b>：真机打开小程序，首页能拉到资料列表（不再报「url 不在合法域名」）。 <span class="tag t-warn">人工·真机</span></li>
+  <li>☐ <b>uploadFile 域名生效</b>：「我的 → 上传头像」能成功上传（个人资料编辑依赖它）。 <span class="tag t-warn">人工</span></li>
+  <li>☐ <b>资料链接可打开</b>：点资料「打开/复制链接」→ 浏览器能打开 <code>https://feiyue-credit.onrender.com/study/xxx.html</code>。 <span class="tag t-warn">人工</span></li>
+</ul>
+
+<h3>📢 C. 广告流量主（需先申请）</h3>
+<ul class="checklist">
+  <li>☐ <b>申请流量主</b>：正式后台 → 「<b>流量主 → 开通</b>」，需累积 ≥1000 用户才能申请（个人主体同样适用）。 <span class="tag t-warn">人工·有门槛</span></li>
+  <li>☐ <b>填广告位 ID</b>：申请通过后，把「开屏广告位 ID」「激励视频广告位 ID」填进 <code>miniprogram/config/ad-config.js</code>，重新上传代码。 <span class="tag t-warn">人工+改码</span></li>
+  <li>☐ <b>真机看广告</b>：开屏广告出现、打开资料弹激励视频、看完才能看资料。 <span class="tag t-warn">人工·真机</span></li>
+  <li>☐ <b>没填广告位时优雅跳过</b>：未配置时小程序不应崩溃，仅静默不显示广告（已做容错）。 <span class="tag t-ok">已处理</span></li>
+</ul>
+
+<h3>⭐ D. 积分 / 资料 / 管理端</h3>
+<ul class="checklist">
+  <li>☐ <b>查阅扣 5 积分</b>：真机打开一条资料，积分从 100 → 95。 <span class="tag t-warn">人工</span></li>
+  <li>☐ <b>积分不足拦截</b>：积分不够时，应提示「积分不足，请看广告或联系老师」。 <span class="tag t-warn">人工</span></li>
+  <li>☐ <b>管理后台入口</b>：老师/管理员角色的「我的」页出现「管理后台」，能进资料管理、用户管理。 <span class="tag t-warn">人工·需管理员账号</span></li>
+  <li>☐ <b>资料已填充</b>：初一/初二/初三各有复习资料（服务器启动自动播种 22 条）。 <span class="tag t-ok">已处理</span></li>
+</ul>
+
+<h3>🧪 E. 用脚本做接口自测（可半自动）</h3>
+<ul class="checklist">
+  <li>☐ 部署后跑：<pre>node tools/endpoint_test.mjs https://feiyue-credit.onrender.com</pre> 看是否全 ✅（登录、资料、管理端、静态 HTML、404）。</li>
+  <li>☐ 注意：脚本里「微信登录」那项在真机 MOCK 关闭后会要求真实 code，脚本用假 code 会得到 401 —— <b>这是正常的</b>，说明生产已关闭 MOCK；真机登录才走通。</li>
+</ul>
+</div>
+
+<!-- ============ 七、常见坑 ============ -->
+<h2>七、必看：最容易卡住你的 5 个坑</h2>
+<table>
+  <thead><tr><th>现象</th><th>原因</th><th>解决</th></tr></thead>
+  <tbody>
+    <tr><td>真机打开小程序白屏/拉不到数据</td><td>服务器域名没在<b>正式后台</b>配，或配的还是测试号</td><td>第二节第7步，正式后台重新加域名</td></tr>
+    <tr><td>点微信登录一直「服务器端未配置微信」</td><td>.env 还留着 <code>WX_MOCK</code> 或 AppSecret 是测试号的</td><td>第四节：换正式 AppSecret、删 WX_MOCK、设 NODE_ENV=production</td></tr>
+    <tr><td>开发者工具只显示欢迎页</td><td>项目没正确导入 / AppID 不匹配</td><td>工具里「导入项目」选 <code>miniprogram</code> 目录，AppID 填正式号</td></tr>
+    <tr><td>上传头像失败</td><td>uploadFile 合法域名没配</td><td>正式后台加 uploadFile 域名</td></tr>
+    <tr><td>审核被拒</td><td>类目不符 / 名称含「学校」需资质</td><td>类目改「工具→信息查询」；名称避免用具体校名</td></tr>
+  </tbody>
+</table>
+
+<div class="box okbox"><span class="i">✅</span><div><b>一句话总结流程</b>：注册正式个人小程序（拿真 AppID/AppSecret）→ 正式后台配域名 → 改 3 个文件 → 填 .env 并删 WX_MOCK → 推 GitHub 触发 Render 重部署 → 开发者工具上传代码 → 提审发布 → 真机逐项联调（登录/积分/广告/头像上传）。</div></div>
+
+<footer>本指南由 WorkBuddy 生成 · 配套：LAUNCH_GUIDE.html（通用上线）、WECHAT_DEVTOOLS_GUIDE.html（开发者工具）、MP_OFFICIAL_GUIDE.html（本篇）</footer>
+
+</div>
+</body>
+</html>
