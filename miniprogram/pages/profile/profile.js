@@ -51,7 +51,7 @@ Page({
     return new Promise((resolve, reject) => {
       const apiBase = app.globalData.apiBase;
       wx.uploadFile({
-        url: apiBase + '/api/uploads/',
+        url: (require('../../utils/api.js').assetBase()) + '/api/uploads/',
         filePath: tempPath,
         name: 'file',
         header: { Authorization: 'Bearer ' + app.globalData.token },

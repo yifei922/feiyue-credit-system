@@ -91,7 +91,7 @@ Page({
     this.setData({ [`files[${i}].status`]: 'uploading', [`files[${i}].progress`]: 0 });
     return new Promise((resolve) => {
       const uploadTask = wx.uploadFile({
-        url: app.globalData.apiBase + '/api/uploads',
+        url: (require('../../utils/api.js').assetBase()) + '/api/uploads',
         filePath: f.path,
         name: 'file',
         formData: { taskId: String(this.data.taskId) },

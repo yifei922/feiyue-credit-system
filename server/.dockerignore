@@ -1,8 +1,14 @@
 node_modules
 npm-debug.log
+data
+*.db
+*.db-shm
+*.db-wal
+.env
 .git
 .gitignore
-data
-coverage
-*.db
+frontend
 tests
+**/*.test.js
+coverage
+.DS_Store

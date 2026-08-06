@@ -1,22 +1,17 @@
-# 后端镜像：Node 22（node:sqlite 需 >= 22.5，与 engines 一致）
-FROM node:22-alpine
+# 微信云托管 · 学分管理系统后端
+FROM node:22-slim
 
 WORKDIR /app
 
-ENV NODE_ENV=production
-
-# 先装依赖（利用层缓存）
+# 先拷依赖清单安装（利用层缓存，改代码不必重装依赖）
 COPY package*.json ./
-RUN npm ci --omit=dev || npm install --omit=dev
+RUN npm install --omit=dev
 
-# 复制源码
+# 再拷源码（node_modules / data / .env 已被 .dockerignore 排除）
 COPY . .
 
-# 数据库持久化目录（由 compose 的 volume 挂载覆盖）
-RUN mkdir -p /app/data
-ENV DB_PATH=/app/data/credit.db
-
-# 与前端 nginx 反代 backend:8080 保持一致
-EXPOSE 8080
+# 运行时由云托管注入 PORT（默认 80），index.js 已用 process.env.PORT 监听
+ENV NODE_ENV=production
+EXPOSE 80
 
 CMD ["node", "src/index.js"]

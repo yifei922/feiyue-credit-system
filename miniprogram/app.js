@@ -1,6 +1,6 @@
 // app.js - 全局入口与状态
 const { getToken, setToken, clearAuth } = require('./utils/auth.js');
-const { API_BASE } = require('./config/env.js');
+const { API_BASE, USE_CLOUD_RUN, CLOUD_RUN_ENV } = require('./config/env.js');
 
 App({
   globalData: {
@@ -64,25 +64,41 @@ App({
   },
 
   _api(path, method, data, noToken) {
-    const url = (path.startsWith('http') ? '' : this.globalData.apiBase) + path;
+    const headers = { 'Content-Type': 'application/json' };
+    if (!noToken && this.globalData.token) headers['Authorization'] = 'Bearer ' + this.globalData.token;
+    // 云托管模式：走 wx.callContainer（微信私有协议，免域名免备案）；否则走 wx.request
+    const url = USE_CLOUD_RUN ? path : (path.startsWith('http') ? '' : this.globalData.apiBase) + path;
     return new Promise((resolve, reject) => {
-      const headers = { 'Content-Type': 'application/json' };
-      if (!noToken && this.globalData.token) headers['Authorization'] = 'Bearer ' + this.globalData.token;
-      wx.request({
-        url, method, data, header: headers, timeout: 30000,
-        success: (res) => {
-          if (res.statusCode === 401) {
-            // token 过期：清除登录态
-            clearAuth();
-            this.globalData.token = '';
-            this.globalData.user = null;
-            wx.showToast({ title: '登录已过期，请重新登录', icon: 'none' });
-            return reject(new Error('未登录'));
-          }
-          resolve(res.data);
-        },
-        fail: (e) => reject(new Error(e.errMsg || '网络错误')),
-      });
+      const onResp = (res) => {
+        if (res.statusCode === 401) {
+          clearAuth();
+          this.globalData.token = '';
+          this.globalData.user = null;
+          wx.showToast({ title: '登录已过期，请重新登录', icon: 'none' });
+          return reject(new Error('未登录'));
+        }
+        resolve(res.data);
+      };
+      if (USE_CLOUD_RUN) {
+        wx.callContainer({
+          config: { env: CLOUD_RUN_ENV },
+          path: url,
+          method: (method || 'GET').toUpperCase(),
+          header: headers,
+          data: data || {},
+          timeout: 30000,
+          success: (res) => {
+            // callContainer 返回 data 常为字符串，按需解析为 JSON
+            let d = res.data;
+            if (typeof d === 'string') { try { d = JSON.parse(d); } catch (_) {} }
+            res.data = d;
+            onResp(res);
+          },
+          fail: (e) => reject(new Error(e.errMsg || '网络错误')),
+        });
+      } else {
+        wx.request({ url, method, data, header: headers, timeout: 30000, success: onResp, fail: (e) => reject(new Error(e.errMsg || '网络错误')) });
+      }
     });
   },
 

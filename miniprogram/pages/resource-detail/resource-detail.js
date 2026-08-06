@@ -61,7 +61,7 @@ Page({
     if (!url) return wx.showToast({ title: '暂未提供资源', icon: 'none' });
     // 相对路径（/study/xxx.html）自动拼接后端域名，本地与线上通用
     let full = url;
-    if (url.startsWith('/')) full = (getApp().globalData.apiBase || '') + url;
+    if (url.startsWith('/')) full = (require('../../utils/api.js').assetBase()) + url;
     if (type === 'article' || type === 'link') {
       wx.setClipboardData({ data: full, success: () => wx.showToast({ title: '链接已复制，去浏览器打开', icon: 'none' }) });
     } else {
