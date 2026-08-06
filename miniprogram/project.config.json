@@ -1,5 +1,5 @@
 {
-  "description": "洛一高附中八（十）班学分管理系统 - 微信小程序端",
+  "description": "点滴进步 - 个人学习记录工具",
   "miniprogramRoot": "./",
   "projectname": "feiyue-credit-mp",
   "appid": "wx0fe78d74fdc47c1b",
@@ -44,5 +44,6 @@
     "ignore": [],
     "include": []
   },
-  "editorSetting": {}
+  "editorSetting": {},
+  "testRoot": "minitest/"
 }

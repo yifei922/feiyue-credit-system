@@ -4,10 +4,10 @@
     <image class="avatar" src="{{user.avatar || '/assets/avatar_default.png'}}"></image>
     <view class="user-info">
       <view class="name">{{user.name}}</view>
-      <view class="role muted">{{user.role === 'STUDENT' ? '同学' : user.role === 'TEACHER' ? '老师' : '其他'}}</view>
+      <view class="role muted">{{user.role === 'STUDENT' ? '同学' : user.role === 'TEACHER' ? '管理员' : '其他'}}</view>
     </view>
     <view class="credit-block">
-      <view class="credit-label">总学分</view>
+      <view class="credit-label">总积分</view>
       <view class="credit-num">{{user.studentId ? '--' : '--'}}</view>
     </view>
   </view>
@@ -24,7 +24,7 @@
     </view>
     <view class="quick-item" bindtap="onTabFeed">
       <view class="quick-ico" style="background:linear-gradient(135deg,#2DD4A7,#38D9C9)">💬</view>
-      <view class="quick-text">班级圈</view>
+      <view class="quick-text">成长圈</view>
     </view>
     <view class="quick-item" bindtap="onTabMe">
       <view class="quick-ico" style="background:linear-gradient(135deg,#FF7EB3,#FF758C)">🏆</view>

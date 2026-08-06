@@ -1,7 +1,7 @@
 // pages/admin/index.js - 管理后台入口（教师/管理员/课代表）
 // 方案选择：直接在小程序内嵌管理功能（而非 webview 跳转网页），
 // 理由：个人主体小程序 webview 需配置业务域名且要托管站点，门槛高；
-// 班级场景管理动作少（资料/用户/概览），内嵌小程序最省事。详见 docs/ADMIN_DESIGN.md
+// 管理动作少（资料/用户/概览），内嵌小程序最省事。详见 docs/ADMIN_DESIGN.md
 const app = getApp();
 Page({
   data: {

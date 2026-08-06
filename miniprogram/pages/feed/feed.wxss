@@ -1,4 +1,4 @@
-/* feed.wxss - 青春版班级圈 */
+/* feed.wxss - 青春版成长圈 */
 .publish-fab {
   position: fixed;
   right: 20px;

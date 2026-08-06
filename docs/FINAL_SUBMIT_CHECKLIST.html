@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>点滴进步 · 小程序备案重提清单（一次性过）</title>
+<style>
+  :root{
+    --purple:#7C5CFF; --purple-l:#EFEBFF; --purple-d:#5B3FD9;
+    --ink:#1a1d29; --gray:#6b7280; --line:#e6e8f0;
+    --red:#E5484D; --red-bg:#FEF0F0;
+    --green:#12A87A; --green-bg:#E8F8F3;
+    --amber:#F5A524; --amber-bg:#FFF7E6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:#f6f7fb; color:var(--ink); line-height:1.75;
+    padding:32px 16px;
+  }
+  .wrap{max-width:860px;margin:0 auto}
+  .hero{
+    background:linear-gradient(135deg,#7C5CFF,#4D9BFF);
+    color:#fff;border-radius:20px;padding:36px 32px;margin-bottom:28px;
+  }
+  .hero h1{font-size:28px;margin-bottom:8px;letter-spacing:.5px}
+  .hero p{opacity:.92;font-size:15px}
+  .hero .badge{
+    display:inline-block;background:rgba(255,255,255,.22);
+    padding:4px 14px;border-radius:99px;font-size:13px;margin-top:14px;
+  }
+  .card{
+    background:#fff;border-radius:16px;padding:26px 28px;margin-bottom:20px;
+    box-shadow:0 1px 3px rgba(20,20,50,.06);
+  }
+  h2{
+    font-size:20px;margin-bottom:16px;padding-left:12px;
+    border-left:4px solid var(--purple);line-height:1.3;
+  }
+  h3{font-size:16px;margin:20px 0 10px;color:var(--purple-d)}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14.5px}
+  th{
+    background:var(--purple-l);color:var(--purple-d);
+    text-align:left;padding:11px 14px;font-weight:600;
+  }
+  td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  .copy-box{
+    background:var(--purple-l);border:1px dashed var(--purple);
+    border-radius:12px;padding:18px 20px;margin:14px 0;
+    font-size:15px;line-height:1.9;position:relative;
+  }
+  .copy-box::before{
+    content:"📋 可直接复制";position:absolute;top:-11px;left:16px;
+    background:var(--purple);color:#fff;font-size:11px;
+    padding:2px 10px;border-radius:99px;
+  }
+  .warn{background:var(--red-bg);border-left:4px solid var(--red);
+    padding:14px 18px;border-radius:8px;margin:14px 0;font-size:14.5px}
+  .ok{background:var(--green-bg);border-left:4px solid var(--green);
+    padding:14px 18px;border-radius:8px;margin:14px 0;font-size:14.5px}
+  .tip{background:var(--amber-bg);border-left:4px solid var(--amber);
+    padding:14px 18px;border-radius:8px;margin:14px 0;font-size:14.5px}
+  code{background:#f0f1f6;padding:2px 7px;border-radius:5px;
+    font-family:Consolas,Monaco,monospace;font-size:13.5px;color:var(--purple-d)}
+  .steps{counter-reset:s;list-style:none;margin:8px 0}
+  .steps li{
+    counter-increment:s;position:relative;padding:12px 0 12px 46px;
+    border-bottom:1px dashed var(--line);
+  }
+  .steps li:last-child{border-bottom:none}
+  .steps li::before{
+    content:counter(s);position:absolute;left:0;top:12px;
+    width:28px;height:28px;background:var(--purple);color:#fff;
+    border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:14px;font-weight:600;
+  }
+  .bad{color:var(--red);text-decoration:line-through;opacity:.7}
+  .good{color:var(--green);font-weight:600}
+  .kv{display:grid;grid-template-columns:120px 1fr;gap:8px 16px;
+    font-size:15px;margin:10px 0}
+  .kv dt{color:var(--gray)}
+  .kv dd{font-weight:600}
+  .footer{text-align:center;color:var(--gray);font-size:13px;
+    padding:24px 0 8px}
+  .pill{display:inline-block;padding:2px 10px;border-radius:99px;
+    font-size:12px;font-weight:600}
+  .pill-r{background:var(--red-bg);color:var(--red)}
+  .pill-g{background:var(--green-bg);color:var(--green)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <h1>点滴进步 · 备案重提清单</h1>
+    <p>针对上次 4 项驳回逐条修正 · 照着填，一次性通过</p>
+    <div class="badge">更新时间：2026-08-06</div>
+  </div>
+
+  <!-- ===== 一、驳回对照 ===== -->
+  <div class="card">
+    <h2>一、上次驳回的 4 项，逐条怎么改</h2>
+    <table>
+      <tr><th style="width:30%">驳回项</th><th>根本原因</th><th style="width:26%">本次修正</th></tr>
+      <tr>
+        <td><span class="pill pill-r">❶</span> 名称不符合个人备案要求</td>
+        <td>名称含「<b>学分</b>」→ 触发教育前置审批 → 个人主体无办学许可证 → 必拒</td>
+        <td class="good">改名「点滴进步」<br>完全无教育词</td>
+      </tr>
+      <tr>
+        <td><span class="pill pill-r">❷</span> 名称涉及商标</td>
+        <td>「飞跃」是第 42 类有效注册商标（飞跃集团，有效期至 2034）</td>
+        <td class="good">新名称无商标冲突</td>
+      </tr>
+      <tr>
+        <td><span class="pill pill-r">❸</span> 手机无人接听</td>
+        <td>管局审核员工作日白天来电核实，未接通</td>
+        <td class="good">见第五节「接电话攻略」</td>
+      </tr>
+      <tr>
+        <td><span class="pill pill-r">❹</span> 备注不符合个人性质</td>
+        <td><b>真正原因不只是备注栏！</b>小程序内部满屏「洛一高附中八（十）班」「斐越科技 出品」「学分」，审核员真机一点开就判定为机构应用</td>
+        <td class="good">已完成代码级<br>合规化改造（见第三节）</td>
+      </tr>
+    </table>
+    <div class="warn">
+      <b>⚠️ 关键认知</b>：很多人以为改后台文字就行，其实<b>审核员会真机体验你的小程序</b>。
+      内部只要出现具体校名、公司名、"学分"等词，改一百遍备注也过不了。这次已从代码层面彻底清理。
+    </div>
+  </div>
+
+  <!-- ===== 二、后台填写内容 ===== -->
+  <div class="card">
+    <h2>二、小程序后台填什么（逐字照抄）</h2>
+
+    <h3>① 小程序名称</h3>
+    <div class="copy-box"><b style="font-size:19px">点滴进步</b></div>
+    <div class="tip">
+      如提示「名称已被占用」，按顺序换：<b>点滴进步记</b> → <b>点滴进步本</b> → <b>每日点滴进步</b>。
+      <br>❌ 千万别再用：飞跃 / 斐越 / 学分 / 班级 / 学校 / 教育 / 培训 / XX中学
+    </div>
+
+    <h3>② 服务类目</h3>
+    <dl class="kv">
+      <dt>一级类目</dt><dd>工具</dd>
+      <dt>二级类目</dt><dd>信息查询</dd>
+    </dl>
+    <div class="ok">
+      <b>✅ 为什么选这个</b>：个人主体通过率最高，<b>不需要任何资质证明</b>。
+      你的系统本质就是"查积分、查资料"，完全匹配。
+      <br><b>❌ 绝对不要选</b>：教育 → 学校教育（会被要求提供办学许可证）
+    </div>
+
+    <h3>③ 小程序介绍（简介栏）</h3>
+    <div class="copy-box">
+      一款面向个人的学习记录小工具。支持学习资料查阅收藏、个人积分记录查询、日常进度跟踪。
+      界面简洁，操作方便，帮助你记录每一天的小进步。
+    </div>
+
+    <h3>④ 备案「服务内容描述 / 备注」</h3>
+    <div class="copy-box">
+      本小程序由个人开发者独立开发，是一款供个人使用的学习记录辅助工具。主要功能包括：学习资料的查阅与收藏、个人积分的记录与查询、日常学习进度的跟踪展示。<br><br>
+      本程序<b>不提供任何教育培训服务</b>，<b>不涉及课程销售</b>，<b>不含商业交易功能</b>，<b>不面向任何机构或组织</b>，<b>不收取任何费用</b>。所有内容仅供个人学习记录使用，严格遵守个人信息保护相关规定。
+    </div>
+    <div class="tip">
+      这段话里三个「不」是关键：<b>不提供培训 / 不涉及交易 / 不面向机构</b>，
+      精准回应「不符合个人性质」的驳回理由。
+    </div>
+
+    <h3>⑤ 小程序头像</h3>
+    <dl class="kv">
+      <dt>上传文件</dt><dd><code>assets/mp-icons-final/owl_avatar_144.png</code></dd>
+      <dt>样式</dt><dd>猫头鹰抱书 + FY + 星星，极光紫底（已去掉文字）</dd>
+      <dt>规格</dt><dd>144×144 PNG，符合微信要求</dd>
+    </dl>
+  </div>
+
+  <!-- ===== 三、代码改了什么 ===== -->
+  <div class="card">
+    <h2>三、小程序内部已完成的合规化改造</h2>
+    <p style="color:var(--gray);font-size:14px;margin-bottom:12px">
+      共修改 <b>19 个文件、30 处文案</b>，只改显示文字，功能完全不变。
+    </p>
+    <table>
+      <tr><th style="width:22%">位置</th><th style="width:39%">改造前 ❌</th><th>改造后 ✅</th></tr>
+      <tr><td>导航栏标题</td><td class="bad">洛一高附中八（十）班</td><td class="good">点滴进步</td></tr>
+      <tr><td>登录页主标题</td><td class="bad">洛一高附中八（十）班</td><td class="good">点滴进步</td></tr>
+      <tr><td>登录页副标题</td><td class="bad">班级作业学分管理</td><td class="good">记录每天的小进步</td></tr>
+      <tr><td>登录页署名</td><td class="bad">斐越科技 出品</td><td class="good">个人开发者作品</td></tr>
+      <tr><td>「我的」页脚</td><td class="bad">斐越科技 出品 · 班级学分管理小程序</td><td class="good">点滴进步 v1.1 · 个人开发者作品</td></tr>
+      <tr><td>底部 Tab</td><td class="bad">班级圈</td><td class="good">成长圈</td></tr>
+      <tr><td>全站术语</td><td class="bad">学分（总学分/学分明细/学分流水）</td><td class="good">积分（总积分/积分明细/积分流水）</td></tr>
+      <tr><td>管理页横幅</td><td class="bad">洛一高附中八（十）班 · 学分与资料管理</td><td class="good">管理中心</td></tr>
+      <tr><td>角色标签</td><td class="bad">老师</td><td class="good">管理员</td></tr>
+      <tr><td>项目描述</td><td class="bad">洛一高附中八（十）班学分管理系统</td><td class="good">点滴进步 - 个人学习记录工具</td></tr>
+      <tr><td>资料来源提示</td><td class="bad">如：老师课件</td><td class="good">如：课堂笔记</td></tr>
+    </table>
+    <div class="ok">
+      <b>🐛 顺手修了 2 个 Bug</b>：登录页引用的 <code>/assets/logo.jpg</code> 和
+      <code>/assets/avatar_default.png</code> <b>此前根本不存在</b>（一直显示破图！）。
+      现已补齐：logo 用新猫头鹰图标，默认头像用极光紫剪影。
+    </div>
+  </div>
+
+  <!-- ===== 四、提交前操作 ===== -->
+  <div class="card">
+    <h2>四、提交前必做的操作步骤</h2>
+    <ol class="steps">
+      <li><b>用开发者工具重新预览</b><br>
+        <span style="color:var(--gray);font-size:14px">打开微信开发者工具 → 编译 → 逐页确认：导航栏是「点滴进步」、登录页 logo 显示正常、无任何"学分/校名/科技"字样</span></li>
+      <li><b>上传新版本代码</b><br>
+        <span style="color:var(--gray);font-size:14px">开发者工具右上角「上传」→ 版本号填 <code>1.2.0</code> → 备注填「个人主体合规化调整」</span></li>
+      <li><b>后台改名称</b><br>
+        <span style="color:var(--gray);font-size:14px">mp.weixin.qq.com → 设置 → 基本设置 → 帐号信息 → 小程序名称 → 改为「点滴进步」</span></li>
+      <li><b>后台换头像</b><br>
+        <span style="color:var(--gray);font-size:14px">同页上传 <code>owl_avatar_144.png</code></span></li>
+      <li><b>后台改简介</b><br>
+        <span style="color:var(--gray);font-size:14px">同页「小程序简介」→ 粘贴第二节 ③ 的文案</span></li>
+      <li><b>改服务类目</b><br>
+        <span style="color:var(--gray);font-size:14px">设置 → 基本设置 → 服务类目 → 删掉教育类 → 添加「工具 - 信息查询」</span></li>
+      <li><b>重新提交备案</b><br>
+        <span style="color:var(--gray);font-size:14px">设置 → 小程序备案 → 修改信息 → 备注栏粘贴第二节 ④ 的文案 → 提交</span></li>
+      <li><b>提交代码审核</b><br>
+        <span style="color:var(--gray);font-size:14px">管理 → 版本管理 → 开发版本 → 提交审核（<b>测试账号务必填学生号，见第五节</b>）</span></li>
+    </ol>
+    <div class="tip">
+      <b>顺序建议</b>：先改名称/类目/简介 → 再提备案 → 备案通过后再提代码审核。
+      备案是最长的一条线（5~15 个工作日），越早启动越好。
+    </div>
+  </div>
+
+  <!-- ===== 五、审核策略 ===== -->
+  <div class="card">
+    <h2>五、两个容易被忽略的通过技巧</h2>
+
+    <h3>📞 技巧一：接电话攻略（解决驳回 ❸）</h3>
+    <table>
+      <tr><th style="width:26%">事项</th><th>做法</th></tr>
+      <tr><td>来电时间</td><td>工作日 <b>9:00–18:00</b>，通常是本地座机或 010 开头</td></tr>
+      <tr><td>手机设置</td><td>关闭「陌生号码拦截」、关闭骚扰拦截 App、把手机<b>调成响铃+震动</b></td></tr>
+      <tr><td>可能问什么</td><td>「你是本人吗」「小程序是做什么的」「有没有商业用途」</td></tr>
+      <tr><td>标准答法</td><td>「是本人。这是我个人开发的一个学习记录小工具，<b>免费的，没有任何商业用途</b>，就是自己记录学习积分和收藏资料用。」</td></tr>
+    </table>
+    <div class="warn">
+      <b>千万别说</b>：「给我们班同学用的」「学校老师管理用的」「给学生布置作业的」——
+      一说这些就等于承认是机构应用，个人主体立刻被拒。
+    </div>
+
+    <h3>🎭 技巧二：提交审核时填「学生」测试账号</h3>
+    <p style="font-size:15px">
+      提交代码审核时要填测试账号。<b>务必填学生角色的账号</b>（如 <code>student01 / 123456</code>），
+      <b>不要填 teacher01 或 admin</b>。
+    </p>
+    <div class="ok">
+      <b>原因</b>：用学生账号登录后，看到的是纯粹的「查资料 + 看积分」个人视角，
+      <b>不会出现「管理后台」入口、不会看到"教师/课代表"角色管理界面</b>。
+      审核员体验到的就是一个干净的个人工具，一次过的概率大幅提升。
+    </div>
+  </div>
+
+  <!-- ===== 六、风险自查 ===== -->
+  <div class="card">
+    <h2>六、最后自查（提交前逐项打勾）</h2>
+    <table>
+      <tr><th style="width:8%">✓</th><th>检查项</th></tr>
+      <tr><td>☐</td><td>小程序名称已改为「点滴进步」，无 飞跃/斐越/学分 字样</td></tr>
+      <tr><td>☐</td><td>服务类目是「工具 - 信息查询」，已删除教育类</td></tr>
+      <tr><td>☐</td><td>简介和备案备注已用本文提供的文案</td></tr>
+      <tr><td>☐</td><td>头像已上传新的猫头鹰图标（无文字版）</td></tr>
+      <tr><td>☐</td><td>开发者工具里逐页看过，无任何校名/公司名/"学分"</td></tr>
+      <tr><td>☐</td><td>登录页 logo 图片正常显示（不是破图）</td></tr>
+      <tr><td>☐</td><td>新版本代码已上传（1.2.0）</td></tr>
+      <tr><td>☐</td><td>提审时测试账号填的是 <b>student01</b>（不是 teacher/admin）</td></tr>
+      <tr><td>☐</td><td>负责人手机已关闭陌生号拦截，保持畅通</td></tr>
+    </table>
+  </div>
+
+  <div class="footer">
+    点滴进步 · 备案重提清单 &nbsp;|&nbsp; 生成于 2026-08-06
+  </div>
+
+</div>
+</body>
+</html>

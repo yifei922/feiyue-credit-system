@@ -40,7 +40,7 @@
           <picker mode="selector" range="{{types}}" bindchange="onType"><view class="picker">{{typeLabel[form.type]}}</view></picker>
         </view>
         <view class="form-item"><text class="fl">链接*（图文/文档/视频/PDF 的网址）</text><input class="fi" value="{{form.url}}" data-key="url" bindinput="onField" placeholder="https://…" /></view>
-        <view class="form-item"><text class="fl">来源</text><input class="fi" value="{{form.source}}" data-key="source" bindinput="onField" placeholder="如：老师课件" /></view>
+        <view class="form-item"><text class="fl">来源</text><input class="fi" value="{{form.source}}" data-key="source" bindinput="onField" placeholder="如：课堂笔记" /></view>
         <view class="form-item"><text class="fl">简介</text><textarea class="fi ta" value="{{form.description}}" data-key="description" bindinput="onField" placeholder="选填" /></view>
       </scroll-view>
       <view class="sheet-ops">

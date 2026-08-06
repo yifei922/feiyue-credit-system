@@ -1,11 +1,11 @@
 <view class="container">
   <view wx:if="{{loading}}" class="muted center">加载中…</view>
-  <view wx:elif="{{list.length === 0}}" class="muted center">暂无学分流水</view>
+  <view wx:elif="{{list.length === 0}}" class="muted center">暂无积分流水</view>
   <view wx:else class="list">
     <view wx:for="{{list}}" wx:key="id" class="item card">
       <view class="row">
         <view>
-          <view class="item-title">{{item.taskTitle || item.type || '学分变动'}}</view>
+          <view class="item-title">{{item.taskTitle || item.type || '积分变动'}}</view>
           <view class="muted">{{item.created_at}}</view>
         </view>
         <view class="spacer"></view>

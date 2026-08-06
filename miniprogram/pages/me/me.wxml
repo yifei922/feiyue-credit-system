@@ -12,7 +12,7 @@
   <view class="row card">
     <view class="row-item" bindtap="goCredits">
       <view class="big-num">{{credits.length || '--'}}</view>
-      <view class="muted">学分明细</view>
+      <view class="muted">积分明细</view>
     </view>
     <view class="row-item">
       <view class="big-num">{{points}}</view>
@@ -42,7 +42,7 @@
     </view>
     <view class="menu-item" bindtap="goCredits">
       <view class="ico" style="background:linear-gradient(135deg,#7C5CFF,#4D9BFF)">📊</view>
-      <text>学分流水</text>
+      <text>积分流水</text>
       <text class="muted spacer">›</text>
     </view>
     <view class="menu-item" bindtap="onLogout">
@@ -52,5 +52,5 @@
     </view>
   </view>
 
-  <view class="footer muted">斐越科技 出品 · 班级学分管理小程序 v1.1</view>
+  <view class="footer muted">点滴进步 v1.1 · 个人开发者作品</view>
 </view>

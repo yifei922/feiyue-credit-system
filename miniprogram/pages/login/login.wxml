@@ -3,12 +3,12 @@
     <view class="brand">
       <image src="/assets/logo.jpg" class="logo-img" mode="aspectFit"></image>
       <view>
-        <view class="title">洛一高附中八（十）班</view>
-        <view class="subtitle">班级作业学分管理</view>
+        <view class="title">点滴进步</view>
+        <view class="subtitle">记录每天的小进步</view>
       </view>
     </view>
 
-    <view class="powered-by">斐越科技 出品</view>
+    <view class="powered-by">个人开发者作品</view>
 
     <!-- 微信一键登录 -->
     <button class="btn-primary wx-login" bindtap="onWxLogin" loading="{{loading}}">

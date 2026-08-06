@@ -26,7 +26,7 @@ Page({
       } else {
         wx.showModal({
           title: '欢迎！',
-          content: '首次微信登录，请在「我的」页面绑定学号以关联班级数据。',
+          content: '首次登录，请在「我的」页面完善个人资料。',
           showCancel: false,
           success: () => wx.switchTab({ url: '/pages/index/index' }),
         });

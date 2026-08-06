@@ -17,7 +17,7 @@
   </view>
 
   <view class="card hint">
-    填写真实姓名和学号，方便老师在后台识别和管理你的账号。资料仅老师和管理员可见。
+    完善个人资料，方便识别你的记录。资料仅本人和管理员可见。
   </view>
 
   <button class="save-btn" bindtap="onSave" loading="{{saving}}" disabled="{{saving}}">保存修改</button>

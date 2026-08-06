@@ -14,7 +14,7 @@
       <view class="task-title">{{item.title}}</view>
       <view class="task-meta">
         <text class="tag">{{item.subjectName || '其他'}}</text>
-        <text class="tag tag-red">+{{item.creditValue}} 学分</text>
+        <text class="tag tag-red">+{{item.creditValue}} 积分</text>
         <text wx:if="{{item.deadline}}" class="muted">⏰ 截止：{{item.deadline}}</text>
       </view>
       <view class="task-action">
@@ -30,7 +30,7 @@
       <view class="task-title">{{item.title}}</view>
       <view class="task-meta">
         <text class="tag">{{item.subjectName || '其他'}}</text>
-        <text class="tag tag-green">+{{item.creditValue}} 学分 ✓</text>
+        <text class="tag tag-green">+{{item.creditValue}} 积分 ✓</text>
       </view>
     </view>
   </block>

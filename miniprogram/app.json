@@ -18,7 +18,7 @@
   "window": {
     "backgroundTextStyle": "light",
     "navigationBarBackgroundColor": "#7C5CFF",
-    "navigationBarTitleText": "洛一高附中八（十）班",
+    "navigationBarTitleText": "点滴进步",
     "navigationBarTextStyle": "white",
     "backgroundColor": "#f4f5fb",
     "enablePullDownRefresh": false
@@ -32,7 +32,7 @@
       { "pagePath": "pages/index/index",  "text": "首页",   "iconPath": "assets/tab/home.png",  "selectedIconPath": "assets/tab/home_a.png" },
       { "pagePath": "pages/study/study",  "text": "学习",   "iconPath": "assets/tab/study.png", "selectedIconPath": "assets/tab/study_a.png" },
       { "pagePath": "pages/tasks/tasks",  "text": "作业",   "iconPath": "assets/tab/tasks.png", "selectedIconPath": "assets/tab/tasks_a.png" },
-      { "pagePath": "pages/feed/feed",    "text": "班级圈", "iconPath": "assets/tab/feed.png",  "selectedIconPath": "assets/tab/feed_a.png" },
+      { "pagePath": "pages/feed/feed",    "text": "成长圈", "iconPath": "assets/tab/feed.png",  "selectedIconPath": "assets/tab/feed_a.png" },
       { "pagePath": "pages/me/me",        "text": "我的",   "iconPath": "assets/tab/me.png",    "selectedIconPath": "assets/tab/me_a.png" }
     ]
   },

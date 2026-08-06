@@ -5,7 +5,7 @@ Page({
     user: null,
     points: 0,
     totalEarned: 0,
-    credits: [],   // 学分明细（暂拉空数组，等学分接口）
+    credits: [],   // 积分明细（暂拉空数组，等积分接口）
     canManage: false,  // 教师/管理员/课代表可见「管理后台」
   },
   onShow() {

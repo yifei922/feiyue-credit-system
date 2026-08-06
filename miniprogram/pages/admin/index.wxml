@@ -1,7 +1,7 @@
 <view class="container">
   <view class="banner">
     <view class="role-badge">{{roleLabel}}后台</view>
-    <view class="banner-sub">洛一高附中八（十）班 · 学分与资料管理</view>
+    <view class="banner-sub">管理中心</view>
   </view>
 
   <view class="stats card">
@@ -24,7 +24,7 @@
     </view>
     <view class="menu-item" bindtap="goCredits">
       <view class="ico" style="background:linear-gradient(135deg,#FF7EB3,#FF758C)">📊</view>
-      <view class="mi-text"><view class="mi-title">学分流水</view><view class="mi-sub">查看全员学分记录</view></view>
+      <view class="mi-text"><view class="mi-title">积分流水</view><view class="mi-sub">查看全部积分记录</view></view>
       <text class="muted">›</text>
     </view>
   </view>

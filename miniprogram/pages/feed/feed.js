@@ -1,4 +1,4 @@
-// pages/feed/feed.js - Tab4 班级圈（社交动态信息流）
+// pages/feed/feed.js - Tab4 成长圈（社交动态信息流）
 const app = getApp();
 Page({
   data: { list: [], loading: true, page: 1, hasMore: true },

@@ -1,4 +1,4 @@
-// pages/credits/credits.js - 学分明细
+// pages/credits/credits.js - 积分明细
 const app = getApp();
 Page({
   data: { list: [], loading: true },
