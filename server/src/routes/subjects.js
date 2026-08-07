@@ -1,25 +1,30 @@
 const express = require('express');
 const router = express.Router();
 const { db } = require('../db');
-const { ok, fail } = require('../util');
+const { ok, fail, paginate, setPageHeaders } = require('../util');
 const authMiddleware = require('../middleware/auth');
 const { requireRole, getManagedSubjectIds } = require('../middleware/rbac');
 const { recordLog } = require('../services/log');
 
-// 列表
+// 列表（分页；主体返回数组，分页元信息放响应头，网页端/小程序端均兼容）
 router.get('/', authMiddleware, async (req, res) => {
-  let rows;
+  const { page, pageSize, offset } = paginate(req.query);
+  let total, rows;
   if (req.user.role === 'REP') {
     const ids = await getManagedSubjectIds(req.user);
+    total = ids.length;
     if (ids.length === 0) rows = [];
-    else rows = await db.prepare(`SELECT * FROM subject WHERE id IN (${ids.map(() => '?').join(',')})`).all(...ids);
+    else rows = await db.prepare(`SELECT * FROM subject WHERE id IN (${ids.map(() => '?').join(',')}) ORDER BY id LIMIT ? OFFSET ?`).all(...ids, pageSize, offset);
   } else {
-    rows = await db.prepare('SELECT * FROM subject ORDER BY id').all();
+    total = (await db.prepare('SELECT COUNT(*) AS c FROM subject').get()).c;
+    rows = await db.prepare('SELECT * FROM subject ORDER BY id LIMIT ? OFFSET ?').all(pageSize, offset);
   }
   const result = await Promise.all(rows.map(async s => {
     const reps = await db.prepare(`SELECT u.id, u.name FROM subject_rep sr JOIN sys_user u ON sr.user_id=u.id WHERE sr.subject_id=?`).all(s.id);
     return { id: s.id, name: s.name, classId: s.class_id, teacherId: s.teacher_id, repUserIds: await Promise.all(reps.map(async r => r.id)), repNames: await Promise.all(reps.map(async r => r.name)) };
   }));
+  const hasMore = offset + rows.length < total;
+  setPageHeaders(res, { total, page, pageSize, hasMore });
   ok(res, result);
 });
 

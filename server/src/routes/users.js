@@ -2,22 +2,26 @@ const express = require('express');
 const router = express.Router();
 const { db } = require('../db');
 const { hashPassword } = require('../auth');
-const { ok, fail } = require('../util');
+const { ok, fail, paginate, setPageHeaders } = require('../util');
 const { requireRole } = require('../middleware/rbac');
 const { recordLog } = require('../services/log');
 
 const ROLE_LABEL = { ADMIN: '管理员', TEACHER: '老师', REP: '课代表', STUDENT: '学生' };
 
-// 账号列表（管理员/老师）：含角色、姓名、学号、负责科目
+// 账号列表（管理员/老师）：含角色、姓名、学号、负责科目（分页；数组主体 + 响应头元信息）
 router.get('/', requireRole('ADMIN', 'TEACHER'), async (req, res) => {
+  const { page, pageSize, offset } = paginate(req.query);
   const role = req.query.role;
-  let sql = `SELECT u.id, u.username, u.name, u.role, u.student_id AS studentId, s.student_no AS studentNo
-             FROM sys_user u LEFT JOIN student s ON u.student_id=s.id WHERE 1=1`;
   const params = [];
-  if (role) { sql += ' AND u.role=?'; params.push(role); }
-  sql += " ORDER BY CASE u.role WHEN 'ADMIN' THEN 0 WHEN 'TEACHER' THEN 1 WHEN 'REP' THEN 2 ELSE 3 END, u.id";
-  const rows = await db.prepare(sql).all(...params);
-  const result = await Promise.all(rows.map(async (u) => {
+  let where = '1=1';
+  if (role) { where += ' AND u.role=?'; params.push(role); }
+  const total = (await db.prepare(`SELECT COUNT(*) AS c FROM sys_user u WHERE ${where}`).get(...params)).c;
+  const sql = `SELECT u.id, u.username, u.name, u.role, u.student_id AS studentId, s.student_no AS studentNo
+             FROM sys_user u LEFT JOIN student s ON u.student_id=s.id WHERE ${where}
+             ORDER BY CASE u.role WHEN 'ADMIN' THEN 0 WHEN 'TEACHER' THEN 1 WHEN 'REP' THEN 2 ELSE 3 END, u.id
+             LIMIT ? OFFSET ?`;
+  const rows = await db.prepare(sql).all(...params, pageSize, offset);
+  const list = await Promise.all(rows.map(async (u) => {
     const subs = await db.prepare(
       `SELECT sub.id, sub.name FROM subject_rep sr JOIN subject sub ON sr.subject_id=sub.id WHERE sr.user_id=?`
     ).all(u.id);
@@ -27,7 +31,9 @@ router.get('/', requireRole('ADMIN', 'TEACHER'), async (req, res) => {
       subjectIds: await Promise.all(subs.map(async (s) => s.id)), subjectNames: await Promise.all(subs.map(async (s) => s.name))
     };
   }));
-  ok(res, result);
+  const hasMore = offset + rows.length < total;
+  setPageHeaders(res, { total, page, pageSize, hasMore });
+  ok(res, list);
 });
 
 // 重置/设定密码（管理员/老师/课代表）

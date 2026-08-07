@@ -2,7 +2,7 @@
 const app = getApp();
 Page({
   data: { list: [], loading: true, page: 1, hasMore: true },
-  onShow() { this.load(true); },
+  onShow() { app.trackPage('pages/feed/feed'); this.load(true); },
   async load(reset = false) {
     if (!app.globalData.token) return;
     if (reset) { this.setData({ page: 1, list: [], hasMore: true }); }

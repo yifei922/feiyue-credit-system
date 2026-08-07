@@ -21,8 +21,8 @@
 .form-title { font-size: 32rpx; font-weight: 600; margin-bottom: 24rpx; }
 .form-group { margin-bottom: 24rpx; }
 .form-label { font-size: 26rpx; color: #666; margin-bottom: 10rpx; display: block; }
-.form-input { width: 100%; border: 2rpx solid #e8e9f0; border-radius: 12rpx; padding: 18rpx 20rpx; font-size: 28rpx; box-sizing: border-box; }
-.form-textarea { width: 100%; border: 2rpx solid #e8e9f0; border-radius: 12rpx; padding: 18rpx 20rpx; font-size: 28rpx; min-height: 180rpx; box-sizing: border-box; }
+.form-input { width: 100%; height: 80rpx; line-height: 1.4; border: 2rpx solid #e8e9f0; border-radius: 12rpx; padding: 0 20rpx; font-size: 28rpx; box-sizing: border-box; }
+.form-textarea { width: 100%; border: 2rpx solid #e8e9f0; border-radius: 12rpx; padding: 18rpx 20rpx; font-size: 28rpx; min-height: 180rpx; line-height: 1.6; box-sizing: border-box; }
 .btn-row { display: flex; gap: 20rpx; margin-top: 32rpx; }
 .btn-primary { flex: 1; background: #7C5CFF; color: #fff; border: none; border-radius: 12rpx; padding: 22rpx 0; font-size: 30rpx; }
 .btn-cancel { flex: 1; background: #f0f0f0; color: #666; border: none; border-radius: 12rpx; padding: 22rpx 0; font-size: 30rpx; }

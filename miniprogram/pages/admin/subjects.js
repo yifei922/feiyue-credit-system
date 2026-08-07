@@ -1,6 +1,6 @@
-// pages/admin/subjects.js - 科目管理（教师/管理员）
+// pages/admin/subjects.js - 科目管理 + 课代表任命
+// 对标网页端 SystemSettings → 课代表任命 Tab
 const app = getApp();
-
 Page({
   data: {
     subjects: [],
@@ -8,16 +8,39 @@ Page({
     editingId: null,
     form: { name: '' },
     loading: false,
+    error: '',
+    // 课代表弹窗
+    showRepModal: false,
+    repTarget: null,
+    repCandidates: [],
+    selectedRepId: null,
+    savingRep: false,
   },
 
-  onShow() { this.loadSubjects(); },
+  onShow() { this.loadSubjects(); this.loadRepCandidates(); },
   onPullDownRefresh() { this.loadSubjects().then(() => wx.stopPullDownRefresh()); },
+  onRetry() { this.loadSubjects(); },
 
   async loadSubjects() {
+    this.setData({ loading: true, error: '' });
     try {
-      const r = await app.apiGet('/api/subjects');
-      this.setData({ subjects: r.data || [] });
-    } catch (e) { console.error('loadSubjects', e); }
+      const r = await app.apiGet('/api/subjects', { pageSize: 200 });
+      if (r.code !== 0) throw new Error(r.message || '加载失败');
+      // 后端 /api/subjects 返回数组（分页元信息在响应头）
+      this.setData({ subjects: Array.isArray(r.data) ? r.data : (r.data.list || []) });
+    } catch (e) {
+      this.setData({ error: e.message || '加载失败，请重试' });
+    } finally {
+      this.setData({ loading: false });
+    }
+  },
+
+  async loadRepCandidates() {
+    try {
+      const r = await app.apiGet('/api/users/', { role: 'REP', pageSize: 200 });
+      const arr = Array.isArray(r.data) ? r.data : (r.data && r.data.list) || [];
+      this.setData({ repCandidates: arr.filter((u) => u.role === 'REP') });
+    } catch (_) {}
   },
 
   onCreate() { this.setData({ showForm: true, editingId: null, form: { name: '' } }); },
@@ -50,12 +73,51 @@ Page({
 
   async onDelete(e) {
     const id = e.currentTarget.dataset.id;
-    const res = await new Promise(r => wx.showModal({ title: '确认删除', content: '删除后关联的任务和学分记录可能异常。确定？', success: r }));
+    const res = await new Promise(r => wx.showModal({ title: '确认删除', content: '删除后关联的任务和积分记录可能异常。确定？', success: r }));
     if (!res.confirm) return;
     try {
       await app.apiDelete('/api/subjects/' + id);
       wx.showToast({ title: '已删除', icon: 'success' });
       this.loadSubjects();
     } catch (e) { wx.showToast({ title: e.message, icon: 'none' }); }
+  },
+
+  // ---- 课代表任命（新增）----
+  onShowRepModal(e) {
+    const s = e.currentTarget.dataset.s;
+    // 找到当前已选的课代表（从 rep_names 反推不太可靠，直接让用户重选）
+    this.setData({
+      showRepModal: true,
+      repTarget: s,
+      selectedRepId: null,
+    });
+  },
+
+  onCloseRepModal() { this.setData({ showRepModal: false }); },
+
+  onPickRep(e) { this.setData({ selectedRepId: e.currentTarget.dataset.id }); },
+
+  async onSaveRep() {
+    if (!this.data.selectedRepId) return wx.showToast({ title: '请选择课代表', icon: 'none' });
+    this.setData({ savingRep: true });
+    try {
+      // 后端接口：POST /api/subjects/:id/reps  { userIds:[...] }（subject_rep 关联表，可多可单）
+      await app.apiPost('/api/subjects/' + this.data.repTarget.id + '/reps', {
+        userIds: [this.data.selectedRepId],
+      });
+      wx.showToast({ title: '已设置课代表', icon: 'success' });
+      this.setData({ showRepModal: false });
+      this.loadSubjects(); // 刷新以显示新课代表
+    } catch (e) {
+      console.warn('setReps failed:', e.message);
+      wx.showToast({ title: e.message || '设置失败', icon: 'none' });
+    } finally {
+      this.setData({ savingRep: false });
+    }
+  },
+
+  // 列表里直接显示当前课代表姓名
+  repNamesOf(s) {
+    return (s.repNames && s.repNames.length) ? s.repNames.join('、') : '未设置';
   },
 });

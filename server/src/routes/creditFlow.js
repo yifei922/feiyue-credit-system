@@ -51,8 +51,9 @@ router.post('/adjust', requireRole('ADMIN', 'TEACHER', 'REP'), async (req, res) 
 
   await db.prepare('INSERT INTO credit_flow(student_id, task_id, change_amount, flow_type, reason) VALUES(?,?,?,?,?)')
     .run(studentId, null, amount, 'MANUAL', reason);
-  await db.prepare('UPDATE student SET total_credits = (SELECT COALESCE(SUM(change_amount),0) FROM credit_flow WHERE student_id=?) WHERE id=?')
-    .run(studentId, studentId);
+  // 增量回写（原子单条 SQL + amount），不再依赖全量 SUM 重算，避免并发覆盖
+  await db.prepare('UPDATE student SET total_credits = total_credits + ? WHERE id=?')
+    .run(amount, studentId);
   const total = await (await db.prepare('SELECT total_credits AS t FROM student WHERE id=?').get(studentId)).t;
 
   recordLog(req.user, 'UPDATE', 'credit_flow', studentId, null, { amount, reason, total });

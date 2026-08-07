@@ -6,11 +6,16 @@ const { requireRole, canManageSubject, getManagedSubjectIds } = require('../midd
 const { calcCredit } = require('../services/credit');
 const { recordLog } = require('../services/log');
 
-// 写入单条完成记录 + 流水 + 重算总积分（被 /register 与 /import 复用，保证幂等）
+// 写入单条完成记录 + 流水 + 增量回写总积分（被 /register 与 /import 复用，保证幂等）
+// 并发安全：不再「全量 SUM 后整体覆盖」，而是用单条原子 SQL 按本次差值 +/- 回写，
+// 避免多位老师/课代表同时登记同一批学生时出现的 read-modify-write 丢失更新竞态。
 async function registerCompletion(task, sid, status, operator) {
   const { credit, flowType } = calcCredit(task.credit_value, task.type, status);
   const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
   const isDone = status === 'DONE_ONTIME' || status === 'DONE_OVERDUE';
+  // 先取该 (task, student) 旧积分（用于计算本次净差值）
+  const oldRow = await db.prepare('SELECT COALESCE(SUM(change_amount),0) AS s FROM credit_flow WHERE task_id=? AND student_id=?').get(task.id, sid);
+  const oldCredit = oldRow ? oldRow.s : 0;
   await db.prepare('DELETE FROM completion_record WHERE task_id=? AND student_id=?').run(task.id, sid);
   await db.prepare('DELETE FROM credit_flow WHERE task_id=? AND student_id=?').run(task.id, sid);
   const info = await db.prepare('INSERT INTO completion_record(task_id, student_id, status, completion_time, credit_earned, operator_id) VALUES(?,?,?,?,?,?)')
@@ -20,8 +25,11 @@ async function registerCompletion(task, sid, status, operator) {
     await db.prepare('INSERT INTO credit_flow(student_id, task_id, change_amount, flow_type, reason) VALUES(?,?,?,?,?)')
       .run(sid, task.id, credit, flowType, task.title);
   }
-  await db.prepare('UPDATE student SET total_credits = (SELECT COALESCE(SUM(change_amount),0) FROM credit_flow WHERE student_id=?) WHERE id=?')
-    .run(sid, sid);
+  // 增量回写：仅 +/- 本次差值（原子单条 SQL），并发无覆盖风险
+  const delta = credit - oldCredit;
+  if (delta !== 0) {
+    await db.prepare('UPDATE student SET total_credits = total_credits + ? WHERE id=?').run(delta, sid);
+  }
   return { credit, recId };
 }
 

@@ -5,11 +5,11 @@
         <view class="sub-info">
           <view class="sub-name">{{item.name}}</view>
           <view class="sub-meta">
-            课代表：{{item.rep_names || '未指定'}}
-            <text wx:if="{{item.student_count !== undefined}}"> · {{item.student_count || 0}} 人</text>
+            课代表：<text class="rep-name {{item.repNames && item.repNames.length ? '' : 'no-rep'}}">{{item.repNames && item.repNames.length ? item.repNames.join('、') : '未指定'}}</text>
           </view>
         </view>
         <view class="sub-actions">
+          <view class="action-btn rep" data-s="{{item}}" bindtap="onShowRepModal">设课代表</view>
           <view class="action-btn" bindtap="onEdit" data-s="{{item}}">编辑</view>
           <view class="action-btn danger" bindtap="onDelete" data-id="{{item.id}}">删除</view>
         </view>
@@ -28,6 +28,28 @@
     <view class="btn-row">
       <button class="btn-cancel" bindtap="onCancel">取消</button>
       <button class="btn-primary" loading="{{loading}}" bindtap="onSave">{{editingId?'保存':'添加'}}</button>
+    </view>
+  </view>
+
+  <!-- 设置课代表弹窗 -->
+  <view wx:if="{{showRepModal}}" class="modal-mask" bindtap="onCloseRepModal">
+    <view class="modal-card" catchtap="">
+      <view class="modal-title">设置「{{repTarget.name}}」课代表</view>
+      <view class="form-group">
+        <text class="form-label">选择课代表（从 REP 角色账号中选）</text>
+        <view wx:if="{{repCandidates.length}}" class="rep-list">
+          <view wx:for="{{repCandidates}}" wx:key="id"
+                class="rep-candidate {{selectedRepId===item.id?'selected':''}}"
+                data-id="{{item.id}}" bindtap="onPickRep">
+            {{item.name}}（{{item.username}}）
+          </view>
+        </view>
+        <view wx:else class="empty-hint">暂无课代表角色账号，请先在「账号管理」中将学生角色改为课代表</view>
+      </view>
+      <view class="btn-row">
+        <button class="btn-cancel" bindtap="onCloseRepModal">取消</button>
+        <button class="btn-primary" loading="{{savingRep}}" bindtap="onSaveRep">确定</button>
+      </view>
     </view>
   </view>
 

@@ -9,7 +9,7 @@ Page({
     list: [],
     loading: true,
   },
-  onShow() { this.load(); },
+  onShow() { app.trackPage('pages/study/study'); this.load(); },
   onGradeChange(e) { this.setData({ grade: e.currentTarget.dataset.g }); this.load(); },
   onSubjectChange(e) { this.setData({ subject: e.currentTarget.dataset.s }); this.load(); },
   onSearchInput(e) { this.setData({ keyword: e.detail.value }); },

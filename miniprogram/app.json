@@ -17,7 +17,11 @@
     "pages/admin/tasks",
     "pages/admin/students",
     "pages/admin/subjects",
-    "pages/admin/credits-adjust"
+    "pages/admin/credits-adjust",
+    "pages/admin/alerts",
+    "pages/admin/operate-log",
+    "pages/me/change-pwd",
+    "pages/debug/telemetry"
   ],
   "window": {
     "backgroundTextStyle": "light",

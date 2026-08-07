@@ -9,6 +9,7 @@ Page({
     canManage: false,
   },
   onShow() {
+    app.trackPage('pages/me/me');
     if (!app.globalData.token) {
       wx.reLaunch({ url: '/pages/login/login' });
       return;

@@ -12,6 +12,7 @@ Page({
   },
 
   onShow() {
+    app.trackPage('pages/index/index');
     if (!app.globalData.token) {
       wx.switchTab({ url: '/pages/me/me' });
       return;

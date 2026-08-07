@@ -8,7 +8,7 @@ Page({
     overdue: [],
     loading: true,
   },
-  onShow() { this.load(); },
+  onShow() { app.trackPage('pages/tasks/tasks'); this.load(); },
   switchTab(e) {
     this.setData({ tab: e.currentTarget.dataset.t });
   },

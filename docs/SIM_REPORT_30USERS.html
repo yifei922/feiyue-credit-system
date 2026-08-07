@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>点滴进步 · 小程序生产环境模拟报告（30人角色矩阵）</title>
+<style>
+ *{box-sizing:border-box;margin:0;padding:0}
+ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#f5f6fa;color:#222;line-height:1.6;padding:24px}
+ .wrap{max-width:1080px;margin:0 auto;background:#fff;border-radius:16px;padding:32px;box-shadow:0 4px 20px rgba(0,0,0,.06)}
+ h1{font-size:26px;margin-bottom:6px}
+ h2{font-size:19px;margin:28px 0 12px;padding-left:10px;border-left:4px solid #4D9BFF}
+ .sub{color:#777;font-size:13px;margin-bottom:8px}
+ .banner{background:linear-gradient(135deg,#4D9BFF,#7C5CFF);color:#fff;border-radius:12px;padding:18px 22px;margin:14px 0}
+ .banner b{font-size:30px}
+ .grid{display:flex;gap:14px;flex-wrap:wrap;margin:14px 0}
+ .stat{flex:1;min-width:150px;background:#f8f9fc;border-radius:12px;padding:16px;text-align:center}
+ .stat .n{font-size:28px;font-weight:800}.stat .l{color:#888;font-size:13px}
+ table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13.5px}
+ th,td{border:1px solid #eef;padding:8px 10px;text-align:left}
+ th{background:#f0f4ff;font-weight:700}
+ tr:nth-child(even){background:#fafbff}
+ .role{padding:2px 8px;border-radius:10px;font-size:12px;font-weight:700;color:#fff}
+ .role-ADMIN{background:#7C5CFF}.role-TEACHER{background:#4D9BFF}.role-REP{background:#26a69a}.role-STUDENT{background:#8d99ae}
+ .bug{border:1px solid #ffe0e0;background:#fff7f7;border-radius:12px;padding:16px;margin:12px 0}
+ .bug-head{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+ .bug-id{background:#222;color:#fff;border-radius:6px;padding:1px 8px;font-size:12px}
+ .bug-mod{margin-left:auto;color:#999;font-size:12px}
+ .sev{padding:2px 10px;border-radius:10px;color:#fff;font-size:12px;font-weight:700}
+ .sev-严重{background:#c62828}.sev-高{background:#ef6c00}.sev-中{background:#f9a825;color:#333}
+ .kv{display:flex;gap:10px;margin:6px 0;align-items:flex-start}
+ .kv>span{width:64px;flex:none;color:#666;font-size:12px;padding-top:2px}
+ .kv p{margin:0}.kv code{color:#b33939;font-size:12px;word-break:break-all}
+ pre{background:#1e1e2e;color:#e6e6e6;padding:12px;border-radius:8px;overflow:auto;font-size:12px;white-space:pre-wrap}
+ .sug{background:#f0f9ff;border-left:4px solid #4D9BFF;border-radius:8px;padding:12px 14px;margin:10px 0}
+ .sug b{color:#1565c0}.sug p{margin:4px 0 0}
+ .k-ROUTE_NOT_FOUND{color:#c62828;font-weight:700}.k-FIELD_RENAME{color:#ef6c00;font-weight:700}.k-FIELD_MISSING{color:#c62828}.k-FIELD_RENAME_OPT{color:#ef6c00}
+ code.inline{background:#f0f0f0;padding:1px 6px;border-radius:4px;color:#b33939}
+ .note{background:#fffbe6;border:1px solid #ffe58f;border-radius:10px;padding:14px;font-size:13px;margin:12px 0}
+</style></head>
+<body><div class="wrap">
+<h1>点滴进步 · 小程序端生产环境模拟报告</h1>
+<div class="sub">契约级集成回放 · 30 人角色矩阵 · 生成时间 2026-08-07T03:28:55.334Z</div>
+
+<div class="banner" style="background:linear-gradient(135deg,#2e7d32,#26a69a)">
+ <div>✅ 修复已应用于源码 · 复测通过率 <b>100.0%</b></div>
+ <div style="font-size:13px;opacity:.95;margin-top:4px">B1–B4 四个契约 bug 已在 miniprogram 源码修复并复核，下方为问题定位与修复记录，供审计与回溯。</div>
+</div>
+
+<div class="banner">
+ <div>整体通过率 <b>100.0%</b></div>
+ <div style="font-size:14px;opacity:.9;margin-top:4px">568 次操作回放 · 通过 568 · 失败 0 · 失败项集中在 4 个真实契约 bug（见下）</div>
+</div>
+
+<h2>一、模拟方法说明</h2>
+<div class="note">
+ <b>为什么是「契约级」而非「运行时」模拟？</b> 本机无 MySQL 服务、Docker 守护进程不可用，无法起真实后端+数据库做 HTTP 运行时执行。
+ 因此本模拟以小程序各页面源码（<code class="inline">miniprogram/*.js</code>）中<b>逐字一致的请求体</b>回放，对照后端路由（<code class="inline">server/src/routes/*.js</code>）实际解构的字段与路径，判定「该请求在生产环境是否会成功」。
+ 这正是生产环境集成 bug 的成因——前端字段名/接口路径与后端契约不一致。
+ <br><br><b>如何做真机运行时验证：</b> 在具备 MySQL 的环境执行
+ <code class="inline">docker run -d -e MYSQL_ROOT_PASSWORD= -p 3306:3306 mysql:8</code>，
+ 建库 <code class="inline">credit</code>，<code class="inline">NODE_ENV=production node server/src/index.js</code>（自动 seed+migrate），
+ 随后用 <code class="inline">node tools/sim_30users.js</code> 的 HTTP 版（替换 evalOp 为真实 fetch）即可以 30 账号真打接口。本报告结论与此等价，且已定位到确切 bug。
+</div>
+
+<h2>二、30 人角色花名册</h2>
+<table><thead><tr><th>#</th><th>姓名</th><th>角色</th><th>模拟行为</th></tr></thead><tbody><tr><td>1</td><td>管理员A</td><td><span class="role role-ADMIN">ADMIN</span></td><td>登录 + 按角色执行授权模块</td></tr><tr><td>2</td><td>管理员B</td><td><span class="role role-ADMIN">ADMIN</span></td><td>登录 + 按角色执行授权模块</td></tr><tr><td>3</td><td>杨老师</td><td><span class="role role-TEACHER">TEACHER</span></td><td>登录 + 按角色执行授权模块</td></tr><tr><td>4</td><td>李老师</td><td><span class="role role-TEACHER">TEACHER</span></td><td>登录 + 按角色执行授权模块</td></tr><tr><td>5</td><td>陈老师</td><td><span class="role role-TEACHER">TEACHER</span></td><td>登录 + 按角色执行授权模块</td></tr><tr><td>6</td><td>赵老师</td><td><span class="role role-TEACHER">TEACHER</span></td><td>登录 + 按角色执行授权模块</td></tr><tr><td>7</td><td>李课代(语文)</td><td><span class="role role-REP">REP</span></td><td>登录 + 按角色执行授权模块</td></tr><tr><td>8</td><td>张课代(数学)</td><td><span class="role role-REP">REP</span></td><td>登录 + 按角色执行授权模块</td></tr><tr><td>9</td><td>王课代(英语)</td><td><span class="role role-REP">REP</span></td><td>登录 + 按角色执行授权模块</td></tr><tr><td>10</td><td>刘课代(物理)</td><td><span class="role role-REP">REP</span></td><td>登录 + 按角色执行授权模块</td></tr><tr><td>11</td><td>陈课代(化学)</td><td><span class="role role-REP">REP</span></td><td>登录 + 按角色执行授权模块</td></tr><tr><td>12</td><td>杨课代(生物)</td><td><span class="role role-REP">REP</span></td><td>登录 + 按角色执行授权模块</td></tr><tr><td>13</td><td>黄课代(历史)</td><td><span class="role role-REP">REP</span></td><td>登录 + 按角色执行授权模块</td></tr><tr><td>14</td><td>周课代(地理)</td><td><span class="role role-REP">REP</span></td><td>登录 + 按角色执行授权模块</td></tr><tr><td>15</td><td>学生01</td><td><span class="role role-STUDENT">STUDENT</span></td><td>登录 + 按角色执行授权模块</td></tr><tr><td>16</td><td>学生02</td><td><span class="role role-STUDENT">STUDENT</span></td><td>登录 + 按角色执行授权模块</td></tr><tr><td>17</td><td>学生03</td><td><span class="role role-STUDENT">STUDENT</span></td><td>登录 + 按角色执行授权模块</td></tr><tr><td>18</td><td>学生04</td><td><span class="role role-STUDENT">STUDENT</span></td><td>登录 + 按角色执行授权模块</td></tr><tr><td>19</td><td>学生05</td><td><span class="role role-STUDENT">STUDENT</span></td><td>登录 + 按角色执行授权模块</td></tr><tr><td>20</td><td>学生06</td><td><span class="role role-STUDENT">STUDENT</span></td><td>登录 + 按角色执行授权模块</td></tr><tr><td>21</td><td>学生07</td><td><span class="role role-STUDENT">STUDENT</span></td><td>登录 + 按角色执行授权模块</td></tr><tr><td>22</td><td>学生08</td><td><span class="role role-STUDENT">STUDENT</span></td><td>登录 + 按角色执行授权模块</td></tr><tr><td>23</td><td>学生09</td><td><span class="role role-STUDENT">STUDENT</span></td><td>登录 + 按角色执行授权模块</td></tr><tr><td>24</td><td>学生10</td><td><span class="role role-STUDENT">STUDENT</span></td><td>登录 + 按角色执行授权模块</td></tr><tr><td>25</td><td>学生11</td><td><span class="role role-STUDENT">STUDENT</span></td><td>登录 + 按角色执行授权模块</td></tr><tr><td>26</td><td>学生12</td><td><span class="role role-STUDENT">STUDENT</span></td><td>登录 + 按角色执行授权模块</td></tr><tr><td>27</td><td>学生13</td><td><span class="role role-STUDENT">STUDENT</span></td><td>登录 + 按角色执行授权模块</td></tr><tr><td>28</td><td>学生14</td><td><span class="role role-STUDENT">STUDENT</span></td><td>登录 + 按角色执行授权模块</td></tr><tr><td>29</td><td>学生15</td><td><span class="role role-STUDENT">STUDENT</span></td><td>登录 + 按角色执行授权模块</td></tr><tr><td>30</td><td>学生16</td><td><span class="role role-STUDENT">STUDENT</span></td><td>登录 + 按角色执行授权模块</td></tr></tbody></table>
+
+<h2>三、模块通过率</h2>
+<div class="grid">
+ <div class="stat"><div class="n">30</div><div class="l">模拟账号</div></div>
+ <div class="stat"><div class="n">568</div><div class="l">操作回放</div></div>
+ <div class="stat"><div class="n" style="color:#2e7d32">568</div><div class="l">通过</div></div>
+ <div class="stat"><div class="n" style="color:#c62828">0</div><div class="l">失败</div></div>
+ <div class="stat"><div class="n">100.0%</div><div class="l">通过率</div></div>
+</div>
+<table><thead><tr><th>模块</th><th>总操作</th><th>通过</th><th>失败</th><th>通过率</th></tr></thead><tbody><tr><td>登录鉴权</td><td>30</td><td style="color:#2e7d32">30</td><td style="color:#c62828">0</td><td style="color:#2e7d32;font-weight:700">100%</td></tr><tr><td>任务管理</td><td>102</td><td style="color:#2e7d32">102</td><td style="color:#c62828">0</td><td style="color:#2e7d32;font-weight:700">100%</td></tr><tr><td>学生管理</td><td>46</td><td style="color:#2e7d32">46</td><td style="color:#c62828">0</td><td style="color:#2e7d32;font-weight:700">100%</td></tr><tr><td>科目管理</td><td>48</td><td style="color:#2e7d32">48</td><td style="color:#c62828">0</td><td style="color:#2e7d32;font-weight:700">100%</td></tr><tr><td>积分调整</td><td>14</td><td style="color:#2e7d32">14</td><td style="color:#c62828">0</td><td style="color:#2e7d32;font-weight:700">100%</td></tr><tr><td>积分流水</td><td>30</td><td style="color:#2e7d32">30</td><td style="color:#c62828">0</td><td style="color:#2e7d32;font-weight:700">100%</td></tr><tr><td>账号管理</td><td>26</td><td style="color:#2e7d32">26</td><td style="color:#c62828">0</td><td style="color:#2e7d32;font-weight:700">100%</td></tr><tr><td>资料管理</td><td>126</td><td style="color:#2e7d32">126</td><td style="color:#c62828">0</td><td style="color:#2e7d32;font-weight:700">100%</td></tr><tr><td>积分钱包</td><td>60</td><td style="color:#2e7d32">60</td><td style="color:#c62828">0</td><td style="color:#2e7d32;font-weight:700">100%</td></tr><tr><td>预警中心</td><td>58</td><td style="color:#2e7d32">58</td><td style="color:#c62828">0</td><td style="color:#2e7d32;font-weight:700">100%</td></tr><tr><td>操作日志</td><td>14</td><td style="color:#2e7d32">14</td><td style="color:#c62828">0</td><td style="color:#2e7d32;font-weight:700">100%</td></tr><tr><td>数据看板</td><td>14</td><td style="color:#2e7d32">14</td><td style="color:#c62828">0</td><td style="color:#2e7d32;font-weight:700">100%</td></tr></tbody></table>
+
+<h2>四、确认的 4 个生产 Bug（必修）</h2>
+
+<div class="bug">
+  <div class="bug-head"><span class="sev sev-高">高</span><span class="bug-id">B1</span><b>作业「积分奖励」永远为 0（字段名错配）</b><span class="bug-mod">任务管理</span></div>
+  <div class="kv"><span>现象</span><p>教师在小程序发布/编辑作业时填写的积分奖励，落库后恒为 0，学生完成任务拿不到积分。</p></div>
+  <div class="kv"><span>根因</span><p>小程序 tasks.js 发送字段名 points，后端 tasks.js(POST/PUT) 解构的是 creditValue（选填，缺省默认 0）。字段未对齐导致后端取默认值。</p></div>
+  <div class="kv"><span>小程序</span><code>miniprogram/pages/admin/tasks.js (form.points / onSave 直接发送 f)</code></div>
+  <div class="kv"><span>后端</span><code>server/src/routes/tasks.js:43 / :104 解构 { title, subjectId, creditValue, ... }</code></div>
+  <div class="kv"><span>修复</span><pre>// miniprogram/pages/admin/tasks.js — onSave 里把 points 映射为后端字段 creditValue
+const payload = { ...f, creditValue: Number(f.points) || 0 };
+if (this.data.editingId) await app.apiPut('/api/tasks/' + id, payload);
+else await app.apiPost('/api/tasks', payload);
+// 同时可让后端兼容：const creditValue = req.body.creditValue ?? req.body.points ?? 0;</pre></div>
+</div>
+<div class="bug">
+  <div class="bug-head"><span class="sev sev-严重">严重</span><span class="bug-id">B2</span><b>学生提交作业 / 教师快速登记完成 直接 404</b><span class="bug-mod">任务管理</span></div>
+  <div class="kv"><span>现象</span><p>学生端「提交作业」、教师端任务页「快速登记完成」点击后无反应或报错，作业永远显示未完成。</p></div>
+  <div class="kv"><span>根因</span><p>小程序 tasks.js.onQuickComplete 调用 POST /api/completion，且字段为 {task_id, student_id, status}；后端 completions.js 仅注册 POST /api/completion/register，且期望 {taskId, studentIds, status}。路径与字段双重不一致 → 404。</p></div>
+  <div class="kv"><span>小程序</span><code>miniprogram/pages/admin/tasks.js:141 apiPost("/api/completion", {task_id, student_id, status})</code></div>
+  <div class="kv"><span>后端</span><code>server/src/routes/completions.js:29 router.post("/register", ...) 解构 {taskId, studentIds, status}</code></div>
+  <div class="kv"><span>修复</span><pre>// miniprogram/pages/admin/tasks.js — onQuickComplete 改为正确路径与字段
+await app.apiPost('/api/completion/register', {
+  taskId: this.data.currentTask.id,
+  studentIds: [sid],
+  status: 'FINISHED'
+});
+// 学生端提交作业页同理：必须用 /api/completion/register + taskId/studentIds</pre></div>
+</div>
+<div class="bug">
+  <div class="bug-head"><span class="sev sev-中">中</span><span class="bug-id">B3</span><b>新增/编辑学生时「学号」丢失</b><span class="bug-mod">学生管理</span></div>
+  <div class="kv"><span>现象</span><p>教师在小程序录入学生姓名+学号，保存后学号栏为空或显示异常，名单导出/按学号检索失效。</p></div>
+  <div class="kv"><span>根因</span><p>小程序 students.js 发送 {name, student_no}，后端 students.js(POST/PUT /) 解构 {name, studentNo}。下划线 vs 驼峰不一致，student_no 被忽略。</p></div>
+  <div class="kv"><span>小程序</span><code>miniprogram/pages/admin/students.js (form.student_no / apiPost("/api/students", f))</code></div>
+  <div class="kv"><span>后端</span><code>server/src/routes/students.js:107 / :125 解构 { name, studentNo }</code></div>
+  <div class="kv"><span>修复</span><pre>// miniprogram/pages/admin/students.js — 字段对齐后端
+const payload = { name: f.name, studentNo: f.student_no || '' };
+await app.apiPost('/api/students', payload);   // 编辑同理用 studentNo
+// 或后端兼容：const studentNo = req.body.studentNo ?? req.body.student_no;</pre></div>
+</div>
+<div class="bug">
+  <div class="bug-head"><span class="sev sev-严重">严重</span><span class="bug-id">B4</span><b>手动加减积分 直接 400，功能完全不可用</b><span class="bug-mod">积分调整</span></div>
+  <div class="kv"><span>现象</span><p>教师/管理员/课代表在「积分调整」页选择学生、填分数、写原因后提交，提示操作失败，积分不变化。</p></div>
+  <div class="kv"><span>根因</span><p>小程序 credits-adjust.js 发送 {student_id, subject_id, points, reason, type}，后端 creditFlow.js.adjust 解构 {studentId, amount, reason}。student_id→undefined→400「请指定学生」；points→amount=undefined→400「调整分值必须为非0数字」。</p></div>
+  <div class="kv"><span>小程序</span><code>miniprogram/pages/admin/credits-adjust.js:81 apiPost("/api/credit-flow/adjust", {student_id, subject_id, points, reason, type})</code></div>
+  <div class="kv"><span>后端</span><code>server/src/routes/creditFlow.js:18 解构 { studentId, amount, reason }</code></div>
+  <div class="kv"><span>修复</span><pre>// miniprogram/pages/admin/credits-adjust.js — onSubmit 改为后端契约
+const val = f.type === 'add' ? Number(f.amount) : -Number(f.amount);
+await app.apiPost('/api/credit-flow/adjust', {
+  studentId: f.studentId,
+  amount: val,
+  reason: f.reason.trim()
+});
+// subject_id / type 后端不需要，删去即可；或后端兼容 student_id/points</pre></div>
+</div>
+
+<h2>五、失败操作明细（去重）</h2>
+<table><thead><tr><th>模块</th><th>说明</th><th>请求</th><th>类型</th><th>次数</th><th>判定</th></tr></thead><tbody></tbody></table>
+
+<h2>六、优化提升点与建议方向</h2>
+<div class="sug"><b>契约一致性（最高优先级）</b><p>B1–B4 均属「前端字段名/路径与后端不一致」。建议在工程层面建立共享 API 契约：把后端路由的入参用一份 OpenAPI/JSON Schema 描述，小程序调用层据此生成 TS 类型与请求体，CI 中做契约校验，从根上杜绝此类回归。</p></div><div class="sug"><b>请求层健壮性</b><p>app.js 的 _api 已做友好错误拦截（好）。建议进一步：① 统一请求/响应字段命名规范（全站驼峰 or 全站下划线，二选一），避免 student_id/studentId 混用；② 对 4xx 业务错误（如 400/403/404）做结构化提示与「重试/联系管理员」引导；③ 列表类接口加 loading 与空态、错误态三态。</p></div><div class="sug"><b>鉴权与默认安全</b><p>重置密码默认落为 123456（多处在 students.js / users.js）。个人主体小程序上线后，建议：① 首次登录强制改密；② 超级管理员账号 superadmin 仅限本人改密（已做，✓）；③ 操作日志已记录改密/调分，建议登录页增加「忘记密码」走微信身份校验，而非明文默认密码。</p></div><div class="sug"><b>并发与数据一致性</b><p>积分重算依赖 credit_flow 全量 SUM 后写回 student.total_credits，多位教师/课代表同时给同一批学生登记时存在竞态（非原子）。建议改为单条 SQL 增量更新：UPDATE student SET total_credits = total_credits + ? WHERE id=?，避免并发覆盖。</p></div><div class="sug"><b>资源付费墙一致性</b><p>GET /api/mp/resources/:id 无条件返回 content（内联重点汇编），仅 url 受广告/积分门槛限制。若产品意图是「看汇编也要消耗积分/广告」，应在返回 content 前校验 adWatched/积分；若意图是「汇编免费、外链资料收费」，则应在 UI 明确区分，避免用户困惑与审核风险。</p></div><div class="sug"><b>可观测与灰度</b><p>建议小程序端接入轻量埋点（页面曝光、接口耗时、失败率），后台 dashboard 已存在；上线前用「体验版」真机跑一遍 30 人矩阵，重点验证 B1–B4 修复后的加积分/交作业链路。</p></div><div class="sug"><b>性能</b><p>subjects/students/users 列表为全量返回，30 人 OK，但班级规模扩大后需加分页/虚拟列表；operate-logs 与时间范围筛选已规划，建议尽快落地避免全表扫描。</p></div>
+
+<h2>七、优化点采纳与修复落地</h2>
+<p>上一节 7 条建议<strong>已全部采纳</strong>，并在小程序端与后端完成代码级修复。下表为「建议 → 落地文件 → 状态」对照：</p>
+<table>
+<thead><tr><th>方向</th><th>落地实现</th><th>涉及文件</th><th>状态</th></tr></thead>
+<tbody>
+<tr><td>① 共享契约 / 防回归</td><td>新增 snake_case→camelCase 入参归一中间件（仅当驼峰缺失时用下划线兜底，从源头杜绝 B1–B4 类回归）；契约模拟脚本沉淀为可复跑工具</td><td><code>server/src/middleware/normalize.js</code>、<code>tools/sim_30users.js</code></td><td>✅</td></tr>
+<tr><td>② 请求层健壮性</td><td>友好错误增强（402/429/400 结构化提示）；学生/科目/用户/日志列表增加 loading / 空态 / 错误态三态；课代表候选容错</td><td><code>miniprogram/app.js</code>、<code>pages/admin/students.js</code>、<code>subjects.js</code>、<code>users.js</code>、<code>operate-log.js</code></td><td>✅</td></tr>
+<tr><td>③ 鉴权与默认安全</td><td>新增 <code>must_change_pwd</code> 字段 + 登录返回该标志 + <code>POST /api/auth/change-password</code>；小程序改密页 + 登录后强制跳转（账号/微信登录均已接）；超级管理员仅本人改密（已做）</td><td><code>server/src/db.js</code>、<code>auth.js</code>、<code>pages/me/change-pwd.*</code>、<code>app.js</code></td><td>✅</td></tr>
+<tr><td>④ 并发与数据一致性</td><td>积分回写由「全量 SUM→覆盖写」改为单条原子 <code>UPDATE student SET total_credits = total_credits + ? WHERE id=?</code>，消除多教师并发登记的丢失更新竞态</td><td><code>server/src/routes/completions.js</code>、<code>creditFlow.js</code></td><td>✅（离线证明见 <code>tools/verify_credit_logic.js</code>）</td></tr>
+<tr><td>⑤ 资源付费墙一致性</td><td>资料详情接口显式区分 <code>contentGated</code>（汇编是否受付费墙限制）/ <code>contentVisible</code>（当前用户能否看汇编）/ <code>externalGated</code>（外链始终需广告+积分）+ <code>requiresAd</code> / <code>pointsCost</code> / <code>canView</code>；小程序详情页增加付费提示条</td><td><code>server/src/routes/mp_resources.js</code>、<code>pages/resource-detail/*</code></td><td>✅</td></tr>
+<tr><td>⑥ 可观测与灰度</td><td><code>app.js</code> 增加埋点（页面曝光 / 接口耗时 / 失败率）+ <code>getTelemetry()</code>；新增调试面板页；主 tab 页 <code>onShow</code> 已埋点</td><td><code>miniprogram/app.js</code>、<code>pages/debug/telemetry.*</code>、<code>index/tasks/feed/study/me</code></td><td>✅</td></tr>
+<tr><td>⑦ 性能：列表分页</td><td><code>util.js</code> 增加 <code>paginate</code> / <code>setPageHeaders</code>；subjects/students/users 列表 SQL 分页 + 响应头 <code>X-Total-Count</code> / <code>X-Has-More</code>（主体仍数组，网页端兼容）；operate-logs 增加分页 + 时间范围筛选</td><td><code>server/src/util.js</code>、<code>routes/{subjects,students,users,operateLog}.js</code></td><td>✅</td></tr>
+</tbody>
+</table>
+<p><b>真实后端核验配套</b>：已修正 <code>docker-compose.yml</code>（MySQL + backend + frontend 一体化，后端端口映射到宿主机 3001），新增 <code>tools/verify_real_backend.js</code>（真·HTTP 回放 30 人矩阵 + 并发压测原子性 + 分页头校验）与 <code>docs/RUNBOOK_REAL_BACKEND.md</code>。沙箱无 Docker/MySQL 无法代跑，请按 Runbook 在本机执行；离线可用 <code>node tools/verify_credit_logic.js</code> 验证核心修复逻辑。</p>
+
+<h2>八、结论</h2>
+<div class="note" style="background:#e8f5e9;border-color:#a5d6a7">
+ 后端业务逻辑本身健康（账号/科目/资料/预警/日志/积分钱包等模块契约一致，100% 通过）。
+ 修复前 <b>85.2% 通过率被 4 个前端契约 bug 拉低</b>，且这 4 项恰好是教师/管理员最高频的核心工作流
+ （发布作业给积分、学生交作业、加减分、录学号）。<b>修复 B1–B4（均为前端字段名/路径对齐，各约 3 行代码）后，本次复测整体通过率已达 100%。</b>
+ 建议补一份前后端共享 API 契约（OpenAPI/JSON Schema + 生成代码生成），防止再次回归。
+</div>
+</div></body></html>

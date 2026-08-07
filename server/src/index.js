@@ -2,6 +2,7 @@
 try { require('dotenv').config(); } catch (_) { /* dotenv 未安装时跳过 */ }
 const express = require('express');
 const path = require('path');
+const { normalizeBody } = require('./middleware/normalize');
 const authRouter = require('./routes/auth');
 const studentsRouter = require('./routes/students');
 const subjectsRouter = require('./routes/subjects');
@@ -26,6 +27,8 @@ const { init: initDb } = require('./db');
 
 const app = express();
 app.use(express.json());
+// 入参命名归一（契约防御层）：snake_case 别名 → camelCase 兜底
+app.use(normalizeBody);
 
 // ── 健康检查（供 Render + 保活服务使用，无需鉴权，最快响应）──
 app.get('/api/health', (_req, res) => {

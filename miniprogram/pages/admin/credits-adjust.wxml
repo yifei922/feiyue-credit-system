@@ -1,6 +1,6 @@
 <view class="container">
   <view class="card">
-    <view class="section-title">手动学分调整</view>
+    <view class="section-title">手动积分调整</view>
 
     <!-- 加分/扣减 -->
     <view class="form-group">
@@ -55,7 +55,7 @@
     </button>
 
     <view class="tip">
-      ⚠ 学分调整会记录操作日志，请确保调整理由充分合理。
+      ⚠ 积分调整会记录操作日志，请确保调整理由充分合理。
       扣分操作请谨慎使用，建议先与学生沟通确认。
     </view>
   </view>

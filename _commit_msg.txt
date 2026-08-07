@@ -1,0 +1,17 @@
+chore: 采纳全部优化建议并升级核验能力
+
+- #4 并发原子化：completions/creditFlow 积分回写改为单条原子
+  UPDATE student SET total_credits=total_credits+?（消除并发丢失更新）
+- #2 请求层健壮：normalize 中间件(snake->camel 防御)、4xx 结构化提示、
+  列表 loading/空态/错误态三态
+- #3 鉴权安全：must_change_pwd 字段 + 登录强制改密 + /api/auth/change-password
+  + 小程序改密页与登录跳转
+- #5 资源付费墙：详情接口显式区分 contentGated/contentVisible/externalGated
+- #6 可观测：app.js 埋点(track/getTelemetry) + 调试面板页
+- #7 性能分页：util.paginate/setPageHeaders，列表数组主体+响应头分页
+  （保持网页端 frontend/ 兼容，不破坏其数组遍历）
+- 真实后端核验：修正 docker-compose(MySQL+backend+frontend)、
+  tools/verify_real_backend.js、tools/verify_credit_logic.js、
+  docs/RUNBOOK_REAL_BACKEND.md；SIM 报告补充采纳对照表
+- 沉淀技能 .workbuddy/skills/miniprogram-backend-contract-sim
+- 契约模拟复测 568/568=100%

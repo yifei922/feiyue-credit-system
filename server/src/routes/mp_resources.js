@@ -45,6 +45,9 @@ router.get('/resources', async (req, res) => {
 });
 
 // 详情：返回是否需看广告、积分是否足够等元信息（url 仅当天已看广告后才返回）
+// 付费墙策略（可配置，默认「汇编免费、外链资料收费」）：
+//   RESOURCE_CONTENT_GATED=1 时，连「汇编本身」也需在看过广告且积分充足后才返回；
+//   =0（默认）时，结构化汇编(content)免费展示，仅外链原文件(url)走广告+积分门槛。
 router.get('/resources/:id', async (req, res) => {
   const id = Number(req.params.id);
   const r = await db.prepare('SELECT * FROM resource WHERE id=?').get(id);
@@ -53,9 +56,16 @@ router.get('/resources/:id', async (req, res) => {
   const uid = req.user.id;
   const adWatched = await watchedAdToday(uid, id);
   const balance = await balanceOf(uid);
+  const contentGated = process.env.RESOURCE_CONTENT_GATED === '1';
   // 解析结构化内容（供小程序内联展示）
   let parsedContent = null;
   if (r.content) { try { parsedContent = JSON.parse(r.content); } catch (_) {} }
+
+  // 汇编内容是否对本用户可见：
+  //   - 非门控模式(默认)：始终免费可见
+  //   - 门控模式：需看过广告且积分足够
+  const contentVisible = !contentGated || (adWatched && balance >= VIEW_COST_POINTS);
+
   const out = {
     id: r.id, grade: r.grade, subject: r.subject, title: r.title, cover: r.cover,
     type: r.type, description: r.description, source: r.source, view_count: r.view_count,
@@ -64,7 +74,10 @@ router.get('/resources/:id', async (req, res) => {
     pointsCost: VIEW_COST_POINTS,
     pointsBalance: balance,
     canView: balance >= VIEW_COST_POINTS,
-    content: parsedContent,           // 结构化内容（sections + tags），小程序端可直接渲染
+    contentGated,                       // 汇编内容是否受付费墙限制
+    contentVisible,                     // 当前用户能否看到汇编内容
+    externalGated: true,                // 外链原文件始终需广告+积分
+    content: contentVisible ? parsedContent : null,  // 受 contentGated 约束
   };
   if (adWatched) out.url = r.url;    // 当天看过广告 → 可直接查阅（但仍会扣积分）
   ok(res, { resource: out, adDailyLimit: AD_DAILY_LIMIT });

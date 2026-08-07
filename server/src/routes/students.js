@@ -2,24 +2,30 @@ const express = require('express');
 const router = express.Router();
 const { db } = require('../db');
 const { hashPassword } = require('../auth');
-const { ok, fail, fmtDate } = require('../util');
+const { ok, fail, fmtDate, paginate, setPageHeaders } = require('../util');
 const authMiddleware = require('../middleware/auth');
 const { requireRole } = require('../middleware/rbac');
 const { recordLog } = require('../services/log');
 
-// 列表：管理员/老师/课代表看全班；学生仅看自己
+// 列表：管理员/老师/课代表看全班（分页，数组主体 + 响应头元信息）；学生仅看自己
 router.get('/', authMiddleware, async (req, res) => {
-  let rows;
+  const { page, pageSize, offset } = paginate(req.query);
+  let total, rows;
   if (req.user.role === 'STUDENT') {
+    total = 1;
     rows = await db.prepare(`SELECT s.*, c.name AS className FROM student s LEFT JOIN clazz c ON s.class_id=c.id WHERE s.id=?`)
       .all(req.user.studentId);
   } else {
-    rows = await db.prepare(`SELECT s.*, c.name AS className FROM student s LEFT JOIN clazz c ON s.class_id=c.id ORDER BY s.id`).all();
+    total = (await db.prepare('SELECT COUNT(*) AS c FROM student').get()).c;
+    rows = await db.prepare(`SELECT s.*, c.name AS className FROM student s LEFT JOIN clazz c ON s.class_id=c.id ORDER BY s.id LIMIT ? OFFSET ?`).all(pageSize, offset);
   }
-  ok(res, await Promise.all(rows.map(async r => ({
+  const list = await Promise.all(rows.map(async r => ({
     id: r.id, studentNo: r.student_no, name: r.name, classId: r.class_id,
     totalCredits: r.total_credits, className: r.className
-  }))));
+  })));
+  const hasMore = offset + rows.length < total;
+  setPageHeaders(res, { total, page, pageSize, hasMore });
+  ok(res, list);
 });
 
 // 名单导出（管理员/老师/课代表）：CSV（带 BOM 兼容 Excel）或 JSON，含总积分

@@ -10,6 +10,9 @@ Page({
     pointsBalance: 0,
     pointsCost: 0,
     canView: true,
+    contentGated: false,
+    contentVisible: true,
+    externalGated: true,
     loaded: false,
     viewing: false,
   },
@@ -22,11 +25,15 @@ Page({
     try {
       const r = await app.apiGet('/api/mp/resources/' + this.data.id);
       const d = r.data;
+      const res = d.resource;
       this.setData({
-        res: d.resource,
-        pointsBalance: d.resource.pointsBalance,
-        pointsCost: d.resource.pointsCost,
-        canView: d.resource.canView,
+        res,
+        pointsBalance: res.pointsBalance,
+        pointsCost: res.pointsCost,
+        canView: res.canView,
+        contentGated: !!res.contentGated,
+        contentVisible: res.contentVisible !== false,
+        externalGated: !!res.externalGated,
         loaded: true,
       });
     } catch (e) { wx.showToast({ title: e.message, icon: 'none' }); }

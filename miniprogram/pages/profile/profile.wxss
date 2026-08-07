@@ -14,7 +14,7 @@
 
 .form .field { display: flex; align-items: center; }
 .form .label { width: 120rpx; color: #555; font-size: 30rpx; }
-.form .input { flex: 1; font-size: 30rpx; padding: 12rpx 0; }
+.form .input { flex: 1; font-size: 30rpx; height: 80rpx; line-height: 1.4; padding: 0; }
 .divider { height: 1rpx; background: #eee; margin: 24rpx 0; }
 
 .hint { color: #888; font-size: 24rpx; line-height: 1.6; }

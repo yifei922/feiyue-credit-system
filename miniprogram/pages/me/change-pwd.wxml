@@ -1,0 +1,18 @@
+<view class="page">
+  <view wx:if="{{forced}}" class="banner">🔐 为保障账号安全，首次登录需设置新密码</view>
+
+  <view class="form">
+    <view class="form-group">
+      <text class="form-label">新密码 *</text>
+      <input class="form-input" value="{{newPwd}}" password="{{true}}" bindinput="onInput" data-field="newPwd" placeholder="至少 4 位" />
+    </view>
+    <view class="form-group">
+      <text class="form-label">确认新密码 *</text>
+      <input class="form-input" value="{{confirmPwd}}" password="{{true}}" bindinput="onInput" data-field="confirmPwd" placeholder="再次输入" />
+    </view>
+
+    <view wx:if="{{error}}" class="error">{{error}}</view>
+
+    <button class="btn-primary" loading="{{loading}}" bindtap="onSubmit">确认修改</button>
+  </view>
+</view>

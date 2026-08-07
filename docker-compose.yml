@@ -1,9 +1,32 @@
-# 点滴进步积分系统 —— 一键编排（前端 Nginx + 后端 Node）
+# 点滴进步积分系统 —— 一键编排（MySQL + 后端 Node + 前端 Nginx）
+# 真实后端 + 数据库核验流程见 docs/RUNBOOK_REAL_BACKEND.md
+#
 # 用法：
-#   cp .env.example .env   # 填入微信 AppID/Secret 等
-#   docker compose up -d --build
-#   浏览器访问 http://localhost:8080
+#   cp .env.example .env          # 按需填入微信 AppID/Secret、JWT_SECRET
+#   docker compose up -d --build  # 拉起 mysql + backend + frontend
+#   浏览器访问 http://localhost:8080        （前端）
+#   后端直连    http://localhost:3001        （给 tools/verify_real_backend.js 用）
+#   跑核验：     node tools/verify_real_backend.js
+
 services:
+  mysql:
+    image: mysql:8.0
+    container_name: credit-mysql
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-feiyue_dev_pwd}
+      MYSQL_DATABASE: ${DB_NAME:-credit}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${DB_PASSWORD:-feiyue_dev_pwd}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
   backend:
     build:
       context: ./server
@@ -11,15 +34,24 @@ services:
     container_name: credit-backend
     environment:
       - NODE_ENV=production
-      - PORT=8080                       # 与前端 nginx 反代 backend:8080 对应
-      - DB_PATH=/app/data/credit.db
-      - WX_APP_ID=${WX_APP_ID}
-      - WX_APP_SECRET=${WX_APP_SECRET}
+      - PORT=8080
+      # 指向同编排内的 mysql 服务
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=${DB_PASSWORD:-feiyue_dev_pwd}
+      - DB_NAME=${DB_NAME:-credit}
+      - DB_POOL_SIZE=10
       - JWT_SECRET=${JWT_SECRET:-please-change-in-prod}
-    volumes:
-      - backend-data:/app/data          # SQLite 数据持久化
+      - WX_APP_ID=${WX_APP_ID:-}
+      - WX_APP_SECRET=${WX_APP_SECRET:-}
     expose:
       - "8080"
+    ports:
+      - "3001:8080"            # 宿主机 3001 -> backend 8080（供核验脚本直连）
+    depends_on:
+      mysql:
+        condition: service_healthy
     restart: unless-stopped
 
   frontend:
@@ -30,8 +62,8 @@ services:
     depends_on:
       - backend
     ports:
-      - "8080:80"                       # 宿主机 8080 -> Nginx 80
+      - "8080:80"              # 宿主机 8080 -> Nginx 80
     restart: unless-stopped
 
 volumes:
-  backend-data:
+  mysql-data:

@@ -1,0 +1,62 @@
+<!-- pages/admin/operate-log.wxml -->
+<view class="page">
+  <view class="filters">
+    <input class="search-input" placeholder="搜索操作人" value="{{operatorName}}" bindinput="onSearchInput" bindconfirm="onSearch" />
+    <picker class="type-picker" range="{{TYPE_OPTIONS}}" value="{{logTypeIndex}}" bindchange="onTypeChange">
+      <view class="picker-display">{{TYPE_LABELS[TYPE_OPTIONS[logTypeIndex]]}}</view>
+    </picker>
+  </view>
+  <view class="filters date-filters">
+    <picker mode="date" value="{{startTime}}" bindchange="onStartChange">
+      <view class="date-picker">{{startTime || '开始日期'}}</view>
+    </picker>
+    <text class="date-sep">至</text>
+    <picker mode="date" value="{{endTime}}" bindchange="onEndChange">
+      <view class="date-picker">{{endTime || '结束日期'}}</view>
+    </picker>
+    <button class="btn-mini" size="mini" bindtap="onSearch">搜索</button>
+  </view>
+
+  <view wx:if="{{error}}" class="error-bar" bindtap="onRetry">⚠️ {{error}}（点击重试）</view>
+
+  <view wx:if="{{loading && records.length === 0}}" class="loading">加载中…</view>
+  <view wx:elif="{{!error && records.length === 0}}" class="empty">暂无操作日志</view>
+
+  <view wx:else class="list">
+    <view class="log-card" wx:for="{{records}}" wx:key="id" bindtap="onViewSnap" data-item="{{item}}">
+      <view class="log-head">
+        <text class="op-name">{{item.operatorName}}</text>
+        <text class="op-tag op-{{item.operateType}}">{{TYPE_LABELS[item.operateType] || item.operateType}}</text>
+        <text class="op-time">{{item.createTime}}</text>
+      </view>
+      <view class="log-body">
+        <text class="op-table">{{item.tableName}}</text>
+        <text class="op-record">#{{item.recordId}}</text>
+      </view>
+      <view class="log-foot">点击查看变更快照 ›</view>
+    </view>
+  </view>
+
+  <view wx:if="{{hasMore && records.length}}" class="load-more" bindtap="onReachBottom">{{loading ? '加载中…' : '点击加载更多'}}</view>
+
+  <!-- 快照弹窗 -->
+  <view wx:if="{{showSnap}}" class="modal-mask" bindtap="onCloseSnap">
+    <view class="modal" catchtap="noop">
+      <view class="modal-title">变更快照</view>
+      <view class="snap-row"><text class="snap-k">操作人</text><text class="snap-v">{{snap.operatorName}}</text></view>
+      <view class="snap-row"><text class="snap-k">类型</text><text class="snap-v">{{snap.operateType}}</text></view>
+      <view class="snap-row"><text class="snap-k">数据表</text><text class="snap-v">{{snap.tableName}}</text></view>
+      <view class="snap-row"><text class="snap-k">记录ID</text><text class="snap-v">{{snap.recordId}}</text></view>
+      <view class="snap-row"><text class="snap-k">时间</text><text class="snap-v">{{snap.createTime}}</text></view>
+      <view class="snap-block">
+        <view class="snap-label">修改前</view>
+        <view class="snap-code">{{snap.before || '（空）'}}</view>
+      </view>
+      <view class="snap-block">
+        <view class="snap-label">修改后</view>
+        <view class="snap-code">{{snap.after || '（空）'}}</view>
+      </view>
+      <button class="btn-close" bindtap="onCloseSnap">关闭</button>
+    </view>
+  </view>
+</view>

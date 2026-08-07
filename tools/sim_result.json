@@ -1,0 +1,7569 @@
+{
+  "summary": {
+    "generatedAt": "2026-08-07T04:03:22.576Z",
+    "rosterSize": 30,
+    "rosterBreakdown": {
+      "ADMIN": 2,
+      "TEACHER": 4,
+      "REP": 8,
+      "STUDENT": 16
+    },
+    "totalOps": 568,
+    "pass": 568,
+    "fail": 0,
+    "passRate": "100.0%"
+  },
+  "moduleStats": {
+    "登录鉴权": {
+      "total": 30,
+      "pass": 30,
+      "fail": 0
+    },
+    "任务管理": {
+      "total": 102,
+      "pass": 102,
+      "fail": 0
+    },
+    "学生管理": {
+      "total": 46,
+      "pass": 46,
+      "fail": 0
+    },
+    "科目管理": {
+      "total": 48,
+      "pass": 48,
+      "fail": 0
+    },
+    "积分调整": {
+      "total": 14,
+      "pass": 14,
+      "fail": 0
+    },
+    "积分流水": {
+      "total": 30,
+      "pass": 30,
+      "fail": 0
+    },
+    "账号管理": {
+      "total": 26,
+      "pass": 26,
+      "fail": 0
+    },
+    "资料管理": {
+      "total": 126,
+      "pass": 126,
+      "fail": 0
+    },
+    "积分钱包": {
+      "total": 60,
+      "pass": 60,
+      "fail": 0
+    },
+    "预警中心": {
+      "total": 58,
+      "pass": 58,
+      "fail": 0
+    },
+    "操作日志": {
+      "total": 14,
+      "pass": 14,
+      "fail": 0
+    },
+    "数据看板": {
+      "total": 14,
+      "pass": 14,
+      "fail": 0
+    }
+  },
+  "failOps": [],
+  "results": [
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "登录鉴权",
+      "op": "账号密码登录",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "mpBody": {
+        "username": "teacher01",
+        "password": "123456"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "任务管理",
+      "op": "查看任务列表",
+      "method": "GET",
+      "path": "/api/tasks",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "任务管理",
+      "op": "发布作业(新建任务)",
+      "method": "POST",
+      "path": "/api/tasks",
+      "mpBody": {
+        "title": "第一单元随堂练习",
+        "description": "完成练习册P12",
+        "subjectId": 1,
+        "creditValue": 5,
+        "deadline": "2026-08-20",
+        "status": "OPEN"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "任务管理",
+      "op": "编辑任务",
+      "method": "PUT",
+      "path": "/api/tasks/1",
+      "mpBody": {
+        "title": "第一单元随堂练习",
+        "description": "完成练习册P12",
+        "subjectId": 1,
+        "creditValue": 10,
+        "deadline": "2026-08-22",
+        "status": "OPEN"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "任务管理",
+      "op": "删除任务",
+      "method": "DELETE",
+      "path": "/api/tasks/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "任务管理",
+      "op": "快速登记完成/学生提交作业",
+      "method": "POST",
+      "path": "/api/completion/register",
+      "mpBody": {
+        "taskId": 1,
+        "studentIds": [
+          1
+        ],
+        "status": "FINISHED"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "学生管理",
+      "op": "查看学生列表",
+      "method": "GET",
+      "path": "/api/students",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "学生管理",
+      "op": "新增学生",
+      "method": "POST",
+      "path": "/api/students",
+      "mpBody": {
+        "name": "王同学",
+        "studentNo": "2026021"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "学生管理",
+      "op": "编辑学生",
+      "method": "PUT",
+      "path": "/api/students/1",
+      "mpBody": {
+        "name": "王同学",
+        "studentNo": "2026021"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "学生管理",
+      "op": "重置学生密码",
+      "method": "POST",
+      "path": "/api/students/1/reset-password",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "学生管理",
+      "op": "删除学生",
+      "method": "DELETE",
+      "path": "/api/students/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "科目管理",
+      "op": "查看科目(含课代表)",
+      "method": "GET",
+      "path": "/api/subjects",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "科目管理",
+      "op": "新增科目",
+      "method": "POST",
+      "path": "/api/subjects",
+      "mpBody": {
+        "name": "物理",
+        "teacherId": 2
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "科目管理",
+      "op": "设置课代表",
+      "method": "POST",
+      "path": "/api/subjects/1/reps",
+      "mpBody": {
+        "userIds": [
+          3
+        ]
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "科目管理",
+      "op": "删除科目",
+      "method": "DELETE",
+      "path": "/api/subjects/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "积分调整",
+      "op": "手动加减积分",
+      "method": "POST",
+      "path": "/api/credit-flow/adjust",
+      "mpBody": {
+        "studentId": 1,
+        "amount": 5,
+        "reason": "课堂表现优秀"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "积分流水",
+      "op": "查看积分流水",
+      "method": "GET",
+      "path": "/api/credit-flow",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "账号管理",
+      "op": "查看账号列表(按角色)",
+      "method": "GET",
+      "path": "/api/users",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "账号管理",
+      "op": "重置账号密码",
+      "method": "POST",
+      "path": "/api/users/2/reset-password",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "账号管理",
+      "op": "修改用户角色+绑定科目",
+      "method": "POST",
+      "path": "/api/users/3/role",
+      "mpBody": {
+        "role": "REP",
+        "subjectIds": [
+          1,
+          2
+        ]
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "资料管理",
+      "op": "浏览资料列表",
+      "method": "GET",
+      "path": "/api/mp/resources",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "资料管理",
+      "op": "查看资料详情(内联汇编)",
+      "method": "GET",
+      "path": "/api/mp/resources/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "资料管理",
+      "op": "看完广告回调",
+      "method": "POST",
+      "path": "/api/mp/resources/1/ad-done",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "资料管理",
+      "op": "实际查阅(扣积分)",
+      "method": "POST",
+      "path": "/api/mp/resources/1/access",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "资料管理",
+      "op": "后台新增资料",
+      "method": "POST",
+      "path": "/api/mp/admin/resources",
+      "mpBody": {
+        "grade": "八年级",
+        "subject": "语文",
+        "title": "古诗文重点汇编",
+        "type": "doc",
+        "url": "https://x/1.pdf"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "积分钱包",
+      "op": "我的积分余额",
+      "method": "GET",
+      "path": "/api/mp/me/points",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "积分钱包",
+      "op": "看广告赚积分",
+      "method": "POST",
+      "path": "/api/mp/points/ad-reward",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "预警中心",
+      "op": "查看预警列表",
+      "method": "GET",
+      "path": "/api/alerts",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "预警中心",
+      "op": "手动扫描预警",
+      "method": "POST",
+      "path": "/api/alerts/scan",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "预警中心",
+      "op": "标记预警解决",
+      "method": "PUT",
+      "path": "/api/alerts/1/resolve",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "操作日志",
+      "op": "查看操作日志",
+      "method": "GET",
+      "path": "/api/operate-logs",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员A",
+      "role": "ADMIN",
+      "mod": "数据看板",
+      "op": "查看数据看板",
+      "method": "GET",
+      "path": "/api/dashboard",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "登录鉴权",
+      "op": "账号密码登录",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "mpBody": {
+        "username": "teacher01",
+        "password": "123456"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "任务管理",
+      "op": "查看任务列表",
+      "method": "GET",
+      "path": "/api/tasks",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "任务管理",
+      "op": "发布作业(新建任务)",
+      "method": "POST",
+      "path": "/api/tasks",
+      "mpBody": {
+        "title": "第一单元随堂练习",
+        "description": "完成练习册P12",
+        "subjectId": 1,
+        "creditValue": 5,
+        "deadline": "2026-08-20",
+        "status": "OPEN"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "任务管理",
+      "op": "编辑任务",
+      "method": "PUT",
+      "path": "/api/tasks/1",
+      "mpBody": {
+        "title": "第一单元随堂练习",
+        "description": "完成练习册P12",
+        "subjectId": 1,
+        "creditValue": 10,
+        "deadline": "2026-08-22",
+        "status": "OPEN"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "任务管理",
+      "op": "删除任务",
+      "method": "DELETE",
+      "path": "/api/tasks/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "任务管理",
+      "op": "快速登记完成/学生提交作业",
+      "method": "POST",
+      "path": "/api/completion/register",
+      "mpBody": {
+        "taskId": 1,
+        "studentIds": [
+          1
+        ],
+        "status": "FINISHED"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "学生管理",
+      "op": "查看学生列表",
+      "method": "GET",
+      "path": "/api/students",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "学生管理",
+      "op": "新增学生",
+      "method": "POST",
+      "path": "/api/students",
+      "mpBody": {
+        "name": "王同学",
+        "studentNo": "2026021"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "学生管理",
+      "op": "编辑学生",
+      "method": "PUT",
+      "path": "/api/students/1",
+      "mpBody": {
+        "name": "王同学",
+        "studentNo": "2026021"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "学生管理",
+      "op": "重置学生密码",
+      "method": "POST",
+      "path": "/api/students/1/reset-password",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "学生管理",
+      "op": "删除学生",
+      "method": "DELETE",
+      "path": "/api/students/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "科目管理",
+      "op": "查看科目(含课代表)",
+      "method": "GET",
+      "path": "/api/subjects",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "科目管理",
+      "op": "新增科目",
+      "method": "POST",
+      "path": "/api/subjects",
+      "mpBody": {
+        "name": "物理",
+        "teacherId": 2
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "科目管理",
+      "op": "设置课代表",
+      "method": "POST",
+      "path": "/api/subjects/1/reps",
+      "mpBody": {
+        "userIds": [
+          3
+        ]
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "科目管理",
+      "op": "删除科目",
+      "method": "DELETE",
+      "path": "/api/subjects/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "积分调整",
+      "op": "手动加减积分",
+      "method": "POST",
+      "path": "/api/credit-flow/adjust",
+      "mpBody": {
+        "studentId": 1,
+        "amount": 5,
+        "reason": "课堂表现优秀"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "积分流水",
+      "op": "查看积分流水",
+      "method": "GET",
+      "path": "/api/credit-flow",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "账号管理",
+      "op": "查看账号列表(按角色)",
+      "method": "GET",
+      "path": "/api/users",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "账号管理",
+      "op": "重置账号密码",
+      "method": "POST",
+      "path": "/api/users/2/reset-password",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "账号管理",
+      "op": "修改用户角色+绑定科目",
+      "method": "POST",
+      "path": "/api/users/3/role",
+      "mpBody": {
+        "role": "REP",
+        "subjectIds": [
+          1,
+          2
+        ]
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "资料管理",
+      "op": "浏览资料列表",
+      "method": "GET",
+      "path": "/api/mp/resources",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "资料管理",
+      "op": "查看资料详情(内联汇编)",
+      "method": "GET",
+      "path": "/api/mp/resources/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "资料管理",
+      "op": "看完广告回调",
+      "method": "POST",
+      "path": "/api/mp/resources/1/ad-done",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "资料管理",
+      "op": "实际查阅(扣积分)",
+      "method": "POST",
+      "path": "/api/mp/resources/1/access",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "资料管理",
+      "op": "后台新增资料",
+      "method": "POST",
+      "path": "/api/mp/admin/resources",
+      "mpBody": {
+        "grade": "八年级",
+        "subject": "语文",
+        "title": "古诗文重点汇编",
+        "type": "doc",
+        "url": "https://x/1.pdf"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "积分钱包",
+      "op": "我的积分余额",
+      "method": "GET",
+      "path": "/api/mp/me/points",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "积分钱包",
+      "op": "看广告赚积分",
+      "method": "POST",
+      "path": "/api/mp/points/ad-reward",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "预警中心",
+      "op": "查看预警列表",
+      "method": "GET",
+      "path": "/api/alerts",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "预警中心",
+      "op": "手动扫描预警",
+      "method": "POST",
+      "path": "/api/alerts/scan",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "预警中心",
+      "op": "标记预警解决",
+      "method": "PUT",
+      "path": "/api/alerts/1/resolve",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "操作日志",
+      "op": "查看操作日志",
+      "method": "GET",
+      "path": "/api/operate-logs",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "管理员B",
+      "role": "ADMIN",
+      "mod": "数据看板",
+      "op": "查看数据看板",
+      "method": "GET",
+      "path": "/api/dashboard",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "登录鉴权",
+      "op": "账号密码登录",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "mpBody": {
+        "username": "teacher01",
+        "password": "123456"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "任务管理",
+      "op": "查看任务列表",
+      "method": "GET",
+      "path": "/api/tasks",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "任务管理",
+      "op": "发布作业(新建任务)",
+      "method": "POST",
+      "path": "/api/tasks",
+      "mpBody": {
+        "title": "第一单元随堂练习",
+        "description": "完成练习册P12",
+        "subjectId": 1,
+        "creditValue": 5,
+        "deadline": "2026-08-20",
+        "status": "OPEN"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "任务管理",
+      "op": "编辑任务",
+      "method": "PUT",
+      "path": "/api/tasks/1",
+      "mpBody": {
+        "title": "第一单元随堂练习",
+        "description": "完成练习册P12",
+        "subjectId": 1,
+        "creditValue": 10,
+        "deadline": "2026-08-22",
+        "status": "OPEN"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "任务管理",
+      "op": "删除任务",
+      "method": "DELETE",
+      "path": "/api/tasks/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "任务管理",
+      "op": "快速登记完成/学生提交作业",
+      "method": "POST",
+      "path": "/api/completion/register",
+      "mpBody": {
+        "taskId": 1,
+        "studentIds": [
+          1
+        ],
+        "status": "FINISHED"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "学生管理",
+      "op": "查看学生列表",
+      "method": "GET",
+      "path": "/api/students",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "学生管理",
+      "op": "新增学生",
+      "method": "POST",
+      "path": "/api/students",
+      "mpBody": {
+        "name": "王同学",
+        "studentNo": "2026021"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "学生管理",
+      "op": "编辑学生",
+      "method": "PUT",
+      "path": "/api/students/1",
+      "mpBody": {
+        "name": "王同学",
+        "studentNo": "2026021"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "学生管理",
+      "op": "重置学生密码",
+      "method": "POST",
+      "path": "/api/students/1/reset-password",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "学生管理",
+      "op": "删除学生",
+      "method": "DELETE",
+      "path": "/api/students/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "科目管理",
+      "op": "查看科目(含课代表)",
+      "method": "GET",
+      "path": "/api/subjects",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "科目管理",
+      "op": "新增科目",
+      "method": "POST",
+      "path": "/api/subjects",
+      "mpBody": {
+        "name": "物理",
+        "teacherId": 2
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "科目管理",
+      "op": "设置课代表",
+      "method": "POST",
+      "path": "/api/subjects/1/reps",
+      "mpBody": {
+        "userIds": [
+          3
+        ]
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "科目管理",
+      "op": "删除科目",
+      "method": "DELETE",
+      "path": "/api/subjects/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "积分调整",
+      "op": "手动加减积分",
+      "method": "POST",
+      "path": "/api/credit-flow/adjust",
+      "mpBody": {
+        "studentId": 1,
+        "amount": 5,
+        "reason": "课堂表现优秀"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "积分流水",
+      "op": "查看积分流水",
+      "method": "GET",
+      "path": "/api/credit-flow",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "账号管理",
+      "op": "查看账号列表(按角色)",
+      "method": "GET",
+      "path": "/api/users",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "账号管理",
+      "op": "重置账号密码",
+      "method": "POST",
+      "path": "/api/users/2/reset-password",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "账号管理",
+      "op": "修改用户角色+绑定科目",
+      "method": "POST",
+      "path": "/api/users/3/role",
+      "mpBody": {
+        "role": "REP",
+        "subjectIds": [
+          1,
+          2
+        ]
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "资料管理",
+      "op": "浏览资料列表",
+      "method": "GET",
+      "path": "/api/mp/resources",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "资料管理",
+      "op": "查看资料详情(内联汇编)",
+      "method": "GET",
+      "path": "/api/mp/resources/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "资料管理",
+      "op": "看完广告回调",
+      "method": "POST",
+      "path": "/api/mp/resources/1/ad-done",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "资料管理",
+      "op": "实际查阅(扣积分)",
+      "method": "POST",
+      "path": "/api/mp/resources/1/access",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "资料管理",
+      "op": "后台新增资料",
+      "method": "POST",
+      "path": "/api/mp/admin/resources",
+      "mpBody": {
+        "grade": "八年级",
+        "subject": "语文",
+        "title": "古诗文重点汇编",
+        "type": "doc",
+        "url": "https://x/1.pdf"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "积分钱包",
+      "op": "我的积分余额",
+      "method": "GET",
+      "path": "/api/mp/me/points",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "积分钱包",
+      "op": "看广告赚积分",
+      "method": "POST",
+      "path": "/api/mp/points/ad-reward",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "预警中心",
+      "op": "查看预警列表",
+      "method": "GET",
+      "path": "/api/alerts",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "预警中心",
+      "op": "手动扫描预警",
+      "method": "POST",
+      "path": "/api/alerts/scan",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "预警中心",
+      "op": "标记预警解决",
+      "method": "PUT",
+      "path": "/api/alerts/1/resolve",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "操作日志",
+      "op": "查看操作日志",
+      "method": "GET",
+      "path": "/api/operate-logs",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨老师",
+      "role": "TEACHER",
+      "mod": "数据看板",
+      "op": "查看数据看板",
+      "method": "GET",
+      "path": "/api/dashboard",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "登录鉴权",
+      "op": "账号密码登录",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "mpBody": {
+        "username": "teacher01",
+        "password": "123456"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "任务管理",
+      "op": "查看任务列表",
+      "method": "GET",
+      "path": "/api/tasks",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "任务管理",
+      "op": "发布作业(新建任务)",
+      "method": "POST",
+      "path": "/api/tasks",
+      "mpBody": {
+        "title": "第一单元随堂练习",
+        "description": "完成练习册P12",
+        "subjectId": 1,
+        "creditValue": 5,
+        "deadline": "2026-08-20",
+        "status": "OPEN"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "任务管理",
+      "op": "编辑任务",
+      "method": "PUT",
+      "path": "/api/tasks/1",
+      "mpBody": {
+        "title": "第一单元随堂练习",
+        "description": "完成练习册P12",
+        "subjectId": 1,
+        "creditValue": 10,
+        "deadline": "2026-08-22",
+        "status": "OPEN"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "任务管理",
+      "op": "删除任务",
+      "method": "DELETE",
+      "path": "/api/tasks/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "任务管理",
+      "op": "快速登记完成/学生提交作业",
+      "method": "POST",
+      "path": "/api/completion/register",
+      "mpBody": {
+        "taskId": 1,
+        "studentIds": [
+          1
+        ],
+        "status": "FINISHED"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "学生管理",
+      "op": "查看学生列表",
+      "method": "GET",
+      "path": "/api/students",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "学生管理",
+      "op": "新增学生",
+      "method": "POST",
+      "path": "/api/students",
+      "mpBody": {
+        "name": "王同学",
+        "studentNo": "2026021"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "学生管理",
+      "op": "编辑学生",
+      "method": "PUT",
+      "path": "/api/students/1",
+      "mpBody": {
+        "name": "王同学",
+        "studentNo": "2026021"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "学生管理",
+      "op": "重置学生密码",
+      "method": "POST",
+      "path": "/api/students/1/reset-password",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "学生管理",
+      "op": "删除学生",
+      "method": "DELETE",
+      "path": "/api/students/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "科目管理",
+      "op": "查看科目(含课代表)",
+      "method": "GET",
+      "path": "/api/subjects",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "科目管理",
+      "op": "新增科目",
+      "method": "POST",
+      "path": "/api/subjects",
+      "mpBody": {
+        "name": "物理",
+        "teacherId": 2
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "科目管理",
+      "op": "设置课代表",
+      "method": "POST",
+      "path": "/api/subjects/1/reps",
+      "mpBody": {
+        "userIds": [
+          3
+        ]
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "科目管理",
+      "op": "删除科目",
+      "method": "DELETE",
+      "path": "/api/subjects/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "积分调整",
+      "op": "手动加减积分",
+      "method": "POST",
+      "path": "/api/credit-flow/adjust",
+      "mpBody": {
+        "studentId": 1,
+        "amount": 5,
+        "reason": "课堂表现优秀"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "积分流水",
+      "op": "查看积分流水",
+      "method": "GET",
+      "path": "/api/credit-flow",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "账号管理",
+      "op": "查看账号列表(按角色)",
+      "method": "GET",
+      "path": "/api/users",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "账号管理",
+      "op": "重置账号密码",
+      "method": "POST",
+      "path": "/api/users/2/reset-password",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "账号管理",
+      "op": "修改用户角色+绑定科目",
+      "method": "POST",
+      "path": "/api/users/3/role",
+      "mpBody": {
+        "role": "REP",
+        "subjectIds": [
+          1,
+          2
+        ]
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "资料管理",
+      "op": "浏览资料列表",
+      "method": "GET",
+      "path": "/api/mp/resources",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "资料管理",
+      "op": "查看资料详情(内联汇编)",
+      "method": "GET",
+      "path": "/api/mp/resources/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "资料管理",
+      "op": "看完广告回调",
+      "method": "POST",
+      "path": "/api/mp/resources/1/ad-done",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "资料管理",
+      "op": "实际查阅(扣积分)",
+      "method": "POST",
+      "path": "/api/mp/resources/1/access",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "资料管理",
+      "op": "后台新增资料",
+      "method": "POST",
+      "path": "/api/mp/admin/resources",
+      "mpBody": {
+        "grade": "八年级",
+        "subject": "语文",
+        "title": "古诗文重点汇编",
+        "type": "doc",
+        "url": "https://x/1.pdf"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "积分钱包",
+      "op": "我的积分余额",
+      "method": "GET",
+      "path": "/api/mp/me/points",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "积分钱包",
+      "op": "看广告赚积分",
+      "method": "POST",
+      "path": "/api/mp/points/ad-reward",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "预警中心",
+      "op": "查看预警列表",
+      "method": "GET",
+      "path": "/api/alerts",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "预警中心",
+      "op": "手动扫描预警",
+      "method": "POST",
+      "path": "/api/alerts/scan",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "预警中心",
+      "op": "标记预警解决",
+      "method": "PUT",
+      "path": "/api/alerts/1/resolve",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "操作日志",
+      "op": "查看操作日志",
+      "method": "GET",
+      "path": "/api/operate-logs",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李老师",
+      "role": "TEACHER",
+      "mod": "数据看板",
+      "op": "查看数据看板",
+      "method": "GET",
+      "path": "/api/dashboard",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "登录鉴权",
+      "op": "账号密码登录",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "mpBody": {
+        "username": "teacher01",
+        "password": "123456"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "任务管理",
+      "op": "查看任务列表",
+      "method": "GET",
+      "path": "/api/tasks",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "任务管理",
+      "op": "发布作业(新建任务)",
+      "method": "POST",
+      "path": "/api/tasks",
+      "mpBody": {
+        "title": "第一单元随堂练习",
+        "description": "完成练习册P12",
+        "subjectId": 1,
+        "creditValue": 5,
+        "deadline": "2026-08-20",
+        "status": "OPEN"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "任务管理",
+      "op": "编辑任务",
+      "method": "PUT",
+      "path": "/api/tasks/1",
+      "mpBody": {
+        "title": "第一单元随堂练习",
+        "description": "完成练习册P12",
+        "subjectId": 1,
+        "creditValue": 10,
+        "deadline": "2026-08-22",
+        "status": "OPEN"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "任务管理",
+      "op": "删除任务",
+      "method": "DELETE",
+      "path": "/api/tasks/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "任务管理",
+      "op": "快速登记完成/学生提交作业",
+      "method": "POST",
+      "path": "/api/completion/register",
+      "mpBody": {
+        "taskId": 1,
+        "studentIds": [
+          1
+        ],
+        "status": "FINISHED"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "学生管理",
+      "op": "查看学生列表",
+      "method": "GET",
+      "path": "/api/students",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "学生管理",
+      "op": "新增学生",
+      "method": "POST",
+      "path": "/api/students",
+      "mpBody": {
+        "name": "王同学",
+        "studentNo": "2026021"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "学生管理",
+      "op": "编辑学生",
+      "method": "PUT",
+      "path": "/api/students/1",
+      "mpBody": {
+        "name": "王同学",
+        "studentNo": "2026021"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "学生管理",
+      "op": "重置学生密码",
+      "method": "POST",
+      "path": "/api/students/1/reset-password",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "学生管理",
+      "op": "删除学生",
+      "method": "DELETE",
+      "path": "/api/students/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "科目管理",
+      "op": "查看科目(含课代表)",
+      "method": "GET",
+      "path": "/api/subjects",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "科目管理",
+      "op": "新增科目",
+      "method": "POST",
+      "path": "/api/subjects",
+      "mpBody": {
+        "name": "物理",
+        "teacherId": 2
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "科目管理",
+      "op": "设置课代表",
+      "method": "POST",
+      "path": "/api/subjects/1/reps",
+      "mpBody": {
+        "userIds": [
+          3
+        ]
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "科目管理",
+      "op": "删除科目",
+      "method": "DELETE",
+      "path": "/api/subjects/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "积分调整",
+      "op": "手动加减积分",
+      "method": "POST",
+      "path": "/api/credit-flow/adjust",
+      "mpBody": {
+        "studentId": 1,
+        "amount": 5,
+        "reason": "课堂表现优秀"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "积分流水",
+      "op": "查看积分流水",
+      "method": "GET",
+      "path": "/api/credit-flow",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "账号管理",
+      "op": "查看账号列表(按角色)",
+      "method": "GET",
+      "path": "/api/users",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "账号管理",
+      "op": "重置账号密码",
+      "method": "POST",
+      "path": "/api/users/2/reset-password",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "账号管理",
+      "op": "修改用户角色+绑定科目",
+      "method": "POST",
+      "path": "/api/users/3/role",
+      "mpBody": {
+        "role": "REP",
+        "subjectIds": [
+          1,
+          2
+        ]
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "资料管理",
+      "op": "浏览资料列表",
+      "method": "GET",
+      "path": "/api/mp/resources",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "资料管理",
+      "op": "查看资料详情(内联汇编)",
+      "method": "GET",
+      "path": "/api/mp/resources/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "资料管理",
+      "op": "看完广告回调",
+      "method": "POST",
+      "path": "/api/mp/resources/1/ad-done",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "资料管理",
+      "op": "实际查阅(扣积分)",
+      "method": "POST",
+      "path": "/api/mp/resources/1/access",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "资料管理",
+      "op": "后台新增资料",
+      "method": "POST",
+      "path": "/api/mp/admin/resources",
+      "mpBody": {
+        "grade": "八年级",
+        "subject": "语文",
+        "title": "古诗文重点汇编",
+        "type": "doc",
+        "url": "https://x/1.pdf"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "积分钱包",
+      "op": "我的积分余额",
+      "method": "GET",
+      "path": "/api/mp/me/points",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "积分钱包",
+      "op": "看广告赚积分",
+      "method": "POST",
+      "path": "/api/mp/points/ad-reward",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "预警中心",
+      "op": "查看预警列表",
+      "method": "GET",
+      "path": "/api/alerts",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "预警中心",
+      "op": "手动扫描预警",
+      "method": "POST",
+      "path": "/api/alerts/scan",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "预警中心",
+      "op": "标记预警解决",
+      "method": "PUT",
+      "path": "/api/alerts/1/resolve",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "操作日志",
+      "op": "查看操作日志",
+      "method": "GET",
+      "path": "/api/operate-logs",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈老师",
+      "role": "TEACHER",
+      "mod": "数据看板",
+      "op": "查看数据看板",
+      "method": "GET",
+      "path": "/api/dashboard",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "登录鉴权",
+      "op": "账号密码登录",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "mpBody": {
+        "username": "teacher01",
+        "password": "123456"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "任务管理",
+      "op": "查看任务列表",
+      "method": "GET",
+      "path": "/api/tasks",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "任务管理",
+      "op": "发布作业(新建任务)",
+      "method": "POST",
+      "path": "/api/tasks",
+      "mpBody": {
+        "title": "第一单元随堂练习",
+        "description": "完成练习册P12",
+        "subjectId": 1,
+        "creditValue": 5,
+        "deadline": "2026-08-20",
+        "status": "OPEN"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "任务管理",
+      "op": "编辑任务",
+      "method": "PUT",
+      "path": "/api/tasks/1",
+      "mpBody": {
+        "title": "第一单元随堂练习",
+        "description": "完成练习册P12",
+        "subjectId": 1,
+        "creditValue": 10,
+        "deadline": "2026-08-22",
+        "status": "OPEN"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "任务管理",
+      "op": "删除任务",
+      "method": "DELETE",
+      "path": "/api/tasks/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "任务管理",
+      "op": "快速登记完成/学生提交作业",
+      "method": "POST",
+      "path": "/api/completion/register",
+      "mpBody": {
+        "taskId": 1,
+        "studentIds": [
+          1
+        ],
+        "status": "FINISHED"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "学生管理",
+      "op": "查看学生列表",
+      "method": "GET",
+      "path": "/api/students",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "学生管理",
+      "op": "新增学生",
+      "method": "POST",
+      "path": "/api/students",
+      "mpBody": {
+        "name": "王同学",
+        "studentNo": "2026021"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "学生管理",
+      "op": "编辑学生",
+      "method": "PUT",
+      "path": "/api/students/1",
+      "mpBody": {
+        "name": "王同学",
+        "studentNo": "2026021"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "学生管理",
+      "op": "重置学生密码",
+      "method": "POST",
+      "path": "/api/students/1/reset-password",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "学生管理",
+      "op": "删除学生",
+      "method": "DELETE",
+      "path": "/api/students/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "科目管理",
+      "op": "查看科目(含课代表)",
+      "method": "GET",
+      "path": "/api/subjects",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "科目管理",
+      "op": "新增科目",
+      "method": "POST",
+      "path": "/api/subjects",
+      "mpBody": {
+        "name": "物理",
+        "teacherId": 2
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "科目管理",
+      "op": "设置课代表",
+      "method": "POST",
+      "path": "/api/subjects/1/reps",
+      "mpBody": {
+        "userIds": [
+          3
+        ]
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "科目管理",
+      "op": "删除科目",
+      "method": "DELETE",
+      "path": "/api/subjects/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "积分调整",
+      "op": "手动加减积分",
+      "method": "POST",
+      "path": "/api/credit-flow/adjust",
+      "mpBody": {
+        "studentId": 1,
+        "amount": 5,
+        "reason": "课堂表现优秀"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "积分流水",
+      "op": "查看积分流水",
+      "method": "GET",
+      "path": "/api/credit-flow",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "账号管理",
+      "op": "查看账号列表(按角色)",
+      "method": "GET",
+      "path": "/api/users",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "账号管理",
+      "op": "重置账号密码",
+      "method": "POST",
+      "path": "/api/users/2/reset-password",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "账号管理",
+      "op": "修改用户角色+绑定科目",
+      "method": "POST",
+      "path": "/api/users/3/role",
+      "mpBody": {
+        "role": "REP",
+        "subjectIds": [
+          1,
+          2
+        ]
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "资料管理",
+      "op": "浏览资料列表",
+      "method": "GET",
+      "path": "/api/mp/resources",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "资料管理",
+      "op": "查看资料详情(内联汇编)",
+      "method": "GET",
+      "path": "/api/mp/resources/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "资料管理",
+      "op": "看完广告回调",
+      "method": "POST",
+      "path": "/api/mp/resources/1/ad-done",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "资料管理",
+      "op": "实际查阅(扣积分)",
+      "method": "POST",
+      "path": "/api/mp/resources/1/access",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "资料管理",
+      "op": "后台新增资料",
+      "method": "POST",
+      "path": "/api/mp/admin/resources",
+      "mpBody": {
+        "grade": "八年级",
+        "subject": "语文",
+        "title": "古诗文重点汇编",
+        "type": "doc",
+        "url": "https://x/1.pdf"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "积分钱包",
+      "op": "我的积分余额",
+      "method": "GET",
+      "path": "/api/mp/me/points",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "积分钱包",
+      "op": "看广告赚积分",
+      "method": "POST",
+      "path": "/api/mp/points/ad-reward",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "预警中心",
+      "op": "查看预警列表",
+      "method": "GET",
+      "path": "/api/alerts",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "预警中心",
+      "op": "手动扫描预警",
+      "method": "POST",
+      "path": "/api/alerts/scan",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "预警中心",
+      "op": "标记预警解决",
+      "method": "PUT",
+      "path": "/api/alerts/1/resolve",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "操作日志",
+      "op": "查看操作日志",
+      "method": "GET",
+      "path": "/api/operate-logs",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "赵老师",
+      "role": "TEACHER",
+      "mod": "数据看板",
+      "op": "查看数据看板",
+      "method": "GET",
+      "path": "/api/dashboard",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李课代(语文)",
+      "role": "REP",
+      "mod": "登录鉴权",
+      "op": "账号密码登录",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "mpBody": {
+        "username": "teacher01",
+        "password": "123456"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李课代(语文)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "查看任务列表",
+      "method": "GET",
+      "path": "/api/tasks",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李课代(语文)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "发布作业(新建任务)",
+      "method": "POST",
+      "path": "/api/tasks",
+      "mpBody": {
+        "title": "第一单元随堂练习",
+        "description": "完成练习册P12",
+        "subjectId": 1,
+        "creditValue": 5,
+        "deadline": "2026-08-20",
+        "status": "OPEN"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李课代(语文)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "编辑任务",
+      "method": "PUT",
+      "path": "/api/tasks/1",
+      "mpBody": {
+        "title": "第一单元随堂练习",
+        "description": "完成练习册P12",
+        "subjectId": 1,
+        "creditValue": 10,
+        "deadline": "2026-08-22",
+        "status": "OPEN"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李课代(语文)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "删除任务",
+      "method": "DELETE",
+      "path": "/api/tasks/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李课代(语文)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "快速登记完成/学生提交作业",
+      "method": "POST",
+      "path": "/api/completion/register",
+      "mpBody": {
+        "taskId": 1,
+        "studentIds": [
+          1
+        ],
+        "status": "FINISHED"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李课代(语文)",
+      "role": "REP",
+      "mod": "学生管理",
+      "op": "查看学生列表",
+      "method": "GET",
+      "path": "/api/students",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李课代(语文)",
+      "role": "REP",
+      "mod": "学生管理",
+      "op": "重置学生密码",
+      "method": "POST",
+      "path": "/api/students/1/reset-password",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李课代(语文)",
+      "role": "REP",
+      "mod": "科目管理",
+      "op": "查看科目(含课代表)",
+      "method": "GET",
+      "path": "/api/subjects",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李课代(语文)",
+      "role": "REP",
+      "mod": "积分调整",
+      "op": "手动加减积分",
+      "method": "POST",
+      "path": "/api/credit-flow/adjust",
+      "mpBody": {
+        "studentId": 1,
+        "amount": 5,
+        "reason": "课堂表现优秀"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李课代(语文)",
+      "role": "REP",
+      "mod": "积分流水",
+      "op": "查看积分流水",
+      "method": "GET",
+      "path": "/api/credit-flow",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李课代(语文)",
+      "role": "REP",
+      "mod": "账号管理",
+      "op": "重置账号密码",
+      "method": "POST",
+      "path": "/api/users/2/reset-password",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李课代(语文)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "浏览资料列表",
+      "method": "GET",
+      "path": "/api/mp/resources",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李课代(语文)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "查看资料详情(内联汇编)",
+      "method": "GET",
+      "path": "/api/mp/resources/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李课代(语文)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "看完广告回调",
+      "method": "POST",
+      "path": "/api/mp/resources/1/ad-done",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李课代(语文)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "实际查阅(扣积分)",
+      "method": "POST",
+      "path": "/api/mp/resources/1/access",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李课代(语文)",
+      "role": "REP",
+      "mod": "积分钱包",
+      "op": "我的积分余额",
+      "method": "GET",
+      "path": "/api/mp/me/points",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李课代(语文)",
+      "role": "REP",
+      "mod": "积分钱包",
+      "op": "看广告赚积分",
+      "method": "POST",
+      "path": "/api/mp/points/ad-reward",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李课代(语文)",
+      "role": "REP",
+      "mod": "预警中心",
+      "op": "查看预警列表",
+      "method": "GET",
+      "path": "/api/alerts",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李课代(语文)",
+      "role": "REP",
+      "mod": "预警中心",
+      "op": "手动扫描预警",
+      "method": "POST",
+      "path": "/api/alerts/scan",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李课代(语文)",
+      "role": "REP",
+      "mod": "预警中心",
+      "op": "标记预警解决",
+      "method": "PUT",
+      "path": "/api/alerts/1/resolve",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李课代(语文)",
+      "role": "REP",
+      "mod": "操作日志",
+      "op": "查看操作日志",
+      "method": "GET",
+      "path": "/api/operate-logs",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "李课代(语文)",
+      "role": "REP",
+      "mod": "数据看板",
+      "op": "查看数据看板",
+      "method": "GET",
+      "path": "/api/dashboard",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "张课代(数学)",
+      "role": "REP",
+      "mod": "登录鉴权",
+      "op": "账号密码登录",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "mpBody": {
+        "username": "teacher01",
+        "password": "123456"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "张课代(数学)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "查看任务列表",
+      "method": "GET",
+      "path": "/api/tasks",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "张课代(数学)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "发布作业(新建任务)",
+      "method": "POST",
+      "path": "/api/tasks",
+      "mpBody": {
+        "title": "第一单元随堂练习",
+        "description": "完成练习册P12",
+        "subjectId": 1,
+        "creditValue": 5,
+        "deadline": "2026-08-20",
+        "status": "OPEN"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "张课代(数学)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "编辑任务",
+      "method": "PUT",
+      "path": "/api/tasks/1",
+      "mpBody": {
+        "title": "第一单元随堂练习",
+        "description": "完成练习册P12",
+        "subjectId": 1,
+        "creditValue": 10,
+        "deadline": "2026-08-22",
+        "status": "OPEN"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "张课代(数学)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "删除任务",
+      "method": "DELETE",
+      "path": "/api/tasks/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "张课代(数学)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "快速登记完成/学生提交作业",
+      "method": "POST",
+      "path": "/api/completion/register",
+      "mpBody": {
+        "taskId": 1,
+        "studentIds": [
+          1
+        ],
+        "status": "FINISHED"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "张课代(数学)",
+      "role": "REP",
+      "mod": "学生管理",
+      "op": "查看学生列表",
+      "method": "GET",
+      "path": "/api/students",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "张课代(数学)",
+      "role": "REP",
+      "mod": "学生管理",
+      "op": "重置学生密码",
+      "method": "POST",
+      "path": "/api/students/1/reset-password",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "张课代(数学)",
+      "role": "REP",
+      "mod": "科目管理",
+      "op": "查看科目(含课代表)",
+      "method": "GET",
+      "path": "/api/subjects",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "张课代(数学)",
+      "role": "REP",
+      "mod": "积分调整",
+      "op": "手动加减积分",
+      "method": "POST",
+      "path": "/api/credit-flow/adjust",
+      "mpBody": {
+        "studentId": 1,
+        "amount": 5,
+        "reason": "课堂表现优秀"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "张课代(数学)",
+      "role": "REP",
+      "mod": "积分流水",
+      "op": "查看积分流水",
+      "method": "GET",
+      "path": "/api/credit-flow",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "张课代(数学)",
+      "role": "REP",
+      "mod": "账号管理",
+      "op": "重置账号密码",
+      "method": "POST",
+      "path": "/api/users/2/reset-password",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "张课代(数学)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "浏览资料列表",
+      "method": "GET",
+      "path": "/api/mp/resources",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "张课代(数学)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "查看资料详情(内联汇编)",
+      "method": "GET",
+      "path": "/api/mp/resources/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "张课代(数学)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "看完广告回调",
+      "method": "POST",
+      "path": "/api/mp/resources/1/ad-done",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "张课代(数学)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "实际查阅(扣积分)",
+      "method": "POST",
+      "path": "/api/mp/resources/1/access",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "张课代(数学)",
+      "role": "REP",
+      "mod": "积分钱包",
+      "op": "我的积分余额",
+      "method": "GET",
+      "path": "/api/mp/me/points",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "张课代(数学)",
+      "role": "REP",
+      "mod": "积分钱包",
+      "op": "看广告赚积分",
+      "method": "POST",
+      "path": "/api/mp/points/ad-reward",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "张课代(数学)",
+      "role": "REP",
+      "mod": "预警中心",
+      "op": "查看预警列表",
+      "method": "GET",
+      "path": "/api/alerts",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "张课代(数学)",
+      "role": "REP",
+      "mod": "预警中心",
+      "op": "手动扫描预警",
+      "method": "POST",
+      "path": "/api/alerts/scan",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "张课代(数学)",
+      "role": "REP",
+      "mod": "预警中心",
+      "op": "标记预警解决",
+      "method": "PUT",
+      "path": "/api/alerts/1/resolve",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "张课代(数学)",
+      "role": "REP",
+      "mod": "操作日志",
+      "op": "查看操作日志",
+      "method": "GET",
+      "path": "/api/operate-logs",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "张课代(数学)",
+      "role": "REP",
+      "mod": "数据看板",
+      "op": "查看数据看板",
+      "method": "GET",
+      "path": "/api/dashboard",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "王课代(英语)",
+      "role": "REP",
+      "mod": "登录鉴权",
+      "op": "账号密码登录",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "mpBody": {
+        "username": "teacher01",
+        "password": "123456"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "王课代(英语)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "查看任务列表",
+      "method": "GET",
+      "path": "/api/tasks",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "王课代(英语)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "发布作业(新建任务)",
+      "method": "POST",
+      "path": "/api/tasks",
+      "mpBody": {
+        "title": "第一单元随堂练习",
+        "description": "完成练习册P12",
+        "subjectId": 1,
+        "creditValue": 5,
+        "deadline": "2026-08-20",
+        "status": "OPEN"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "王课代(英语)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "编辑任务",
+      "method": "PUT",
+      "path": "/api/tasks/1",
+      "mpBody": {
+        "title": "第一单元随堂练习",
+        "description": "完成练习册P12",
+        "subjectId": 1,
+        "creditValue": 10,
+        "deadline": "2026-08-22",
+        "status": "OPEN"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "王课代(英语)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "删除任务",
+      "method": "DELETE",
+      "path": "/api/tasks/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "王课代(英语)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "快速登记完成/学生提交作业",
+      "method": "POST",
+      "path": "/api/completion/register",
+      "mpBody": {
+        "taskId": 1,
+        "studentIds": [
+          1
+        ],
+        "status": "FINISHED"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "王课代(英语)",
+      "role": "REP",
+      "mod": "学生管理",
+      "op": "查看学生列表",
+      "method": "GET",
+      "path": "/api/students",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "王课代(英语)",
+      "role": "REP",
+      "mod": "学生管理",
+      "op": "重置学生密码",
+      "method": "POST",
+      "path": "/api/students/1/reset-password",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "王课代(英语)",
+      "role": "REP",
+      "mod": "科目管理",
+      "op": "查看科目(含课代表)",
+      "method": "GET",
+      "path": "/api/subjects",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "王课代(英语)",
+      "role": "REP",
+      "mod": "积分调整",
+      "op": "手动加减积分",
+      "method": "POST",
+      "path": "/api/credit-flow/adjust",
+      "mpBody": {
+        "studentId": 1,
+        "amount": 5,
+        "reason": "课堂表现优秀"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "王课代(英语)",
+      "role": "REP",
+      "mod": "积分流水",
+      "op": "查看积分流水",
+      "method": "GET",
+      "path": "/api/credit-flow",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "王课代(英语)",
+      "role": "REP",
+      "mod": "账号管理",
+      "op": "重置账号密码",
+      "method": "POST",
+      "path": "/api/users/2/reset-password",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "王课代(英语)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "浏览资料列表",
+      "method": "GET",
+      "path": "/api/mp/resources",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "王课代(英语)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "查看资料详情(内联汇编)",
+      "method": "GET",
+      "path": "/api/mp/resources/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "王课代(英语)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "看完广告回调",
+      "method": "POST",
+      "path": "/api/mp/resources/1/ad-done",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "王课代(英语)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "实际查阅(扣积分)",
+      "method": "POST",
+      "path": "/api/mp/resources/1/access",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "王课代(英语)",
+      "role": "REP",
+      "mod": "积分钱包",
+      "op": "我的积分余额",
+      "method": "GET",
+      "path": "/api/mp/me/points",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "王课代(英语)",
+      "role": "REP",
+      "mod": "积分钱包",
+      "op": "看广告赚积分",
+      "method": "POST",
+      "path": "/api/mp/points/ad-reward",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "王课代(英语)",
+      "role": "REP",
+      "mod": "预警中心",
+      "op": "查看预警列表",
+      "method": "GET",
+      "path": "/api/alerts",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "王课代(英语)",
+      "role": "REP",
+      "mod": "预警中心",
+      "op": "手动扫描预警",
+      "method": "POST",
+      "path": "/api/alerts/scan",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "王课代(英语)",
+      "role": "REP",
+      "mod": "预警中心",
+      "op": "标记预警解决",
+      "method": "PUT",
+      "path": "/api/alerts/1/resolve",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "王课代(英语)",
+      "role": "REP",
+      "mod": "操作日志",
+      "op": "查看操作日志",
+      "method": "GET",
+      "path": "/api/operate-logs",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "王课代(英语)",
+      "role": "REP",
+      "mod": "数据看板",
+      "op": "查看数据看板",
+      "method": "GET",
+      "path": "/api/dashboard",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "刘课代(物理)",
+      "role": "REP",
+      "mod": "登录鉴权",
+      "op": "账号密码登录",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "mpBody": {
+        "username": "teacher01",
+        "password": "123456"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "刘课代(物理)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "查看任务列表",
+      "method": "GET",
+      "path": "/api/tasks",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "刘课代(物理)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "发布作业(新建任务)",
+      "method": "POST",
+      "path": "/api/tasks",
+      "mpBody": {
+        "title": "第一单元随堂练习",
+        "description": "完成练习册P12",
+        "subjectId": 1,
+        "creditValue": 5,
+        "deadline": "2026-08-20",
+        "status": "OPEN"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "刘课代(物理)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "编辑任务",
+      "method": "PUT",
+      "path": "/api/tasks/1",
+      "mpBody": {
+        "title": "第一单元随堂练习",
+        "description": "完成练习册P12",
+        "subjectId": 1,
+        "creditValue": 10,
+        "deadline": "2026-08-22",
+        "status": "OPEN"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "刘课代(物理)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "删除任务",
+      "method": "DELETE",
+      "path": "/api/tasks/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "刘课代(物理)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "快速登记完成/学生提交作业",
+      "method": "POST",
+      "path": "/api/completion/register",
+      "mpBody": {
+        "taskId": 1,
+        "studentIds": [
+          1
+        ],
+        "status": "FINISHED"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "刘课代(物理)",
+      "role": "REP",
+      "mod": "学生管理",
+      "op": "查看学生列表",
+      "method": "GET",
+      "path": "/api/students",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "刘课代(物理)",
+      "role": "REP",
+      "mod": "学生管理",
+      "op": "重置学生密码",
+      "method": "POST",
+      "path": "/api/students/1/reset-password",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "刘课代(物理)",
+      "role": "REP",
+      "mod": "科目管理",
+      "op": "查看科目(含课代表)",
+      "method": "GET",
+      "path": "/api/subjects",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "刘课代(物理)",
+      "role": "REP",
+      "mod": "积分调整",
+      "op": "手动加减积分",
+      "method": "POST",
+      "path": "/api/credit-flow/adjust",
+      "mpBody": {
+        "studentId": 1,
+        "amount": 5,
+        "reason": "课堂表现优秀"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "刘课代(物理)",
+      "role": "REP",
+      "mod": "积分流水",
+      "op": "查看积分流水",
+      "method": "GET",
+      "path": "/api/credit-flow",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "刘课代(物理)",
+      "role": "REP",
+      "mod": "账号管理",
+      "op": "重置账号密码",
+      "method": "POST",
+      "path": "/api/users/2/reset-password",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "刘课代(物理)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "浏览资料列表",
+      "method": "GET",
+      "path": "/api/mp/resources",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "刘课代(物理)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "查看资料详情(内联汇编)",
+      "method": "GET",
+      "path": "/api/mp/resources/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "刘课代(物理)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "看完广告回调",
+      "method": "POST",
+      "path": "/api/mp/resources/1/ad-done",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "刘课代(物理)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "实际查阅(扣积分)",
+      "method": "POST",
+      "path": "/api/mp/resources/1/access",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "刘课代(物理)",
+      "role": "REP",
+      "mod": "积分钱包",
+      "op": "我的积分余额",
+      "method": "GET",
+      "path": "/api/mp/me/points",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "刘课代(物理)",
+      "role": "REP",
+      "mod": "积分钱包",
+      "op": "看广告赚积分",
+      "method": "POST",
+      "path": "/api/mp/points/ad-reward",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "刘课代(物理)",
+      "role": "REP",
+      "mod": "预警中心",
+      "op": "查看预警列表",
+      "method": "GET",
+      "path": "/api/alerts",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "刘课代(物理)",
+      "role": "REP",
+      "mod": "预警中心",
+      "op": "手动扫描预警",
+      "method": "POST",
+      "path": "/api/alerts/scan",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "刘课代(物理)",
+      "role": "REP",
+      "mod": "预警中心",
+      "op": "标记预警解决",
+      "method": "PUT",
+      "path": "/api/alerts/1/resolve",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "刘课代(物理)",
+      "role": "REP",
+      "mod": "操作日志",
+      "op": "查看操作日志",
+      "method": "GET",
+      "path": "/api/operate-logs",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "刘课代(物理)",
+      "role": "REP",
+      "mod": "数据看板",
+      "op": "查看数据看板",
+      "method": "GET",
+      "path": "/api/dashboard",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈课代(化学)",
+      "role": "REP",
+      "mod": "登录鉴权",
+      "op": "账号密码登录",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "mpBody": {
+        "username": "teacher01",
+        "password": "123456"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈课代(化学)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "查看任务列表",
+      "method": "GET",
+      "path": "/api/tasks",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈课代(化学)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "发布作业(新建任务)",
+      "method": "POST",
+      "path": "/api/tasks",
+      "mpBody": {
+        "title": "第一单元随堂练习",
+        "description": "完成练习册P12",
+        "subjectId": 1,
+        "creditValue": 5,
+        "deadline": "2026-08-20",
+        "status": "OPEN"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈课代(化学)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "编辑任务",
+      "method": "PUT",
+      "path": "/api/tasks/1",
+      "mpBody": {
+        "title": "第一单元随堂练习",
+        "description": "完成练习册P12",
+        "subjectId": 1,
+        "creditValue": 10,
+        "deadline": "2026-08-22",
+        "status": "OPEN"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈课代(化学)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "删除任务",
+      "method": "DELETE",
+      "path": "/api/tasks/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈课代(化学)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "快速登记完成/学生提交作业",
+      "method": "POST",
+      "path": "/api/completion/register",
+      "mpBody": {
+        "taskId": 1,
+        "studentIds": [
+          1
+        ],
+        "status": "FINISHED"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈课代(化学)",
+      "role": "REP",
+      "mod": "学生管理",
+      "op": "查看学生列表",
+      "method": "GET",
+      "path": "/api/students",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈课代(化学)",
+      "role": "REP",
+      "mod": "学生管理",
+      "op": "重置学生密码",
+      "method": "POST",
+      "path": "/api/students/1/reset-password",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈课代(化学)",
+      "role": "REP",
+      "mod": "科目管理",
+      "op": "查看科目(含课代表)",
+      "method": "GET",
+      "path": "/api/subjects",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈课代(化学)",
+      "role": "REP",
+      "mod": "积分调整",
+      "op": "手动加减积分",
+      "method": "POST",
+      "path": "/api/credit-flow/adjust",
+      "mpBody": {
+        "studentId": 1,
+        "amount": 5,
+        "reason": "课堂表现优秀"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈课代(化学)",
+      "role": "REP",
+      "mod": "积分流水",
+      "op": "查看积分流水",
+      "method": "GET",
+      "path": "/api/credit-flow",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈课代(化学)",
+      "role": "REP",
+      "mod": "账号管理",
+      "op": "重置账号密码",
+      "method": "POST",
+      "path": "/api/users/2/reset-password",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈课代(化学)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "浏览资料列表",
+      "method": "GET",
+      "path": "/api/mp/resources",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈课代(化学)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "查看资料详情(内联汇编)",
+      "method": "GET",
+      "path": "/api/mp/resources/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈课代(化学)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "看完广告回调",
+      "method": "POST",
+      "path": "/api/mp/resources/1/ad-done",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈课代(化学)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "实际查阅(扣积分)",
+      "method": "POST",
+      "path": "/api/mp/resources/1/access",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈课代(化学)",
+      "role": "REP",
+      "mod": "积分钱包",
+      "op": "我的积分余额",
+      "method": "GET",
+      "path": "/api/mp/me/points",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈课代(化学)",
+      "role": "REP",
+      "mod": "积分钱包",
+      "op": "看广告赚积分",
+      "method": "POST",
+      "path": "/api/mp/points/ad-reward",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈课代(化学)",
+      "role": "REP",
+      "mod": "预警中心",
+      "op": "查看预警列表",
+      "method": "GET",
+      "path": "/api/alerts",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈课代(化学)",
+      "role": "REP",
+      "mod": "预警中心",
+      "op": "手动扫描预警",
+      "method": "POST",
+      "path": "/api/alerts/scan",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈课代(化学)",
+      "role": "REP",
+      "mod": "预警中心",
+      "op": "标记预警解决",
+      "method": "PUT",
+      "path": "/api/alerts/1/resolve",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈课代(化学)",
+      "role": "REP",
+      "mod": "操作日志",
+      "op": "查看操作日志",
+      "method": "GET",
+      "path": "/api/operate-logs",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "陈课代(化学)",
+      "role": "REP",
+      "mod": "数据看板",
+      "op": "查看数据看板",
+      "method": "GET",
+      "path": "/api/dashboard",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨课代(生物)",
+      "role": "REP",
+      "mod": "登录鉴权",
+      "op": "账号密码登录",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "mpBody": {
+        "username": "teacher01",
+        "password": "123456"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨课代(生物)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "查看任务列表",
+      "method": "GET",
+      "path": "/api/tasks",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨课代(生物)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "发布作业(新建任务)",
+      "method": "POST",
+      "path": "/api/tasks",
+      "mpBody": {
+        "title": "第一单元随堂练习",
+        "description": "完成练习册P12",
+        "subjectId": 1,
+        "creditValue": 5,
+        "deadline": "2026-08-20",
+        "status": "OPEN"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨课代(生物)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "编辑任务",
+      "method": "PUT",
+      "path": "/api/tasks/1",
+      "mpBody": {
+        "title": "第一单元随堂练习",
+        "description": "完成练习册P12",
+        "subjectId": 1,
+        "creditValue": 10,
+        "deadline": "2026-08-22",
+        "status": "OPEN"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨课代(生物)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "删除任务",
+      "method": "DELETE",
+      "path": "/api/tasks/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨课代(生物)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "快速登记完成/学生提交作业",
+      "method": "POST",
+      "path": "/api/completion/register",
+      "mpBody": {
+        "taskId": 1,
+        "studentIds": [
+          1
+        ],
+        "status": "FINISHED"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨课代(生物)",
+      "role": "REP",
+      "mod": "学生管理",
+      "op": "查看学生列表",
+      "method": "GET",
+      "path": "/api/students",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨课代(生物)",
+      "role": "REP",
+      "mod": "学生管理",
+      "op": "重置学生密码",
+      "method": "POST",
+      "path": "/api/students/1/reset-password",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨课代(生物)",
+      "role": "REP",
+      "mod": "科目管理",
+      "op": "查看科目(含课代表)",
+      "method": "GET",
+      "path": "/api/subjects",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨课代(生物)",
+      "role": "REP",
+      "mod": "积分调整",
+      "op": "手动加减积分",
+      "method": "POST",
+      "path": "/api/credit-flow/adjust",
+      "mpBody": {
+        "studentId": 1,
+        "amount": 5,
+        "reason": "课堂表现优秀"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨课代(生物)",
+      "role": "REP",
+      "mod": "积分流水",
+      "op": "查看积分流水",
+      "method": "GET",
+      "path": "/api/credit-flow",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨课代(生物)",
+      "role": "REP",
+      "mod": "账号管理",
+      "op": "重置账号密码",
+      "method": "POST",
+      "path": "/api/users/2/reset-password",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨课代(生物)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "浏览资料列表",
+      "method": "GET",
+      "path": "/api/mp/resources",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨课代(生物)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "查看资料详情(内联汇编)",
+      "method": "GET",
+      "path": "/api/mp/resources/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨课代(生物)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "看完广告回调",
+      "method": "POST",
+      "path": "/api/mp/resources/1/ad-done",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨课代(生物)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "实际查阅(扣积分)",
+      "method": "POST",
+      "path": "/api/mp/resources/1/access",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨课代(生物)",
+      "role": "REP",
+      "mod": "积分钱包",
+      "op": "我的积分余额",
+      "method": "GET",
+      "path": "/api/mp/me/points",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨课代(生物)",
+      "role": "REP",
+      "mod": "积分钱包",
+      "op": "看广告赚积分",
+      "method": "POST",
+      "path": "/api/mp/points/ad-reward",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨课代(生物)",
+      "role": "REP",
+      "mod": "预警中心",
+      "op": "查看预警列表",
+      "method": "GET",
+      "path": "/api/alerts",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨课代(生物)",
+      "role": "REP",
+      "mod": "预警中心",
+      "op": "手动扫描预警",
+      "method": "POST",
+      "path": "/api/alerts/scan",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨课代(生物)",
+      "role": "REP",
+      "mod": "预警中心",
+      "op": "标记预警解决",
+      "method": "PUT",
+      "path": "/api/alerts/1/resolve",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨课代(生物)",
+      "role": "REP",
+      "mod": "操作日志",
+      "op": "查看操作日志",
+      "method": "GET",
+      "path": "/api/operate-logs",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "杨课代(生物)",
+      "role": "REP",
+      "mod": "数据看板",
+      "op": "查看数据看板",
+      "method": "GET",
+      "path": "/api/dashboard",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "黄课代(历史)",
+      "role": "REP",
+      "mod": "登录鉴权",
+      "op": "账号密码登录",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "mpBody": {
+        "username": "teacher01",
+        "password": "123456"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "黄课代(历史)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "查看任务列表",
+      "method": "GET",
+      "path": "/api/tasks",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "黄课代(历史)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "发布作业(新建任务)",
+      "method": "POST",
+      "path": "/api/tasks",
+      "mpBody": {
+        "title": "第一单元随堂练习",
+        "description": "完成练习册P12",
+        "subjectId": 1,
+        "creditValue": 5,
+        "deadline": "2026-08-20",
+        "status": "OPEN"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "黄课代(历史)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "编辑任务",
+      "method": "PUT",
+      "path": "/api/tasks/1",
+      "mpBody": {
+        "title": "第一单元随堂练习",
+        "description": "完成练习册P12",
+        "subjectId": 1,
+        "creditValue": 10,
+        "deadline": "2026-08-22",
+        "status": "OPEN"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "黄课代(历史)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "删除任务",
+      "method": "DELETE",
+      "path": "/api/tasks/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "黄课代(历史)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "快速登记完成/学生提交作业",
+      "method": "POST",
+      "path": "/api/completion/register",
+      "mpBody": {
+        "taskId": 1,
+        "studentIds": [
+          1
+        ],
+        "status": "FINISHED"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "黄课代(历史)",
+      "role": "REP",
+      "mod": "学生管理",
+      "op": "查看学生列表",
+      "method": "GET",
+      "path": "/api/students",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "黄课代(历史)",
+      "role": "REP",
+      "mod": "学生管理",
+      "op": "重置学生密码",
+      "method": "POST",
+      "path": "/api/students/1/reset-password",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "黄课代(历史)",
+      "role": "REP",
+      "mod": "科目管理",
+      "op": "查看科目(含课代表)",
+      "method": "GET",
+      "path": "/api/subjects",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "黄课代(历史)",
+      "role": "REP",
+      "mod": "积分调整",
+      "op": "手动加减积分",
+      "method": "POST",
+      "path": "/api/credit-flow/adjust",
+      "mpBody": {
+        "studentId": 1,
+        "amount": 5,
+        "reason": "课堂表现优秀"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "黄课代(历史)",
+      "role": "REP",
+      "mod": "积分流水",
+      "op": "查看积分流水",
+      "method": "GET",
+      "path": "/api/credit-flow",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "黄课代(历史)",
+      "role": "REP",
+      "mod": "账号管理",
+      "op": "重置账号密码",
+      "method": "POST",
+      "path": "/api/users/2/reset-password",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "黄课代(历史)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "浏览资料列表",
+      "method": "GET",
+      "path": "/api/mp/resources",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "黄课代(历史)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "查看资料详情(内联汇编)",
+      "method": "GET",
+      "path": "/api/mp/resources/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "黄课代(历史)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "看完广告回调",
+      "method": "POST",
+      "path": "/api/mp/resources/1/ad-done",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "黄课代(历史)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "实际查阅(扣积分)",
+      "method": "POST",
+      "path": "/api/mp/resources/1/access",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "黄课代(历史)",
+      "role": "REP",
+      "mod": "积分钱包",
+      "op": "我的积分余额",
+      "method": "GET",
+      "path": "/api/mp/me/points",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "黄课代(历史)",
+      "role": "REP",
+      "mod": "积分钱包",
+      "op": "看广告赚积分",
+      "method": "POST",
+      "path": "/api/mp/points/ad-reward",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "黄课代(历史)",
+      "role": "REP",
+      "mod": "预警中心",
+      "op": "查看预警列表",
+      "method": "GET",
+      "path": "/api/alerts",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "黄课代(历史)",
+      "role": "REP",
+      "mod": "预警中心",
+      "op": "手动扫描预警",
+      "method": "POST",
+      "path": "/api/alerts/scan",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "黄课代(历史)",
+      "role": "REP",
+      "mod": "预警中心",
+      "op": "标记预警解决",
+      "method": "PUT",
+      "path": "/api/alerts/1/resolve",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "黄课代(历史)",
+      "role": "REP",
+      "mod": "操作日志",
+      "op": "查看操作日志",
+      "method": "GET",
+      "path": "/api/operate-logs",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "黄课代(历史)",
+      "role": "REP",
+      "mod": "数据看板",
+      "op": "查看数据看板",
+      "method": "GET",
+      "path": "/api/dashboard",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "周课代(地理)",
+      "role": "REP",
+      "mod": "登录鉴权",
+      "op": "账号密码登录",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "mpBody": {
+        "username": "teacher01",
+        "password": "123456"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "周课代(地理)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "查看任务列表",
+      "method": "GET",
+      "path": "/api/tasks",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "周课代(地理)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "发布作业(新建任务)",
+      "method": "POST",
+      "path": "/api/tasks",
+      "mpBody": {
+        "title": "第一单元随堂练习",
+        "description": "完成练习册P12",
+        "subjectId": 1,
+        "creditValue": 5,
+        "deadline": "2026-08-20",
+        "status": "OPEN"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "周课代(地理)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "编辑任务",
+      "method": "PUT",
+      "path": "/api/tasks/1",
+      "mpBody": {
+        "title": "第一单元随堂练习",
+        "description": "完成练习册P12",
+        "subjectId": 1,
+        "creditValue": 10,
+        "deadline": "2026-08-22",
+        "status": "OPEN"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "周课代(地理)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "删除任务",
+      "method": "DELETE",
+      "path": "/api/tasks/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "周课代(地理)",
+      "role": "REP",
+      "mod": "任务管理",
+      "op": "快速登记完成/学生提交作业",
+      "method": "POST",
+      "path": "/api/completion/register",
+      "mpBody": {
+        "taskId": 1,
+        "studentIds": [
+          1
+        ],
+        "status": "FINISHED"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "周课代(地理)",
+      "role": "REP",
+      "mod": "学生管理",
+      "op": "查看学生列表",
+      "method": "GET",
+      "path": "/api/students",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "周课代(地理)",
+      "role": "REP",
+      "mod": "学生管理",
+      "op": "重置学生密码",
+      "method": "POST",
+      "path": "/api/students/1/reset-password",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "周课代(地理)",
+      "role": "REP",
+      "mod": "科目管理",
+      "op": "查看科目(含课代表)",
+      "method": "GET",
+      "path": "/api/subjects",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "周课代(地理)",
+      "role": "REP",
+      "mod": "积分调整",
+      "op": "手动加减积分",
+      "method": "POST",
+      "path": "/api/credit-flow/adjust",
+      "mpBody": {
+        "studentId": 1,
+        "amount": 5,
+        "reason": "课堂表现优秀"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "周课代(地理)",
+      "role": "REP",
+      "mod": "积分流水",
+      "op": "查看积分流水",
+      "method": "GET",
+      "path": "/api/credit-flow",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "周课代(地理)",
+      "role": "REP",
+      "mod": "账号管理",
+      "op": "重置账号密码",
+      "method": "POST",
+      "path": "/api/users/2/reset-password",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "周课代(地理)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "浏览资料列表",
+      "method": "GET",
+      "path": "/api/mp/resources",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "周课代(地理)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "查看资料详情(内联汇编)",
+      "method": "GET",
+      "path": "/api/mp/resources/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "周课代(地理)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "看完广告回调",
+      "method": "POST",
+      "path": "/api/mp/resources/1/ad-done",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "周课代(地理)",
+      "role": "REP",
+      "mod": "资料管理",
+      "op": "实际查阅(扣积分)",
+      "method": "POST",
+      "path": "/api/mp/resources/1/access",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "周课代(地理)",
+      "role": "REP",
+      "mod": "积分钱包",
+      "op": "我的积分余额",
+      "method": "GET",
+      "path": "/api/mp/me/points",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "周课代(地理)",
+      "role": "REP",
+      "mod": "积分钱包",
+      "op": "看广告赚积分",
+      "method": "POST",
+      "path": "/api/mp/points/ad-reward",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "周课代(地理)",
+      "role": "REP",
+      "mod": "预警中心",
+      "op": "查看预警列表",
+      "method": "GET",
+      "path": "/api/alerts",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "周课代(地理)",
+      "role": "REP",
+      "mod": "预警中心",
+      "op": "手动扫描预警",
+      "method": "POST",
+      "path": "/api/alerts/scan",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "周课代(地理)",
+      "role": "REP",
+      "mod": "预警中心",
+      "op": "标记预警解决",
+      "method": "PUT",
+      "path": "/api/alerts/1/resolve",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "周课代(地理)",
+      "role": "REP",
+      "mod": "操作日志",
+      "op": "查看操作日志",
+      "method": "GET",
+      "path": "/api/operate-logs",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "周课代(地理)",
+      "role": "REP",
+      "mod": "数据看板",
+      "op": "查看数据看板",
+      "method": "GET",
+      "path": "/api/dashboard",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生01",
+      "role": "STUDENT",
+      "mod": "登录鉴权",
+      "op": "账号密码登录",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "mpBody": {
+        "username": "teacher01",
+        "password": "123456"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生01",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "查看任务列表",
+      "method": "GET",
+      "path": "/api/tasks",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生01",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "快速登记完成/学生提交作业",
+      "method": "POST",
+      "path": "/api/completion/register",
+      "mpBody": {
+        "taskId": 1,
+        "studentIds": [
+          1
+        ],
+        "status": "FINISHED"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生01",
+      "role": "STUDENT",
+      "mod": "科目管理",
+      "op": "查看科目(含课代表)",
+      "method": "GET",
+      "path": "/api/subjects",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生01",
+      "role": "STUDENT",
+      "mod": "积分流水",
+      "op": "查看积分流水",
+      "method": "GET",
+      "path": "/api/credit-flow",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生01",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "浏览资料列表",
+      "method": "GET",
+      "path": "/api/mp/resources",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生01",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "查看资料详情(内联汇编)",
+      "method": "GET",
+      "path": "/api/mp/resources/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生01",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "看完广告回调",
+      "method": "POST",
+      "path": "/api/mp/resources/1/ad-done",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生01",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "实际查阅(扣积分)",
+      "method": "POST",
+      "path": "/api/mp/resources/1/access",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生01",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "我的积分余额",
+      "method": "GET",
+      "path": "/api/mp/me/points",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生01",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "看广告赚积分",
+      "method": "POST",
+      "path": "/api/mp/points/ad-reward",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生01",
+      "role": "STUDENT",
+      "mod": "预警中心",
+      "op": "查看预警列表",
+      "method": "GET",
+      "path": "/api/alerts",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生02",
+      "role": "STUDENT",
+      "mod": "登录鉴权",
+      "op": "账号密码登录",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "mpBody": {
+        "username": "teacher01",
+        "password": "123456"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生02",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "查看任务列表",
+      "method": "GET",
+      "path": "/api/tasks",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生02",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "快速登记完成/学生提交作业",
+      "method": "POST",
+      "path": "/api/completion/register",
+      "mpBody": {
+        "taskId": 1,
+        "studentIds": [
+          1
+        ],
+        "status": "FINISHED"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生02",
+      "role": "STUDENT",
+      "mod": "科目管理",
+      "op": "查看科目(含课代表)",
+      "method": "GET",
+      "path": "/api/subjects",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生02",
+      "role": "STUDENT",
+      "mod": "积分流水",
+      "op": "查看积分流水",
+      "method": "GET",
+      "path": "/api/credit-flow",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生02",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "浏览资料列表",
+      "method": "GET",
+      "path": "/api/mp/resources",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生02",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "查看资料详情(内联汇编)",
+      "method": "GET",
+      "path": "/api/mp/resources/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生02",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "看完广告回调",
+      "method": "POST",
+      "path": "/api/mp/resources/1/ad-done",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生02",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "实际查阅(扣积分)",
+      "method": "POST",
+      "path": "/api/mp/resources/1/access",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生02",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "我的积分余额",
+      "method": "GET",
+      "path": "/api/mp/me/points",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生02",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "看广告赚积分",
+      "method": "POST",
+      "path": "/api/mp/points/ad-reward",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生02",
+      "role": "STUDENT",
+      "mod": "预警中心",
+      "op": "查看预警列表",
+      "method": "GET",
+      "path": "/api/alerts",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生03",
+      "role": "STUDENT",
+      "mod": "登录鉴权",
+      "op": "账号密码登录",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "mpBody": {
+        "username": "teacher01",
+        "password": "123456"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生03",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "查看任务列表",
+      "method": "GET",
+      "path": "/api/tasks",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生03",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "快速登记完成/学生提交作业",
+      "method": "POST",
+      "path": "/api/completion/register",
+      "mpBody": {
+        "taskId": 1,
+        "studentIds": [
+          1
+        ],
+        "status": "FINISHED"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生03",
+      "role": "STUDENT",
+      "mod": "科目管理",
+      "op": "查看科目(含课代表)",
+      "method": "GET",
+      "path": "/api/subjects",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生03",
+      "role": "STUDENT",
+      "mod": "积分流水",
+      "op": "查看积分流水",
+      "method": "GET",
+      "path": "/api/credit-flow",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生03",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "浏览资料列表",
+      "method": "GET",
+      "path": "/api/mp/resources",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生03",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "查看资料详情(内联汇编)",
+      "method": "GET",
+      "path": "/api/mp/resources/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生03",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "看完广告回调",
+      "method": "POST",
+      "path": "/api/mp/resources/1/ad-done",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生03",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "实际查阅(扣积分)",
+      "method": "POST",
+      "path": "/api/mp/resources/1/access",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生03",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "我的积分余额",
+      "method": "GET",
+      "path": "/api/mp/me/points",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生03",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "看广告赚积分",
+      "method": "POST",
+      "path": "/api/mp/points/ad-reward",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生03",
+      "role": "STUDENT",
+      "mod": "预警中心",
+      "op": "查看预警列表",
+      "method": "GET",
+      "path": "/api/alerts",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生04",
+      "role": "STUDENT",
+      "mod": "登录鉴权",
+      "op": "账号密码登录",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "mpBody": {
+        "username": "teacher01",
+        "password": "123456"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生04",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "查看任务列表",
+      "method": "GET",
+      "path": "/api/tasks",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生04",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "快速登记完成/学生提交作业",
+      "method": "POST",
+      "path": "/api/completion/register",
+      "mpBody": {
+        "taskId": 1,
+        "studentIds": [
+          1
+        ],
+        "status": "FINISHED"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生04",
+      "role": "STUDENT",
+      "mod": "科目管理",
+      "op": "查看科目(含课代表)",
+      "method": "GET",
+      "path": "/api/subjects",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生04",
+      "role": "STUDENT",
+      "mod": "积分流水",
+      "op": "查看积分流水",
+      "method": "GET",
+      "path": "/api/credit-flow",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生04",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "浏览资料列表",
+      "method": "GET",
+      "path": "/api/mp/resources",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生04",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "查看资料详情(内联汇编)",
+      "method": "GET",
+      "path": "/api/mp/resources/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生04",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "看完广告回调",
+      "method": "POST",
+      "path": "/api/mp/resources/1/ad-done",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生04",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "实际查阅(扣积分)",
+      "method": "POST",
+      "path": "/api/mp/resources/1/access",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生04",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "我的积分余额",
+      "method": "GET",
+      "path": "/api/mp/me/points",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生04",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "看广告赚积分",
+      "method": "POST",
+      "path": "/api/mp/points/ad-reward",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生04",
+      "role": "STUDENT",
+      "mod": "预警中心",
+      "op": "查看预警列表",
+      "method": "GET",
+      "path": "/api/alerts",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生05",
+      "role": "STUDENT",
+      "mod": "登录鉴权",
+      "op": "账号密码登录",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "mpBody": {
+        "username": "teacher01",
+        "password": "123456"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生05",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "查看任务列表",
+      "method": "GET",
+      "path": "/api/tasks",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生05",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "快速登记完成/学生提交作业",
+      "method": "POST",
+      "path": "/api/completion/register",
+      "mpBody": {
+        "taskId": 1,
+        "studentIds": [
+          1
+        ],
+        "status": "FINISHED"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生05",
+      "role": "STUDENT",
+      "mod": "科目管理",
+      "op": "查看科目(含课代表)",
+      "method": "GET",
+      "path": "/api/subjects",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生05",
+      "role": "STUDENT",
+      "mod": "积分流水",
+      "op": "查看积分流水",
+      "method": "GET",
+      "path": "/api/credit-flow",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生05",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "浏览资料列表",
+      "method": "GET",
+      "path": "/api/mp/resources",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生05",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "查看资料详情(内联汇编)",
+      "method": "GET",
+      "path": "/api/mp/resources/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生05",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "看完广告回调",
+      "method": "POST",
+      "path": "/api/mp/resources/1/ad-done",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生05",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "实际查阅(扣积分)",
+      "method": "POST",
+      "path": "/api/mp/resources/1/access",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生05",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "我的积分余额",
+      "method": "GET",
+      "path": "/api/mp/me/points",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生05",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "看广告赚积分",
+      "method": "POST",
+      "path": "/api/mp/points/ad-reward",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生05",
+      "role": "STUDENT",
+      "mod": "预警中心",
+      "op": "查看预警列表",
+      "method": "GET",
+      "path": "/api/alerts",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生06",
+      "role": "STUDENT",
+      "mod": "登录鉴权",
+      "op": "账号密码登录",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "mpBody": {
+        "username": "teacher01",
+        "password": "123456"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生06",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "查看任务列表",
+      "method": "GET",
+      "path": "/api/tasks",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生06",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "快速登记完成/学生提交作业",
+      "method": "POST",
+      "path": "/api/completion/register",
+      "mpBody": {
+        "taskId": 1,
+        "studentIds": [
+          1
+        ],
+        "status": "FINISHED"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生06",
+      "role": "STUDENT",
+      "mod": "科目管理",
+      "op": "查看科目(含课代表)",
+      "method": "GET",
+      "path": "/api/subjects",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生06",
+      "role": "STUDENT",
+      "mod": "积分流水",
+      "op": "查看积分流水",
+      "method": "GET",
+      "path": "/api/credit-flow",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生06",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "浏览资料列表",
+      "method": "GET",
+      "path": "/api/mp/resources",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生06",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "查看资料详情(内联汇编)",
+      "method": "GET",
+      "path": "/api/mp/resources/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生06",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "看完广告回调",
+      "method": "POST",
+      "path": "/api/mp/resources/1/ad-done",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生06",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "实际查阅(扣积分)",
+      "method": "POST",
+      "path": "/api/mp/resources/1/access",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生06",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "我的积分余额",
+      "method": "GET",
+      "path": "/api/mp/me/points",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生06",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "看广告赚积分",
+      "method": "POST",
+      "path": "/api/mp/points/ad-reward",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生06",
+      "role": "STUDENT",
+      "mod": "预警中心",
+      "op": "查看预警列表",
+      "method": "GET",
+      "path": "/api/alerts",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生07",
+      "role": "STUDENT",
+      "mod": "登录鉴权",
+      "op": "账号密码登录",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "mpBody": {
+        "username": "teacher01",
+        "password": "123456"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生07",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "查看任务列表",
+      "method": "GET",
+      "path": "/api/tasks",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生07",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "快速登记完成/学生提交作业",
+      "method": "POST",
+      "path": "/api/completion/register",
+      "mpBody": {
+        "taskId": 1,
+        "studentIds": [
+          1
+        ],
+        "status": "FINISHED"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生07",
+      "role": "STUDENT",
+      "mod": "科目管理",
+      "op": "查看科目(含课代表)",
+      "method": "GET",
+      "path": "/api/subjects",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生07",
+      "role": "STUDENT",
+      "mod": "积分流水",
+      "op": "查看积分流水",
+      "method": "GET",
+      "path": "/api/credit-flow",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生07",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "浏览资料列表",
+      "method": "GET",
+      "path": "/api/mp/resources",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生07",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "查看资料详情(内联汇编)",
+      "method": "GET",
+      "path": "/api/mp/resources/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生07",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "看完广告回调",
+      "method": "POST",
+      "path": "/api/mp/resources/1/ad-done",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生07",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "实际查阅(扣积分)",
+      "method": "POST",
+      "path": "/api/mp/resources/1/access",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生07",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "我的积分余额",
+      "method": "GET",
+      "path": "/api/mp/me/points",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生07",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "看广告赚积分",
+      "method": "POST",
+      "path": "/api/mp/points/ad-reward",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生07",
+      "role": "STUDENT",
+      "mod": "预警中心",
+      "op": "查看预警列表",
+      "method": "GET",
+      "path": "/api/alerts",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生08",
+      "role": "STUDENT",
+      "mod": "登录鉴权",
+      "op": "账号密码登录",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "mpBody": {
+        "username": "teacher01",
+        "password": "123456"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生08",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "查看任务列表",
+      "method": "GET",
+      "path": "/api/tasks",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生08",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "快速登记完成/学生提交作业",
+      "method": "POST",
+      "path": "/api/completion/register",
+      "mpBody": {
+        "taskId": 1,
+        "studentIds": [
+          1
+        ],
+        "status": "FINISHED"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生08",
+      "role": "STUDENT",
+      "mod": "科目管理",
+      "op": "查看科目(含课代表)",
+      "method": "GET",
+      "path": "/api/subjects",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生08",
+      "role": "STUDENT",
+      "mod": "积分流水",
+      "op": "查看积分流水",
+      "method": "GET",
+      "path": "/api/credit-flow",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生08",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "浏览资料列表",
+      "method": "GET",
+      "path": "/api/mp/resources",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生08",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "查看资料详情(内联汇编)",
+      "method": "GET",
+      "path": "/api/mp/resources/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生08",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "看完广告回调",
+      "method": "POST",
+      "path": "/api/mp/resources/1/ad-done",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生08",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "实际查阅(扣积分)",
+      "method": "POST",
+      "path": "/api/mp/resources/1/access",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生08",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "我的积分余额",
+      "method": "GET",
+      "path": "/api/mp/me/points",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生08",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "看广告赚积分",
+      "method": "POST",
+      "path": "/api/mp/points/ad-reward",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生08",
+      "role": "STUDENT",
+      "mod": "预警中心",
+      "op": "查看预警列表",
+      "method": "GET",
+      "path": "/api/alerts",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生09",
+      "role": "STUDENT",
+      "mod": "登录鉴权",
+      "op": "账号密码登录",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "mpBody": {
+        "username": "teacher01",
+        "password": "123456"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生09",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "查看任务列表",
+      "method": "GET",
+      "path": "/api/tasks",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生09",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "快速登记完成/学生提交作业",
+      "method": "POST",
+      "path": "/api/completion/register",
+      "mpBody": {
+        "taskId": 1,
+        "studentIds": [
+          1
+        ],
+        "status": "FINISHED"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生09",
+      "role": "STUDENT",
+      "mod": "科目管理",
+      "op": "查看科目(含课代表)",
+      "method": "GET",
+      "path": "/api/subjects",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生09",
+      "role": "STUDENT",
+      "mod": "积分流水",
+      "op": "查看积分流水",
+      "method": "GET",
+      "path": "/api/credit-flow",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生09",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "浏览资料列表",
+      "method": "GET",
+      "path": "/api/mp/resources",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生09",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "查看资料详情(内联汇编)",
+      "method": "GET",
+      "path": "/api/mp/resources/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生09",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "看完广告回调",
+      "method": "POST",
+      "path": "/api/mp/resources/1/ad-done",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生09",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "实际查阅(扣积分)",
+      "method": "POST",
+      "path": "/api/mp/resources/1/access",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生09",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "我的积分余额",
+      "method": "GET",
+      "path": "/api/mp/me/points",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生09",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "看广告赚积分",
+      "method": "POST",
+      "path": "/api/mp/points/ad-reward",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生09",
+      "role": "STUDENT",
+      "mod": "预警中心",
+      "op": "查看预警列表",
+      "method": "GET",
+      "path": "/api/alerts",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生10",
+      "role": "STUDENT",
+      "mod": "登录鉴权",
+      "op": "账号密码登录",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "mpBody": {
+        "username": "teacher01",
+        "password": "123456"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生10",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "查看任务列表",
+      "method": "GET",
+      "path": "/api/tasks",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生10",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "快速登记完成/学生提交作业",
+      "method": "POST",
+      "path": "/api/completion/register",
+      "mpBody": {
+        "taskId": 1,
+        "studentIds": [
+          1
+        ],
+        "status": "FINISHED"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生10",
+      "role": "STUDENT",
+      "mod": "科目管理",
+      "op": "查看科目(含课代表)",
+      "method": "GET",
+      "path": "/api/subjects",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生10",
+      "role": "STUDENT",
+      "mod": "积分流水",
+      "op": "查看积分流水",
+      "method": "GET",
+      "path": "/api/credit-flow",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生10",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "浏览资料列表",
+      "method": "GET",
+      "path": "/api/mp/resources",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生10",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "查看资料详情(内联汇编)",
+      "method": "GET",
+      "path": "/api/mp/resources/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生10",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "看完广告回调",
+      "method": "POST",
+      "path": "/api/mp/resources/1/ad-done",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生10",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "实际查阅(扣积分)",
+      "method": "POST",
+      "path": "/api/mp/resources/1/access",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生10",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "我的积分余额",
+      "method": "GET",
+      "path": "/api/mp/me/points",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生10",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "看广告赚积分",
+      "method": "POST",
+      "path": "/api/mp/points/ad-reward",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生10",
+      "role": "STUDENT",
+      "mod": "预警中心",
+      "op": "查看预警列表",
+      "method": "GET",
+      "path": "/api/alerts",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生11",
+      "role": "STUDENT",
+      "mod": "登录鉴权",
+      "op": "账号密码登录",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "mpBody": {
+        "username": "teacher01",
+        "password": "123456"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生11",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "查看任务列表",
+      "method": "GET",
+      "path": "/api/tasks",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生11",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "快速登记完成/学生提交作业",
+      "method": "POST",
+      "path": "/api/completion/register",
+      "mpBody": {
+        "taskId": 1,
+        "studentIds": [
+          1
+        ],
+        "status": "FINISHED"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生11",
+      "role": "STUDENT",
+      "mod": "科目管理",
+      "op": "查看科目(含课代表)",
+      "method": "GET",
+      "path": "/api/subjects",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生11",
+      "role": "STUDENT",
+      "mod": "积分流水",
+      "op": "查看积分流水",
+      "method": "GET",
+      "path": "/api/credit-flow",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生11",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "浏览资料列表",
+      "method": "GET",
+      "path": "/api/mp/resources",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生11",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "查看资料详情(内联汇编)",
+      "method": "GET",
+      "path": "/api/mp/resources/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生11",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "看完广告回调",
+      "method": "POST",
+      "path": "/api/mp/resources/1/ad-done",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生11",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "实际查阅(扣积分)",
+      "method": "POST",
+      "path": "/api/mp/resources/1/access",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生11",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "我的积分余额",
+      "method": "GET",
+      "path": "/api/mp/me/points",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生11",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "看广告赚积分",
+      "method": "POST",
+      "path": "/api/mp/points/ad-reward",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生11",
+      "role": "STUDENT",
+      "mod": "预警中心",
+      "op": "查看预警列表",
+      "method": "GET",
+      "path": "/api/alerts",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生12",
+      "role": "STUDENT",
+      "mod": "登录鉴权",
+      "op": "账号密码登录",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "mpBody": {
+        "username": "teacher01",
+        "password": "123456"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生12",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "查看任务列表",
+      "method": "GET",
+      "path": "/api/tasks",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生12",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "快速登记完成/学生提交作业",
+      "method": "POST",
+      "path": "/api/completion/register",
+      "mpBody": {
+        "taskId": 1,
+        "studentIds": [
+          1
+        ],
+        "status": "FINISHED"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生12",
+      "role": "STUDENT",
+      "mod": "科目管理",
+      "op": "查看科目(含课代表)",
+      "method": "GET",
+      "path": "/api/subjects",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生12",
+      "role": "STUDENT",
+      "mod": "积分流水",
+      "op": "查看积分流水",
+      "method": "GET",
+      "path": "/api/credit-flow",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生12",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "浏览资料列表",
+      "method": "GET",
+      "path": "/api/mp/resources",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生12",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "查看资料详情(内联汇编)",
+      "method": "GET",
+      "path": "/api/mp/resources/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生12",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "看完广告回调",
+      "method": "POST",
+      "path": "/api/mp/resources/1/ad-done",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生12",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "实际查阅(扣积分)",
+      "method": "POST",
+      "path": "/api/mp/resources/1/access",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生12",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "我的积分余额",
+      "method": "GET",
+      "path": "/api/mp/me/points",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生12",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "看广告赚积分",
+      "method": "POST",
+      "path": "/api/mp/points/ad-reward",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生12",
+      "role": "STUDENT",
+      "mod": "预警中心",
+      "op": "查看预警列表",
+      "method": "GET",
+      "path": "/api/alerts",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生13",
+      "role": "STUDENT",
+      "mod": "登录鉴权",
+      "op": "账号密码登录",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "mpBody": {
+        "username": "teacher01",
+        "password": "123456"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生13",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "查看任务列表",
+      "method": "GET",
+      "path": "/api/tasks",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生13",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "快速登记完成/学生提交作业",
+      "method": "POST",
+      "path": "/api/completion/register",
+      "mpBody": {
+        "taskId": 1,
+        "studentIds": [
+          1
+        ],
+        "status": "FINISHED"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生13",
+      "role": "STUDENT",
+      "mod": "科目管理",
+      "op": "查看科目(含课代表)",
+      "method": "GET",
+      "path": "/api/subjects",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生13",
+      "role": "STUDENT",
+      "mod": "积分流水",
+      "op": "查看积分流水",
+      "method": "GET",
+      "path": "/api/credit-flow",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生13",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "浏览资料列表",
+      "method": "GET",
+      "path": "/api/mp/resources",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生13",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "查看资料详情(内联汇编)",
+      "method": "GET",
+      "path": "/api/mp/resources/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生13",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "看完广告回调",
+      "method": "POST",
+      "path": "/api/mp/resources/1/ad-done",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生13",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "实际查阅(扣积分)",
+      "method": "POST",
+      "path": "/api/mp/resources/1/access",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生13",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "我的积分余额",
+      "method": "GET",
+      "path": "/api/mp/me/points",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生13",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "看广告赚积分",
+      "method": "POST",
+      "path": "/api/mp/points/ad-reward",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生13",
+      "role": "STUDENT",
+      "mod": "预警中心",
+      "op": "查看预警列表",
+      "method": "GET",
+      "path": "/api/alerts",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生14",
+      "role": "STUDENT",
+      "mod": "登录鉴权",
+      "op": "账号密码登录",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "mpBody": {
+        "username": "teacher01",
+        "password": "123456"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生14",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "查看任务列表",
+      "method": "GET",
+      "path": "/api/tasks",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生14",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "快速登记完成/学生提交作业",
+      "method": "POST",
+      "path": "/api/completion/register",
+      "mpBody": {
+        "taskId": 1,
+        "studentIds": [
+          1
+        ],
+        "status": "FINISHED"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生14",
+      "role": "STUDENT",
+      "mod": "科目管理",
+      "op": "查看科目(含课代表)",
+      "method": "GET",
+      "path": "/api/subjects",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生14",
+      "role": "STUDENT",
+      "mod": "积分流水",
+      "op": "查看积分流水",
+      "method": "GET",
+      "path": "/api/credit-flow",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生14",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "浏览资料列表",
+      "method": "GET",
+      "path": "/api/mp/resources",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生14",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "查看资料详情(内联汇编)",
+      "method": "GET",
+      "path": "/api/mp/resources/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生14",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "看完广告回调",
+      "method": "POST",
+      "path": "/api/mp/resources/1/ad-done",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生14",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "实际查阅(扣积分)",
+      "method": "POST",
+      "path": "/api/mp/resources/1/access",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生14",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "我的积分余额",
+      "method": "GET",
+      "path": "/api/mp/me/points",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生14",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "看广告赚积分",
+      "method": "POST",
+      "path": "/api/mp/points/ad-reward",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生14",
+      "role": "STUDENT",
+      "mod": "预警中心",
+      "op": "查看预警列表",
+      "method": "GET",
+      "path": "/api/alerts",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生15",
+      "role": "STUDENT",
+      "mod": "登录鉴权",
+      "op": "账号密码登录",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "mpBody": {
+        "username": "teacher01",
+        "password": "123456"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生15",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "查看任务列表",
+      "method": "GET",
+      "path": "/api/tasks",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生15",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "快速登记完成/学生提交作业",
+      "method": "POST",
+      "path": "/api/completion/register",
+      "mpBody": {
+        "taskId": 1,
+        "studentIds": [
+          1
+        ],
+        "status": "FINISHED"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生15",
+      "role": "STUDENT",
+      "mod": "科目管理",
+      "op": "查看科目(含课代表)",
+      "method": "GET",
+      "path": "/api/subjects",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生15",
+      "role": "STUDENT",
+      "mod": "积分流水",
+      "op": "查看积分流水",
+      "method": "GET",
+      "path": "/api/credit-flow",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生15",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "浏览资料列表",
+      "method": "GET",
+      "path": "/api/mp/resources",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生15",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "查看资料详情(内联汇编)",
+      "method": "GET",
+      "path": "/api/mp/resources/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生15",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "看完广告回调",
+      "method": "POST",
+      "path": "/api/mp/resources/1/ad-done",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生15",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "实际查阅(扣积分)",
+      "method": "POST",
+      "path": "/api/mp/resources/1/access",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生15",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "我的积分余额",
+      "method": "GET",
+      "path": "/api/mp/me/points",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生15",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "看广告赚积分",
+      "method": "POST",
+      "path": "/api/mp/points/ad-reward",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生15",
+      "role": "STUDENT",
+      "mod": "预警中心",
+      "op": "查看预警列表",
+      "method": "GET",
+      "path": "/api/alerts",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生16",
+      "role": "STUDENT",
+      "mod": "登录鉴权",
+      "op": "账号密码登录",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "mpBody": {
+        "username": "teacher01",
+        "password": "123456"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生16",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "查看任务列表",
+      "method": "GET",
+      "path": "/api/tasks",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生16",
+      "role": "STUDENT",
+      "mod": "任务管理",
+      "op": "快速登记完成/学生提交作业",
+      "method": "POST",
+      "path": "/api/completion/register",
+      "mpBody": {
+        "taskId": 1,
+        "studentIds": [
+          1
+        ],
+        "status": "FINISHED"
+      },
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生16",
+      "role": "STUDENT",
+      "mod": "科目管理",
+      "op": "查看科目(含课代表)",
+      "method": "GET",
+      "path": "/api/subjects",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生16",
+      "role": "STUDENT",
+      "mod": "积分流水",
+      "op": "查看积分流水",
+      "method": "GET",
+      "path": "/api/credit-flow",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生16",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "浏览资料列表",
+      "method": "GET",
+      "path": "/api/mp/resources",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生16",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "查看资料详情(内联汇编)",
+      "method": "GET",
+      "path": "/api/mp/resources/1",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生16",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "看完广告回调",
+      "method": "POST",
+      "path": "/api/mp/resources/1/ad-done",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生16",
+      "role": "STUDENT",
+      "mod": "资料管理",
+      "op": "实际查阅(扣积分)",
+      "method": "POST",
+      "path": "/api/mp/resources/1/access",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生16",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "我的积分余额",
+      "method": "GET",
+      "path": "/api/mp/me/points",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生16",
+      "role": "STUDENT",
+      "mod": "积分钱包",
+      "op": "看广告赚积分",
+      "method": "POST",
+      "path": "/api/mp/points/ad-reward",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    },
+    {
+      "user": "学生16",
+      "role": "STUDENT",
+      "mod": "预警中心",
+      "op": "查看预警列表",
+      "method": "GET",
+      "path": "/api/alerts",
+      "mpBody": {},
+      "verdict": "PASS",
+      "kind": "OK",
+      "detail": "小程序请求体与后端契约一致，生产环境可正常执行"
+    }
+  ]
+}

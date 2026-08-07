@@ -12,6 +12,42 @@
       <view class="meta">账号：{{item.username}}　学号：{{item.studentId || '—'}}</view>
       <view wx:if="{{item.subjectNames.length}}" class="meta">负责科目：{{item.subjectNames}}</view>
     </view>
-    <view class="reset" data-id="{{item.id}}" data-name="{{item.name}}" bindtap="onReset">重置密码</view>
+    <view class="actions">
+      <view class="action-btn reset" data-id="{{item.id}}" data-name="{{item.name}}" bindtap="onReset">重置密码</view>
+      <view wx:if="{{canManageUsers && item.username!=='superadmin'}}" class="action-btn role" data-item="{{item}}" bindtap="onShowRoleEdit">改角色</view>
+    </view>
+  </view>
+
+  <!-- 修改角色弹窗 -->
+  <view wx:if="{{showRoleModal}}" class="modal-mask" bindtap="onCloseRoleModal">
+    <view class="modal-card" catchtap="">
+      <view class="modal-title">修改角色 — {{editTarget.name}}</view>
+      <view class="form-group">
+        <text class="form-label">选择角色</text>
+        <view class="role-options">
+          <view wx:for="{{ROLE_OPTIONS}}" wx:key="value"
+                class="role-opt {{editForm.role===item.value?'selected':''}}"
+                data-value="{{item.value}}" bindtap="onPickRole">
+            {{item.label}}
+          </view>
+        </view>
+      </view>
+      <!-- 课代表需选择负责科目 -->
+      <view wx:if="{{editForm.role==='REP'}}" class="form-group">
+        <text class="form-label">负责科目（可多选）</text>
+        <view class="subject-tags">
+          <view wx:for="{{allSubjects}}" wx:key="id"
+                class="tag {{editForm.subjectIds.indexOf(item.id)>=0?'selected':''}}"
+                data-id="{{item.id}}" bindtap="onToggleSubject">
+            {{item.name}}
+          </view>
+        </view>
+        <view wx:if="{{!editForm.subjectIds.length}}" class="warn-hint">请至少选择一个负责科目</view>
+      </view>
+      <view class="btn-row">
+        <button class="btn-cancel" bindtap="onCloseRoleModal">取消</button>
+        <button class="btn-primary" loading="{{savingRole}}" bindtap="onSaveRole">保存</button>
+      </view>
+    </view>
   </view>
 </view>

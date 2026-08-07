@@ -105,6 +105,7 @@ CREATE TABLE IF NOT EXISTS sys_user (
   student_id INT,
   openid VARCHAR(64) UNIQUE,
   avatar VARCHAR(512),
+  must_change_pwd TINYINT DEFAULT 1 COMMENT '首次登录强制改密：1=需要，0=不需要',
   create_time DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE IF NOT EXISTS subject_rep (
@@ -454,6 +455,12 @@ async function migrate() {
   if (!userCols.some((c) => c.name === 'avatar')) {
     await db.prepare("ALTER TABLE sys_user ADD COLUMN avatar VARCHAR(512)").run();
   }
+  // 9.1) 首次登录强制改密标记列
+  if (!userCols.some((c) => c.name === 'must_change_pwd')) {
+    await db.prepare("ALTER TABLE sys_user ADD COLUMN must_change_pwd TINYINT DEFAULT 1").run();
+  }
+  // 超级管理员使用强密码，无需强制改密；其余默认账号(123456)首次登录必须改密
+  await db.prepare("UPDATE sys_user SET must_change_pwd=0 WHERE username='superadmin'").run();
 
   // 7) 初始积分赠送：给所有尚无 user_points 的用户赠送 INIT_POINTS（前期活动，默认 100）
   const INIT_POINTS = Number(process.env.INIT_POINTS) || 100;

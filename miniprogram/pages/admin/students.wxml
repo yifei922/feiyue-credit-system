@@ -4,6 +4,9 @@
     <input class="search-input" value="{{keyword}}" placeholder="搜索姓名/学号" bindinput="onSearch" confirm-type="search" />
   </view>
 
+  <!-- 错误态 -->
+  <view wx:if="{{error}}" class="error-bar" bindtap="onRetry">⚠️ {{error}}（点击重试）</view>
+
   <!-- 统计 -->
   <view class="stat-bar">
     <view class="stat-box"><view class="stat-num">{{total}}</view><view class="stat-lbl">学生总数</view></view>
@@ -15,7 +18,7 @@
       <view class="student-item">
         <view class="stu-info">
           <view class="stu-name">{{item.name}}</view>
-          <view class="stu-meta">学号：{{item.student_no || '未设置'}} · 学分：{{item.total_credits || 0}}</view>
+          <view class="stu-meta">学号：{{item.student_no || '未设置'}} · 积分：{{item.total_credits || 0}}</view>
         </view>
         <view class="stu-actions">
           <view class="action-btn warn" bindtap="onResetPwd" data-id="{{item.id}}">重置密码</view>
@@ -25,7 +28,11 @@
       </view>
     </view>
   </block>
-  <view wx:else class="empty">暂无学生数据</view>
+  <view wx:elif="{{loading}}" class="empty">加载中…</view>
+  <view wx:elif="{{!error}}" class="empty">暂无学生数据</view>
+
+  <!-- 加载更多 -->
+  <view wx:if="{{hasMore && students.length}}" class="load-more" bindtap="onReachBottom">{{loading ? '加载中…' : '点击加载更多'}}</view>
 
   <!-- 新建/编辑表单 -->
   <view wx:if="{{showForm}}" style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;background:#f4f5fb;overflow-y:auto;padding:32rpx;">

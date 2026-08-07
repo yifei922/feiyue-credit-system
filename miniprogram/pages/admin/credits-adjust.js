@@ -1,4 +1,4 @@
-// pages/admin/credits-adjust.js - 手动学分调整（教师/管理员/课代表）
+// pages/admin/credits-adjust.js - 手动积分调整（教师/管理员/课代表）
 const app = getApp();
 
 Page({
@@ -49,12 +49,11 @@ Page({
     this.setData({ loading: true });
     try {
       const val = f.type === 'add' ? Number(f.amount) : -Number(f.amount);
+      // 对齐后端契约：studentId / amount / reason（subject_id、type 后端不需要）
       await app.apiPost('/api/credit-flow/adjust', {
-        student_id: f.studentId,
-        subject_id: f.subjectId || null,
-        points: val,
+        studentId: f.studentId,
+        amount: val,
         reason: f.reason.trim(),
-        type: 'ADJUST',
       });
       wx.showToast({ title: f.type === 'add' ? '已加分' : '已扣分', icon: 'success' });
       // 重置表单

@@ -54,7 +54,7 @@
     </view>
 
     <view class="form-group">
-      <text class="form-label">学分奖励</text>
+      <text class="form-label">积分奖励</text>
       <input class="form-input" type="digit" value="{{form.points}}" bindinput="onInputChange" data-field="points" placeholder="默认1分" />
     </view>
 

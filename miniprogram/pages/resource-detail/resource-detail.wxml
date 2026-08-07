@@ -13,6 +13,12 @@
       <view wx:if="{{res.source}}" class="muted source">来源：{{res.source}}</view>
     </view>
 
+    <!-- 付费墙提示：汇编内容受门控且当前不可见 -->
+    <view wx:if="{{contentGated && !contentVisible}}" class="ad-block card">
+      <view class="ad-title">🔒 汇编内容受保护</view>
+      <view class="muted">该资料汇编需消耗 {{pointsCost}} 积分或观看广告后查看（外链资料始终需广告+积分）。</view>
+    </view>
+
     <!-- ★ 内联内容展示（优先于外部链接） -->
     <block wx:if="{{res.content && res.content.sections}}">
       <view class="content-card" wx:for="{{res.content.sections}}" wx:key="h">

@@ -85,13 +85,15 @@ Page({
   async onSave() {
     const f = this.data.form;
     if (!f.title.trim()) return wx.showToast({ title: '请输入任务标题', icon: 'none' });
+    // 字段对齐后端契约：小程序用 points，后端解构 creditValue（积分奖励）
+    const payload = { ...f, creditValue: Number(f.points) || 0 };
     this.setData({ loading: true });
     try {
       if (this.data.editingId) {
-        await app.apiPut('/api/tasks/' + this.data.editingId, f);
+        await app.apiPut('/api/tasks/' + this.data.editingId, payload);
         wx.showToast({ title: '已更新', icon: 'success' });
       } else {
-        await app.apiPost('/api/tasks', f);
+        await app.apiPost('/api/tasks', payload);
         wx.showToast({ title: '已创建', icon: 'success' });
       }
       this.setData({ showForm: false });
@@ -138,7 +140,12 @@ Page({
   async onQuickComplete(e) {
     const sid = e.currentTarget.dataset.sid;
     try {
-      await app.apiPost('/api/completion', { task_id: this.data.currentTask.id, student_id: sid, status: 'FINISHED' });
+      // 对齐后端契约：POST /api/completion/register，字段 taskId/studentIds
+      await app.apiPost('/api/completion/register', {
+        taskId: this.data.currentTask.id,
+        studentIds: [sid],
+        status: 'FINISHED',
+      });
       wx.showToast({ title: '已登记', icon: 'success' });
       this.onViewCompletions({ currentTarget: { dataset: { task: this.data.currentTask } } });
     } catch (e) { wx.showToast({ title: e.message, icon: 'none' }); }
