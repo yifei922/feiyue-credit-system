@@ -36,3 +36,14 @@
 .spacer { flex: 1; text-align: right; font-size: 18px; color: #c8cde0; }
 
 .footer { text-align: center; padding: 24px 0; font-size: 11px; color: #b9bfd6; }
+
+/* 分组标题 */
+.menu-section-title {
+  font-size: 12px; color: #999; font-weight: 500;
+  padding: 16px 0 8px; letter-spacing: 1px;
+}
+/* 管理工作台双行 */
+.mi-wrap { display: flex; flex-direction: column; flex: 1; }
+.mi-main { font-size: 14.5px; font-weight: 600; }
+.mi-sub { font-size: 11px; color: #999; margin-top: 2px; }
+.danger { color: #ff5c7c !important; }

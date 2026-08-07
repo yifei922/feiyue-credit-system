@@ -1,6 +1,7 @@
 <view class="container">
   <view wx:if="{{!loaded}}" class="muted center">加载中…</view>
   <block wx:elif="{{res}}">
+    <!-- 资料头部 -->
     <view class="card">
       <view class="res-title">{{res.title}}</view>
       <view class="meta">
@@ -12,21 +13,38 @@
       <view wx:if="{{res.source}}" class="muted source">来源：{{res.source}}</view>
     </view>
 
-    <view class="points-tip card">
+    <!-- ★ 内联内容展示（优先于外部链接） -->
+    <block wx:if="{{res.content && res.content.sections}}">
+      <view class="content-card" wx:for="{{res.content.sections}}" wx:key="h">
+        <view class="sec-title">{{item.h}}</view>
+        <view class="sec-item" wx:for="{{item.items}}" wx:for-item="it" wx:key="*this">
+          <text class="sec-bullet">▸</text>
+          <text class="sec-text">{{it}}</text>
+        </view>
+      </view>
+    </block>
+
+    <!-- 积分提示 + 查看按钮（有外部链接时才显示） -->
+    <view wx:if="{{res.url}}" class="points-tip card">
       <view class="muted">当前积分：<text class="pts">{{pointsBalance}}</text>　·　每次查阅/下载扣 <text class="pts">{{pointsCost}}</text> 积分</view>
     </view>
 
-    <!-- 当天未看广告：先看悬浮窗广告解锁 -->
-    <view wx:if="{{res.requiresAd}}" class="ad-block card">
+    <view wx:if="{{res.url && res.requiresAd}}" class="ad-block card">
       <view class="ad-title">🎬 观看广告即可免费查看</view>
       <view class="muted">打开资料前需先看一段广告（看完才能查看，且不重复扣费）。</view>
       <button class="btn-primary" loading="{{viewing}}" bindtap="onView">▶ 看广告并查看资料</button>
     </view>
 
-    <!-- 已解锁：直接查看（每次仍扣积分） -->
-    <view wx:else class="open-block card">
+    <view wx:elif="{{res.url}}" class="open-block card">
       <button class="btn-primary" loading="{{viewing}}" bindtap="onView" wx:if="{{canView}}">📖 查看 / 下载资料</button>
       <view wx:else class="muted warn">⚠ 积分不足（需 {{pointsCost}}，当前 {{pointsBalance}}）。去看广告或完成任务赚积分后再来。</view>
+    </view>
+
+    <!-- 无内容也无链接的兜底 -->
+    <view wx:elif="{{!res.content && !res.url}}" class="empty-card card">
+      <view class="empty-icon">📭</view>
+      <view class="empty-text">该资料正在整理中，敬请期待</view>
+      <view class="muted empty-sub">老师会在管理后台尽快补充完整内容</view>
     </view>
   </block>
 </view>

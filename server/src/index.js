@@ -109,6 +109,6 @@ const PORT = process.env.PORT || 3001;
     process.exit(1);
   }
   app.listen(PORT, () => {
-    console.log(`[server] 洛一高附中八（十）班学分系统已启动: http://localhost:${PORT}`);
+    console.log(`[server] 点滴进步学分系统已启动: http://localhost:${PORT}`);
   });
 })();

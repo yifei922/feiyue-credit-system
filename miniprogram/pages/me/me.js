@@ -1,12 +1,12 @@
-// pages/me/me.js - Tab5 我的
+// pages/me/me.js - Tab5 我的（按角色展示不同功能）
 const app = getApp();
 Page({
   data: {
     user: null,
     points: 0,
     totalEarned: 0,
-    credits: [],   // 积分明细（暂拉空数组，等积分接口）
-    canManage: false,  // 教师/管理员/课代表可见「管理后台」
+    credits: [],
+    canManage: false,
   },
   onShow() {
     if (!app.globalData.token) {
@@ -14,10 +14,9 @@ Page({
       return;
     }
     const u = app.globalData.user || {};
-    const role = u.role;
     this.setData({
       user: u,
-      canManage: role === 'ADMIN' || role === 'TEACHER' || role === 'REP',
+      canManage: u.role === 'ADMIN' || u.role === 'TEACHER' || u.role === 'REP',
     });
     this.loadPoints();
     this.loadCredits();
@@ -30,7 +29,7 @@ Page({
   },
   async loadCredits() {
     try {
-      const r = await app.apiGet('/api/credit-flow/me');
+      const r = await app.apiGet('/api/credit-flow');
       this.setData({ credits: (r.data || []).slice(0, 20) });
     } catch (_) {}
   },
@@ -38,6 +37,12 @@ Page({
   goPublish() { wx.navigateTo({ url: '/pages/post-detail/post-detail?mode=publish' }); },
   goProfile() { wx.navigateTo({ url: '/pages/profile/profile' }); },
   goAdmin() { wx.navigateTo({ url: '/pages/admin/index' }); },
+  goTasks() { wx.navigateTo({ url: '/pages/admin/tasks' }); },
+  goStudents() { wx.navigateTo({ url: '/pages/admin/students' }); },
+  goSubjects() { wx.navigateTo({ url: '/pages/admin/subjects' }); },
+  goCreditsAdjust() { wx.navigateTo({ url: '/pages/admin/credits-adjust' }); },
+  goSubmit() { wx.navigateTo({ url: '/pages/submit/submit' }); },
+  goStudy() { wx.switchTab({ url: '/pages/study/study' }); },
   onLogout() {
     wx.showModal({
       title: '确认退出？', content: '退出后将清除本地登录态。',

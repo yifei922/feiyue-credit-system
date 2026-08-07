@@ -51,16 +51,20 @@ router.get('/resources/:id', async (req, res) => {
   if (!r) return fail(res, 404, '资料不存在');
 
   const uid = req.user.id;
-  const adWatched = watchedAdToday(uid, id);
-  const balance = balanceOf(uid);
+  const adWatched = await watchedAdToday(uid, id);
+  const balance = await balanceOf(uid);
+  // 解析结构化内容（供小程序内联展示）
+  let parsedContent = null;
+  if (r.content) { try { parsedContent = JSON.parse(r.content); } catch (_) {} }
   const out = {
     id: r.id, grade: r.grade, subject: r.subject, title: r.title, cover: r.cover,
     type: r.type, description: r.description, source: r.source, view_count: r.view_count,
     tags: safeTags(r.tags),
-    requiresAd: !adWatched,          // 当天未看广告 → 需先看悬浮窗广告
-    pointsCost: VIEW_COST_POINTS,    // 每次查阅/下载扣积分
+    requiresAd: !adWatched,
+    pointsCost: VIEW_COST_POINTS,
     pointsBalance: balance,
     canView: balance >= VIEW_COST_POINTS,
+    content: parsedContent,           // 结构化内容（sections + tags），小程序端可直接渲染
   };
   if (adWatched) out.url = r.url;    // 当天看过广告 → 可直接查阅（但仍会扣积分）
   ok(res, { resource: out, adDailyLimit: AD_DAILY_LIMIT });

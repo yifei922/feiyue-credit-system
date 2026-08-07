@@ -1,0 +1,62 @@
+<view class="container">
+  <view class="card">
+    <view class="section-title">手动学分调整</view>
+
+    <!-- 加分/扣减 -->
+    <view class="form-group">
+      <text class="form-label">操作类型</text>
+      <view class="radio-group">
+        <view class="radio-item {{form.type==='add'?'selected':''}}" bindtap="onTypePick" data-t="add">➕ 加分</view>
+        <view class="radio-item {{form.type==='sub'?'selected':''}}" bindtap="onTypePick" data-t="sub">➖ 扣分</view>
+      </view>
+    </view>
+
+    <!-- 选择学生 -->
+    <view class="form-group">
+      <text class="form-label">选择学生 {{form.studentName?'· '+form.studentName:''}}</text>
+      <scroll-view scroll-x style="white-space:nowrap;">
+        <view class="student-chip" wx:for="{{students}}" wx:key="id"
+              style="{{form.studentId==item.id?'background:#7C5CFF;color:#fff;':''}}"
+              bindtap="onStudentPick" data-s="{{item}}">
+          {{item.name}}
+        </view>
+      </scroll-view>
+    </view>
+
+    <!-- 选择科目（可选） -->
+    <view class="form-group">
+      <text class="form-label">关联科目（可选）</text>
+      <scroll-view scroll-x style="white-space:nowrap;">
+        <view class="student-chip" wx:for="{{subjects}}" wx:key="id"
+              style="{{form.subjectId==item.id?'background:#7C5CFF;color:#fff;':''}}"
+              bindtap="onSubjectPick" data-id="{{item.id}}">
+          {{item.name}}
+        </view>
+        <view class="student-chip" style="{{!form.subjectId?'background:#7C5CFF;color:#fff;':''}}"
+              bindtap="onSubjectPick" data-id="">不限</view>
+      </scroll-view>
+    </view>
+
+    <!-- 分数 -->
+    <view class="form-group">
+      <text class="form-label">分数</text>
+      <input class="form-input" type="digit" value="{{form.amount}}" bindinput="onInputChange" data-field="amount" placeholder="输入分数" />
+    </view>
+
+    <!-- 原因 -->
+    <view class="form-group">
+      <text class="form-label">原因 *</text>
+      <textarea class="form-textarea" value="{{form.reason}}" bindinput="onInputChange" data-field="reason"
+                placeholder="如：课堂表现优秀、作业完成质量高、迟到扣分等"></textarea>
+    </view>
+
+    <button class="btn-primary" loading="{{loading}}" bindtap="onSubmit">
+      确认{{form.type==='add'?'加分':'扣分'}}
+    </button>
+
+    <view class="tip">
+      ⚠ 学分调整会记录操作日志，请确保调整理由充分合理。
+      扣分操作请谨慎使用，建议先与学生沟通确认。
+    </view>
+  </view>
+</view>

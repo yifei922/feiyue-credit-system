@@ -1,0 +1,94 @@
+<view class="container">
+  <!-- 筛选 -->
+  <view class="filter-bar">
+    <view class="filter-btn {{filter==='all'?'active':''}}" bindtap="onFilter" data-f="all">全部</view>
+    <view class="filter-btn {{filter==='OPEN'?'active':''}}" bindtap="onFilter" data-f="OPEN">进行中</view>
+    <view class="filter-btn {{filter==='CLOSED'?'active':''}}" bindtap="onFilter" data-f="CLOSED">已结束</view>
+  </view>
+
+  <!-- 任务列表 -->
+  <block wx:if="{{tasks.length}}">
+    <view class="card" wx:for="{{tasks}}" wx:key="id">
+      <view class="task-item">
+        <view class="task-info">
+          <view class="task-title">{{item.title}}</view>
+          <view class="task-meta">
+            <text class="status-{{item.status==='OPEN'?'open':item.status==='DRAFT'?'draft':'closed'}}">{{item.status==='OPEN'?'进行中':item.status==='DRAFT'?'草稿':'已结束'}}</text>
+            <text wx:if="{{item.deadline}}">截止：{{item.deadline}}</text>
+            <text>{{item.points}}分</text>
+          </view>
+        </view>
+        <view class="task-actions">
+          <view class="action-btn primary" bindtap="onViewCompletions" data-task="{{item}}">完成情况</view>
+          <view class="action-btn" bindtap="onEdit" data-task="{{item}}">编辑</view>
+          <view class="action-btn danger" bindtap="onDelete" data-id="{{item.id}}">删除</view>
+        </view>
+      </view>
+    </view>
+  </block>
+  <view wx:else class="empty">暂无任务</view>
+
+  <!-- 新建/编辑表单弹层 -->
+  <view wx:if="{{showForm}}" class="card" style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;background:#f4f5fb;overflow-y:auto;padding:32rpx;">
+    <view class="form-title">{{editingId?'编辑任务':'新建任务'}}</view>
+
+    <view class="form-group">
+      <text class="form-label">任务标题 *</text>
+      <input class="form-input" value="{{form.title}}" bindinput="onInputChange" data-field="title" placeholder="如：第三章练习卷" />
+    </view>
+
+    <view class="form-group">
+      <text class="form-label">详细说明</text>
+      <textarea class="form-textarea" value="{{form.description}}" bindinput="onInputChange" data-field="description" placeholder="任务要求、提交方式等"></textarea>
+    </view>
+
+    <view class="form-group">
+      <text class="form-label">所属科目</text>
+      <view class="subject-tags">
+        <view wx:for="{{subjects}}" wx:key="id"
+              class="tag {{form.subjectId==item.id?'selected':''}}"
+              bindtap="onSubjectPick" data-id="{{item.id}}">
+          {{item.name}}
+        </view>
+      </view>
+    </view>
+
+    <view class="form-group">
+      <text class="form-label">学分奖励</text>
+      <input class="form-input" type="digit" value="{{form.points}}" bindinput="onInputChange" data-field="points" placeholder="默认1分" />
+    </view>
+
+    <view class="form-group">
+      <text class="form-label">截止时间</text>
+      <picker mode="date" value="{{form.deadline}}" bindchange="onDeadlineChange">
+        <view class="form-input" style="display:flex;align-items:center;">{{form.deadline||'选择截止日期'}} ›</view>
+      </picker>
+    </view>
+
+    <view class="btn-row">
+      <button class="btn-cancel" bindtap="onCancel">取消</button>
+      <button class="btn-primary" loading="{{loading}}" bindtap="onSave">{{editingId?'保存修改':'创建任务'}}</button>
+    </view>
+  </view>
+
+  <!-- 完成情况弹层 -->
+  <view wx:if="{{showCompletions}}" style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;background:#f4f5fb;overflow-y:auto;padding:32rpx;">
+    <view class="form-title">{{currentTask.title}} - 完成情况（{{completions.length}}人）</view>
+    <block wx:if="{{completions.length}}">
+      <view class="card completion-list">
+        <view class="comp-item" wx:for="{{completions}}" wx:key="id">
+          <view>{{item.student_name || '学生'+(index+1)}}</view>
+          <view>
+            <text class="status-{{item.status==='FINISHED'?'open':'closed'}}">{{item.status==='FINISHED'?'已完成':'未完成'}}</text>
+            <text wx:if="{{item.status!=='FINISHED'}}" class="action-btn primary" style="margin-left:12rpx;" bindtap="onQuickComplete" data-sid="{{item.student_id}}">登记完成</text>
+          </view>
+        </view>
+      </view>
+    </block>
+    <view wx:else class="empty">暂无完成记录</view>
+    <button class="btn-primary" style="margin-top:24rpx;" bindtap="onCloseCompletions">关闭</button>
+  </view>
+
+  <!-- 新建按钮 -->
+  <view class="fab" bindtap="onCreate">+</view>
+</view>

@@ -8,3 +8,14 @@
 .ad-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
 .open-block { padding: 20px; }
 .btn-primary { background: linear-gradient(135deg, #7C5CFF, #4D9BFF); color: #fff; border-radius: 24px; margin-top: 12px; box-shadow: 0 8px 20px rgba(124,92,255,0.35); }
+
+/* 内联内容样式 */
+.content-card { background: #fff; border-radius: 16rpx; padding: 28rpx; margin-bottom: 20rpx; box-shadow: 0 4rpx 16rpx rgba(31,34,51,.06); }
+.sec-title { font-size: 32rpx; font-weight: 700; color: #7C5CFF; margin-bottom: 16rpx; padding-left: 16rpx; border-left: 6rpx solid #7C5CFF; line-height: 1.4; }
+.sec-item { display: flex; gap: 12rpx; padding: 12rpx 0 12rpx 24rpx; line-height: 1.7; }
+.sec-bullet { color: #7C5CFF; font-weight: bold; flex-shrink: 0; font-size: 26rpx; }
+.sec-text { font-size: 27rpx; color: #333; word-break: break-all; }
+.empty-card { text-align: center; padding: 80rpx 32rpx; }
+.empty-icon { font-size: 64rpx; margin-bottom: 16rpx; }
+.empty-text { font-size: 30rpx; color: #666; font-weight: 500; }
+.empty-sub { font-size: 24rpx; margin-top: 8px; }

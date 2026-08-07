@@ -7,7 +7,7 @@ const path = require('path');
 const crypto = require('crypto');
 
 const STUDY_DIR = path.join(__dirname, '..', 'study-content');
-const SOURCE = '飞跃学分·自编资料';
+const SOURCE = '点滴进步·自编资料';
 
 // ── 知识库（与小程序端展示的年级/科目一致）──
 const KB = [
@@ -282,7 +282,7 @@ const KB = [
 const TPL = `<!DOCTYPE html>
 <html lang="zh-CN"><head><meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>{TITLE} · 洛一高附中八（十）班</title>
+<title>{TITLE} · 点滴进步</title>
 <style>
 :root{--purple:#7C5CFF;--blue:#4D9BFF;--ink:#1f2233;--muted:#6b7280;}
 *{box-sizing:border-box;}
@@ -301,8 +301,8 @@ body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-ser
 <div class="hero"><div class="tag">{GRADE} · {SUBJECT}</div><h1>{TITLE}</h1><p>{DESC}</p></div>
 <div class="meta">{CHIPS}</div>
 {SECTIONS}
-<div class="tip">📌 本资料由「飞跃学分」系统自编整理，供班级同学复习参考。老师可在小程序管理端补充或替换更贴合教材版本的内容。</div>
-<div class="foot">洛一高附中八（十）班 · 飞跃学分课程资料</div>
+<div class="tip">📌 本资料由「点滴进步」系统整理，供复习参考。老师可在管理端补充或替换更贴合教材版本的内容。</div>
+<div class="foot">点滴进步 · 课程资料</div>
 </div></body></html>`;
 
 function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
@@ -332,15 +332,16 @@ async function seedResources(db) {
     const admin = await db.prepare("SELECT id FROM sys_user WHERE role='ADMIN' ORDER BY id LIMIT 1").get();
     const createdBy = admin ? admin.id : null;
     const ins = await db.prepare(
-      'INSERT INTO resource(grade,subject,title,cover,type,url,description,source,tags,sort_order,created_by) VALUES(?,?,?,?,?,?,?,?,?,?,?)'
+      'INSERT INTO resource(grade,subject,title,cover,type,url,description,source,tags,content,sort_order,created_by) VALUES(?,?,?,?,?,?,?,?,?,?,?)'
     );
     let n = 0;
     for (const e of KB) {
       const slug = slugOf(e);
       const url = `/study/${slug}.html`;
+      const contentJson = JSON.stringify({ sections: e.sections || [], tags: e.tags || [] });
       fs.writeFileSync(path.join(STUDY_DIR, `${slug}.html`), renderHtml(e), 'utf-8');
       ins.run(e.grade, e.subject, e.title, null, 'article', url, e.desc, SOURCE,
-        JSON.stringify(e.tags || []), 0, createdBy);
+        JSON.stringify(e.tags || []), contentJson, 0, createdBy);
       n++;
     }
     console.log(`[seed_resources] 已自动播种 ${n} 条课程资料到 /study/`);

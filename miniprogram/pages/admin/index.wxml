@@ -1,33 +1,68 @@
 <view class="container">
   <view class="banner">
-    <view class="role-badge">{{roleLabel}}后台</view>
+    <view class="role-badge">{{roleLabel}}工作台</view>
     <view class="banner-sub">管理中心</view>
   </view>
 
+  <!-- 统计概览 -->
   <view class="stats card">
-    <view class="stat"><view class="num">{{stats.resources}}</view><view class="lbl">资料数</view></view>
-    <view class="stat"><view class="num">{{stats.users}}</view><view class="lbl">学生数</view></view>
-    <view class="stat"><view class="num">{{stats.todayViews}}</view><view class="lbl">今日广告解锁</view></view>
-    <view class="stat"><view class="num">{{stats.totalPoints}}</view><view class="lbl">总积分池</view></view>
+    <view class="stat"><view class="num">{{stats.resources || 0}}</view><view class="lbl">资料数</view></view>
+    <view class="stat"><view class="num">{{stats.users || 0}}</view><view class="lbl">学生数</view></view>
+    <view class="stat"><view class="num">{{stats.todayViews || 0}}</view><view class="lbl">今日活跃</view></view>
+    <view class="stat"><view class="num">{{stats.totalPoints || 0}}</view><view class="lbl">总积分池</view></view>
   </view>
 
+  <!-- 核心管理功能 -->
   <view class="menu card">
+    <!-- 任务/作业管理（教师+课代表核心） -->
+    <view class="menu-item" bindtap="goTasks">
+      <view class="ico" style="background:linear-gradient(135deg,#7C5CFF,#4D9BFF)">📋</view>
+      <view class="mi-text"><view class="mi-title">任务管理</view><view class="mi-sub">发布作业、查看完成情况、登记学分</view></view>
+      <text class="muted">›</text>
+    </view>
+
+    <!-- 学生管理 -->
+    <view wx:if="{{canManageUsers}}" class="menu-item" bindtap="goStudents">
+      <view class="ico" style="background:linear-gradient(135deg,#2DD4A7,#4D9BFF)">👥</view>
+      <view class="mi-text"><view class="mi-title">学生管理</view><view class="mi-sub">添加/编辑学生、重置密码、查看学分</view></view>
+      <text class="muted">›</text>
+    </view>
+
+    <!-- 科目管理 -->
+    <view wx:if="{{canManageUsers}}" class="menu-item" bindtap="goSubjects">
+      <view class="ico" style="background:linear-gradient(135deg,#FFB74D,#FF8A65)">📚</view>
+      <view class="mi-text"><view class="mi-title">科目管理</view><view class="mi-sub">管理科目、指定课代表</view></view>
+      <text class="muted">›</text>
+    </view>
+
+    <!-- 资料管理 -->
     <view class="menu-item" bindtap="goResources">
-      <view class="ico" style="background:linear-gradient(135deg,#7C5CFF,#4D9BFF)">📚</view>
+      <view class="ico" style="background:linear-gradient(135deg,#7C5CFF,#4D9BFF)">📖</view>
       <view class="mi-text"><view class="mi-title">资料管理</view><view class="mi-sub">新增/编辑/删除课程资料</view></view>
       <text class="muted">›</text>
     </view>
+
+    <!-- 用户账号管理 -->
     <view wx:if="{{canManageUsers}}" class="menu-item" bindtap="goUsers">
-      <view class="ico" style="background:linear-gradient(135deg,#2DD4A7,#4D9BFF)">👥</view>
-      <view class="mi-text"><view class="mi-title">用户管理</view><view class="mi-sub">查看账号、重置密码</view></view>
+      <view class="ico" style="background:linear-gradient(135deg,#BA68C8,#9C27B0)">🔐</view>
+      <view class="mi-text"><view class="mi-title">账号管理</view><view class="mi-sub">查看账号列表、重置密码</view></view>
       <text class="muted">›</text>
     </view>
+
+    <!-- 学分调整 -->
+    <view class="menu-item" bindtap="goCreditsAdjust">
+      <view class="ico" style="background:linear-gradient(135deg,#FF7EB3,#FF758C)">⚖️</view>
+      <view class="mi-text"><view class="mi-title">学分调整</view><view class="mi-sub">手动加减分、记录原因</view></view>
+      <text class="muted">›</text>
+    </view>
+
+    <!-- 积分流水 -->
     <view class="menu-item" bindtap="goCredits">
-      <view class="ico" style="background:linear-gradient(135deg,#FF7EB3,#FF758C)">📊</view>
+      <view class="ico" style="background:linear-gradient(135deg,#4FC3F7,#29B6F6)">📊</view>
       <view class="mi-text"><view class="mi-title">积分流水</view><view class="mi-sub">查看全部积分记录</view></view>
       <text class="muted">›</text>
     </view>
   </view>
 
-  <view class="footer muted">管理操作会记录日志，请妥善使用</view>
+  <view class="footer muted">操作会记录日志 · 请妥善使用</view>
 </view>

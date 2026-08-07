@@ -219,6 +219,7 @@ CREATE TABLE IF NOT EXISTS resource (
   description TEXT,
   source TEXT,
   tags TEXT,
+  content TEXT,
   sort_order INT DEFAULT 0,
   view_count INT DEFAULT 0,
   unlock_count INT DEFAULT 0,
@@ -279,7 +280,7 @@ async function seed() {
   if (cntRow.c > 0) return;
 
   const CLASS_ID = 1;
-  await db.prepare('INSERT INTO clazz(name) VALUES(?)').run('洛一高附中八（十）班');
+  await db.prepare('INSERT INTO clazz(name) VALUES(?)').run('默认班级');
 
   // 科目（teacher_id 指向王老师）
   const insSubj = db.prepare('INSERT INTO subject(name, class_id, teacher_id) VALUES(?,?,?)');
@@ -394,7 +395,7 @@ async function migrate() {
   // 确保存在班级（极端情况下空库场景）
   const hasClass = await db.prepare('SELECT id FROM clazz WHERE id=?').get(CLASS_ID);
   if (!hasClass) {
-    await db.prepare('INSERT INTO clazz(id, name) VALUES(?,?)').run(CLASS_ID, '洛一高附中八（十）班');
+    await db.prepare('INSERT INTO clazz(id, name) VALUES(?,?)').run(CLASS_ID, '默认班级');
   }
 
   // 1) 超级管理员（单独给管理者本人的最高权限账号）
@@ -465,7 +466,16 @@ async function migrate() {
     console.log(`[migrate] 已为 ${noPoints.length} 位用户初始化赠送 ${INIT_POINTS} 积分`);
   }
 
-  // 8) 课程资料自动播种：仅当 resource 表为空时填充示例资料（与数据库 id 解耦，刷新/新环境均可复现）
+  // 8) resource 表 content 字段（存储结构化内容 JSON，供小程序内联展示）
+  const [resCols] = await pool.query(
+    "SELECT COLUMN_NAME AS name FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=? AND TABLE_NAME='resource'",
+    [DB_NAME]
+  );
+  if (!resCols.some((c) => c.name === 'content')) {
+    await db.prepare("ALTER TABLE resource ADD COLUMN content TEXT").run();
+  }
+
+  // 9) 课程资料自动播种：仅当 resource 表为空时填充示例资料（与数据库 id 解耦，刷新/新环境均可复现）
   await require('./seed_resources').seedResources(db);
 }
 

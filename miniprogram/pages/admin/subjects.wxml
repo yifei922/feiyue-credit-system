@@ -1,0 +1,35 @@
+<view class="container">
+  <block wx:if="{{subjects.length}}">
+    <view class="card" wx:for="{{subjects}}" wx:key="id">
+      <view class="sub-item">
+        <view class="sub-info">
+          <view class="sub-name">{{item.name}}</view>
+          <view class="sub-meta">
+            课代表：{{item.rep_names || '未指定'}}
+            <text wx:if="{{item.student_count !== undefined}}"> · {{item.student_count || 0}} 人</text>
+          </view>
+        </view>
+        <view class="sub-actions">
+          <view class="action-btn" bindtap="onEdit" data-s="{{item}}">编辑</view>
+          <view class="action-btn danger" bindtap="onDelete" data-id="{{item.id}}">删除</view>
+        </view>
+      </view>
+    </view>
+  </block>
+  <view wx:else class="empty">暂无科目数据</view>
+
+  <!-- 新建/编辑表单 -->
+  <view wx:if="{{showForm}}" style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;background:#f4f5fb;overflow-y:auto;padding:32rpx;">
+    <view class="form-title">{{editingId?'编辑科目':'添加科目'}}</view>
+    <view class="form-group">
+      <text class="form-label">科目名称 *</text>
+      <input class="form-input" value="{{form.name}}" bindinput="onInputChange" data-field="name" placeholder="如：语文、数学" />
+    </view>
+    <view class="btn-row">
+      <button class="btn-cancel" bindtap="onCancel">取消</button>
+      <button class="btn-primary" loading="{{loading}}" bindtap="onSave">{{editingId?'保存':'添加'}}</button>
+    </view>
+  </view>
+
+  <view class="fab" bindtap="onCreate">+</view>
+</view>

@@ -13,7 +13,11 @@
     "pages/profile/profile",
     "pages/admin/index",
     "pages/admin/resources",
-    "pages/admin/users"
+    "pages/admin/users",
+    "pages/admin/tasks",
+    "pages/admin/students",
+    "pages/admin/subjects",
+    "pages/admin/credits-adjust"
   ],
   "window": {
     "backgroundTextStyle": "light",

@@ -62,6 +62,9 @@ App({
   apiDelete(path, data, noToken = false) {
     return this._api(path, 'DELETE', data || null, noToken);
   },
+  apiPut(path, data, noToken = false) {
+    return this._api(path, 'PUT', data || null, noToken);
+  },
 
   _api(path, method, data, noToken) {
     const headers = { 'Content-Type': 'application/json' };

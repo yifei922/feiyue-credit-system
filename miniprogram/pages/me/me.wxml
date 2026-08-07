@@ -1,14 +1,16 @@
 <view class="container">
+  <!-- 用户卡片 -->
   <view class="me-card">
     <image class="avatar" src="{{user.avatar || '/assets/avatar_default.png'}}" bindtap="goProfile"></image>
     <view class="me-info">
       <view class="name">{{user.name}}</view>
-      <view class="role muted">{{user.role === 'STUDENT' ? '学生' : user.role === 'TEACHER' ? '教师' : user.role === 'REP' ? '科代' : user.role === 'ADMIN' ? '管理员' : '其他'}}</view>
+      <view class="role muted">{{user.role === 'STUDENT' ? '学生' : user.role === 'TEACHER' ? '教师' : user.role === 'REP' ? '课代表' : user.role === 'ADMIN' ? '管理员' : '其他'}}</view>
       <view wx:if="{{user.studentId}}" class="muted sid">学号：{{user.studentId}}</view>
     </view>
     <view class="edit-badge" bindtap="goProfile">编辑 ›</view>
   </view>
 
+  <!-- 学分概览 -->
   <view class="row card">
     <view class="row-item" bindtap="goCredits">
       <view class="big-num">{{credits.length || '--'}}</view>
@@ -24,27 +26,100 @@
     </view>
   </view>
 
+  <!-- ===== 学生端功能 ===== -->
+  <block wx:if="{{user.role === 'STUDENT'}}">
+    <view class="menu card">
+      <view class="menu-section-title">学习工具</view>
+
+      <view class="menu-item" bindtap="goProfile">
+        <view class="ico" style="background:linear-gradient(135deg,#7C5CFF,#4D9BFF)">👤</view>
+        <text>编辑资料</text>
+        <text class="muted spacer">›</text>
+      </view>
+
+      <view class="menu-item" bindtap="goSubmit">
+        <view class="ico" style="background:linear-gradient(135deg,#4CAF50,#8BC34A)">📝</view>
+        <text>提交作业</text>
+        <text class="muted spacer">›</text>
+      </view>
+
+      <view class="menu-item" bindtap="goStudy">
+        <view class="ico" style="background:linear-gradient(135deg,#2DD4A7,#26C6DA)">📚</view>
+        <text>学习资料</text>
+        <text class="muted spacer">›</text>
+      </view>
+
+      <view class="menu-item" bindtap="goPublish">
+        <view class="ico" style="background:linear-gradient(135deg,#FF7EB3,#FF758C)">✨</view>
+        <text>发动态</text>
+        <text class="muted spacer">›</text>
+      </view>
+
+      <view class="menu-item" bindtap="goCredits">
+        <view class="ico" style="background:linear-gradient(135deg,#7C5CFF,#4D9BFF)">📊</view>
+        <text>积分流水</text>
+        <text class="muted spacer">›</text>
+      </view>
+    </view>
+  </block>
+
+  <!-- ===== 教师/管理员/课代 管理功能 ===== -->
+  <block wx:if="{{canManage}}">
+    <view class="menu card">
+      <view class="menu-section-title">管理工具</view>
+
+      <view class="menu-item" bindtap="goAdmin">
+        <view class="ico" style="background:linear-gradient(135deg,#7C5CFF,#4D9BFF)">🛠️</view>
+        <view class="mi-wrap"><text class="mi-main">管理工作台</text><text class="mi-sub">任务·学生·科目·资料·学分</text></view>
+        <text class="muted spacer">›</text>
+      </view>
+
+      <view class="menu-item" bindtap="goTasks">
+        <view class="ico" style="background:linear-gradient(135deg,#FFB74D,#FF8A65)">📋</view>
+        <text>任务管理</text>
+        <text class="muted spacer">›</text>
+      </view>
+
+      <view wx:if="{{canManageUsers}}" class="menu-item" bindtap="goStudents">
+        <view class="ico" style="background:linear-gradient(135deg,#2DD4A7,#4D9BFF)">👥</view>
+        <text>学生管理</text>
+        <text class="muted spacer">›</text>
+      </view>
+
+      <view wx:if="{{canManageUsers}}" class="menu-item" bindtap="goSubjects">
+        <view class="ico" style="background:linear-gradient(135deg,#BA68C8,#9C27B0)">📖</view>
+        <text>科目管理</text>
+        <text class="muted spacer">›</text>
+      </view>
+
+      <view class="menu-item" bindtap="goCreditsAdjust">
+        <view class="ico" style="background:linear-gradient(135deg,#FF7EB3,#FF758C)">⚖️</view>
+        <text>学分调整</text>
+        <text class="muted spacer">›</text>
+      </view>
+
+      <view class="menu-item" bindtap="goCredits">
+        <view class="ico" style="background:linear-gradient(135deg,#4FC3F7,#29B6F6)">📊</view>
+        <text>积分流水</text>
+        <text class="muted spacer">›</text>
+      </view>
+
+      <view class="menu-item" bindtap="goPublish">
+        <view class="ico" style="background:linear-gradient(135deg,#FF7EB3,#FF758C)">📝</view>
+        <text>发动态</text>
+        <text class="muted spacer">›</text>
+      </view>
+
+      <view class="menu-item" bindtap="goProfile">
+        <view class="ico" style="background:linear-gradient(135deg,#7C5CFF,#4D9BFF)">👤</view>
+        <text>编辑资料</text>
+        <text class="muted spacer">›</text>
+      </view>
+    </view>
+  </block>
+
+  <!-- 退出登录（所有角色） -->
   <view class="menu card">
-    <view class="menu-item" bindtap="goProfile">
-      <view class="ico" style="background:linear-gradient(135deg,#7C5CFF,#4D9BFF)">👤</view>
-      <text>编辑资料（头像/姓名/学号）</text>
-      <text class="muted spacer">›</text>
-    </view>
-    <view wx:if="{{canManage}}" class="menu-item" bindtap="goAdmin">
-      <view class="ico" style="background:linear-gradient(135deg,#2DD4A7,#4D9BFF)">🛠</view>
-      <text>管理后台</text>
-      <text class="muted spacer">›</text>
-    </view>
-    <view class="menu-item" bindtap="goPublish">
-      <view class="ico" style="background:linear-gradient(135deg,#FF7EB3,#FF758C)">📝</view>
-      <text>发动态</text>
-      <text class="muted spacer">›</text>
-    </view>
-    <view class="menu-item" bindtap="goCredits">
-      <view class="ico" style="background:linear-gradient(135deg,#7C5CFF,#4D9BFF)">📊</view>
-      <text>积分流水</text>
-      <text class="muted spacer">›</text>
-    </view>
     <view class="menu-item" bindtap="onLogout">
       <view class="ico" style="background:#ff5c7c">🚪</view>
       <text class="danger">退出登录</text>

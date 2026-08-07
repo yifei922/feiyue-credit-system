@@ -1,0 +1,48 @@
+<view class="container">
+  <!-- 搜索 -->
+  <view class="search-bar">
+    <input class="search-input" value="{{keyword}}" placeholder="搜索姓名/学号" bindinput="onSearch" confirm-type="search" />
+  </view>
+
+  <!-- 统计 -->
+  <view class="stat-bar">
+    <view class="stat-box"><view class="stat-num">{{total}}</view><view class="stat-lbl">学生总数</view></view>
+  </view>
+
+  <!-- 学生列表 -->
+  <block wx:if="{{students.length}}">
+    <view class="card" wx:for="{{students}}" wx:key="id">
+      <view class="student-item">
+        <view class="stu-info">
+          <view class="stu-name">{{item.name}}</view>
+          <view class="stu-meta">学号：{{item.student_no || '未设置'}} · 学分：{{item.total_credits || 0}}</view>
+        </view>
+        <view class="stu-actions">
+          <view class="action-btn warn" bindtap="onResetPwd" data-id="{{item.id}}">重置密码</view>
+          <view class="action-btn" bindtap="onEdit" data-s="{{item}}">编辑</view>
+          <view class="action-btn danger" bindtap="onDelete" data-id="{{item.id}}">删除</view>
+        </view>
+      </view>
+    </view>
+  </block>
+  <view wx:else class="empty">暂无学生数据</view>
+
+  <!-- 新建/编辑表单 -->
+  <view wx:if="{{showForm}}" style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;background:#f4f5fb;overflow-y:auto;padding:32rpx;">
+    <view class="form-title">{{editingId?'编辑学生':'添加学生'}}</view>
+    <view class="form-group">
+      <text class="form-label">姓名 *</text>
+      <input class="form-input" value="{{form.name}}" bindinput="onInputChange" data-field="name" placeholder="学生姓名" />
+    </view>
+    <view class="form-group">
+      <text class="form-label">学号</text>
+      <input class="form-input" value="{{form.student_no}}" bindinput="onInputChange" data-field="student_no" placeholder="选填" />
+    </view>
+    <view class="btn-row">
+      <button class="btn-cancel" bindtap="onCancel">取消</button>
+      <button class="btn-primary" loading="{{loading}}" bindtap="onSave">{{editingId?'保存':'添加'}}</button>
+    </view>
+  </view>
+
+  <view class="fab" bindtap="onCreate">+</view>
+</view>
