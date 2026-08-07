@@ -26,7 +26,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms))
 const stuToken = await login('student01', '123456')
 log('✅ student01 登录成功')
 
-// 2) 王老师 -> 杨老师
+// 2) 默认教师规范化（王老师 -> 杨老师）
 const teaToken = await login('teacher01', '123456')
 const tea = await (async () => {
   const r = await fetch(`${BASE}/api/auth/me`, { headers: { Authorization: `Bearer ${teaToken}` } })

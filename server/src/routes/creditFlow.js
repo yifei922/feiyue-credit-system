@@ -37,7 +37,7 @@ router.get('/', async (req, res) => {
   }))));
 });
 
-// 手动增减学分（管理员/老师/课代表）
+// 手动增减积分（管理员/老师/课代表）
 // body: { studentId, amount(可正可负), reason }
 router.post('/adjust', requireRole('ADMIN', 'TEACHER', 'REP'), async (req, res) => {
   const studentId = Number(req.body?.studentId);

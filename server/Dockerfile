@@ -1,4 +1,4 @@
-# 微信云托管 · 学分管理系统后端
+# 微信云托管 · 积分管理系统后端
 FROM node:22-slim
 
 WORKDIR /app

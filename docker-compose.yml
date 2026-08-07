@@ -1,4 +1,4 @@
-# 斐越十班学分系统 —— 一键编排（前端 Nginx + 后端 Node）
+# 点滴进步积分系统 —— 一键编排（前端 Nginx + 后端 Node）
 # 用法：
 #   cp .env.example .env   # 填入微信 AppID/Secret 等
 #   docker compose up -d --build

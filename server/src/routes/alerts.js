@@ -50,7 +50,7 @@ router.post('/scan', requireRole('ADMIN', 'TEACHER', 'REP'), async (req, res) =>
     }
   }
 
-  // 2) 学分偏低
+  // 2) 积分偏低
   const lowThresh = 5;
   let scope = await db.prepare('SELECT * FROM student').all();
   if (managed) {
@@ -60,7 +60,7 @@ router.post('/scan', requireRole('ADMIN', 'TEACHER', 'REP'), async (req, res) =>
   for (const s of scope) {
     if ((s.total_credits || 0) < lowThresh && !(await existsPending(s.id, 'LOW_CREDIT'))) {
       await db.prepare('INSERT INTO alert(student_id,type,level,message) VALUES(?,?,?,?)')
-        .run(s.id, 'LOW_CREDIT', 'WARN', `当前学分 ${s.total_credits}，低于预警线 ${lowThresh}`);
+        .run(s.id, 'LOW_CREDIT', 'WARN', `当前积分 ${s.total_credits}，低于预警线 ${lowThresh}`);
       count++;
     }
   }

@@ -107,7 +107,7 @@ router.get('/completion-summary', async (req, res) => {
   ok(res, { totalStudents, doneStudents, unfinishedStudents, byTask, unfinishedList });
 });
 
-// 学分趋势（按流水累计）
+// 积分趋势（按流水累计）
 router.get('/credit-trend', async (req, res) => {
   let studentId = Number(req.query.studentId);
   if (req.user.role === 'STUDENT') studentId = req.user.studentId;

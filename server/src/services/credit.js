@@ -1,4 +1,4 @@
-// 学分计算规则（与前端 src/utils/credit.js 完全一致）
+// 积分计算规则（与前端 src/utils/credit.js 完全一致）
 // DONE_ONTIME 满分；DONE_OVERDUE 半分(向下取整)；UNFINISHED/FAILED 0
 function calcCredit(creditValue, type, status) {
   const v = Number(creditValue) || 0;
@@ -29,7 +29,7 @@ const TYPE_LABEL = { HOMEWORK: '作业', BACKING: '背书', EXAM: '测验' };
 const ALERT_TYPE_LABEL = {
   CONSECUTIVE_MISS: '连续未完成',
   OVERDUE_SOON: '临近截止未完成',
-  LOW_CREDIT: '学分偏低',
+  LOW_CREDIT: '积分偏低',
   REMIND: '任务提醒'
 };
 

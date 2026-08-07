@@ -282,7 +282,7 @@ async function seed() {
   const CLASS_ID = 1;
   await db.prepare('INSERT INTO clazz(name) VALUES(?)').run('默认班级');
 
-  // 科目（teacher_id 指向王老师）
+  // 科目（teacher_id 指向默认教师）
   const insSubj = db.prepare('INSERT INTO subject(name, class_id, teacher_id) VALUES(?,?,?)');
   await insSubj.run('语文', CLASS_ID, 2);
   await insSubj.run('数学', CLASS_ID, 2);
@@ -362,7 +362,7 @@ async function seed() {
       await insFlow.run(studentId, taskId, credit, flowType, meta.title);
     }
   }
-  // 重算各学生总学分（MySQL 不允许在 UPDATE 子查询中引用同一张表，改为按学生汇总后逐条更新）
+  // 重算各学生总积分（MySQL 不允许在 UPDATE 子查询中引用同一张表，改为按学生汇总后逐条更新）
   const sums = await db.prepare('SELECT student_id, COALESCE(SUM(change_amount),0) AS s FROM credit_flow GROUP BY student_id').all();
   const updStuCredit = db.prepare('UPDATE student SET total_credits=? WHERE id=?');
   for (const { student_id, s } of sums) {
@@ -407,7 +407,7 @@ async function migrate() {
     console.log('[migrate] 超级管理员账号已创建: superadmin / (密码已设置，请及时修改)');
   }
 
-  // 2) 初中全科科目补齐（缺哪科补哪科，默认挂王老师 teacher_id=2）
+  // 2) 初中全科科目补齐（缺哪科补哪科，默认挂默认教师 teacher_id=2）
   const FULL_SUBJECTS = [
     '语文', '数学', '英语', '物理', '化学', '生物',
     '道德与法治', '历史', '地理', '体育与健康', '音乐', '美术', '信息科技',

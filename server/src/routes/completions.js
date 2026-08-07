@@ -6,7 +6,7 @@ const { requireRole, canManageSubject, getManagedSubjectIds } = require('../midd
 const { calcCredit } = require('../services/credit');
 const { recordLog } = require('../services/log');
 
-// 写入单条完成记录 + 流水 + 重算总学分（被 /register 与 /import 复用，保证幂等）
+// 写入单条完成记录 + 流水 + 重算总积分（被 /register 与 /import 复用，保证幂等）
 async function registerCompletion(task, sid, status, operator) {
   const { credit, flowType } = calcCredit(task.credit_value, task.type, status);
   const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
@@ -25,7 +25,7 @@ async function registerCompletion(task, sid, status, operator) {
   return { credit, recId };
 }
 
-// 完成登记：计算学分、写入完成记录 + 流水、更新总学分
+// 完成登记：计算积分、写入完成记录 + 流水、更新总积分
 router.post('/register', requireRole('ADMIN', 'TEACHER', 'REP', 'STUDENT'), async (req, res) => {
   const { taskId, studentIds, status } = req.body || {};
   if (!taskId || !status) return fail(res, 400, '缺少任务或状态');

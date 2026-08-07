@@ -1,4 +1,4 @@
-// 班级圈（社交）路由
+// 动态（社交）路由
 // - GET    /api/mp/feed?page=N          动态信息流
 // - POST   /api/mp/posts                发布
 // - DELETE /api/mp/posts/:id           删除自己的

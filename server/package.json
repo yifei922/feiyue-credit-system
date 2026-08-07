@@ -2,7 +2,7 @@
   "name": "credit-system-server",
   "version": "2.0.0",
   "private": true,
-  "description": "斐越十班班级作业学分管理系统 - Node 后端（MySQL + Express，云托管免备案部署）",
+  "description": "点滴进步学习积分管理系统 - Node 后端（MySQL + Express，云托管免备案部署）",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",

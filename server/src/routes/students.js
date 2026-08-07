@@ -22,7 +22,7 @@ router.get('/', authMiddleware, async (req, res) => {
   }))));
 });
 
-// 名单导出（管理员/老师/课代表）：CSV（带 BOM 兼容 Excel）或 JSON，含总学分
+// 名单导出（管理员/老师/课代表）：CSV（带 BOM 兼容 Excel）或 JSON，含总积分
 router.get('/export', authMiddleware, requireRole('ADMIN', 'TEACHER', 'REP'), async (req, res) => {
   const format = String(req.query.format || 'csv').toLowerCase();
   const rows = await db.prepare(

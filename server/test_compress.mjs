@@ -47,7 +47,7 @@ if (fs.existsSync(tmpV)) {
 
 // 3) PDF：读取项目里的指南PDF(如存在)，否则用 pdf-lib 造一个
 let pdfBuf;
-const guide = path.join('..', '洛一高附中八（十）班-学分管理系统使用指南.pdf');
+const guide = path.join('..', '点滴进步-积分管理系统使用指南.pdf');
 if (fs.existsSync(guide)) pdfBuf = fs.readFileSync(guide);
 else { const { PDFDocument } = require('pdf-lib'); const d = await PDFDocument.create(); d.addPage(); pdfBuf = Buffer.from(await d.save()); }
 const rPdf = await processUpload(pdfBuf, 'application/pdf', 'guide.pdf');
@@ -56,7 +56,7 @@ const pdfBack = rPdf.storageEnc === 'gzip' ? gunzip(rPdf.buf) : rPdf.buf;
 check('PDF为有效PDF(以%PDF开头)', pdfBack.slice(0, 4).toString() === '%PDF');
 
 // 4) 文档(docx模拟：可压缩文本)：gzip 无损，还原字节一致
-const docBuf = Buffer.from('学分管理系统作业内容 '.repeat(5000), 'utf8');
+const docBuf = Buffer.from('积分管理系统作业内容 '.repeat(5000), 'utf8');
 const rDoc = await processUpload(docBuf, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'homework.docx');
 check('文档gzip压缩体积下降', rDoc.buf.length < docBuf.length, `${kb(docBuf.length)}→${kb(rDoc.buf.length)} enc=${rDoc.storageEnc}`);
 const docBack = rDoc.storageEnc === 'gzip' ? gunzip(rDoc.buf) : rDoc.buf;
