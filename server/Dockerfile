@@ -10,8 +10,9 @@ RUN npm install --omit=dev
 # 再拷源码（node_modules / data / .env 已被 .dockerignore 排除）
 COPY . .
 
-# 运行时由云托管注入 PORT（默认 80），index.js 已用 process.env.PORT 监听
+# 运行时由云托管 / compose 注入 PORT（默认 80），index.js 已用 process.env.PORT 监听
 ENV NODE_ENV=production
+ENV PORT=80
 EXPOSE 80
 
 CMD ["node", "src/index.js"]

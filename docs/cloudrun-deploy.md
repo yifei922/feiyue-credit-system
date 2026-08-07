@@ -28,7 +28,7 @@
 - `server/Dockerfile`（基于 `node:22-slim`，`npm install --omit=dev`，监听 `process.env.PORT`）
 - `server/.dockerignore`（排除 node_modules / data / .env）
 
-> ⚠ 数据库文件 `server/data/credit.db` 不会被打进镜像（也不应打进），见第五节。
+> ⚠ 后端已不依赖文件型数据库（`node:sqlite` 已迁移到外部 MySQL，见第五节），`server/.dockerignore` 仍排除 `.env` / `data` 等本地产物，避免泄露凭证。
 
 ---
 
@@ -49,29 +49,41 @@ docker push your-tcr/feiyue-credit-server:latest
 
 ---
 
-## 五、数据库持久化（⚠ 唯一真障碍，需决策）
+## 五、数据库持久化（✅ 已选定方案 B：腾讯云 MySQL，代码已完成迁移）
 
-云托管**容器不支持持久化存储**，现有 `node:sqlite` 文件库（`data/credit.db`）在容器重启/缩容时会**丢失**。二选一：
+云托管**容器不支持持久化存储**，不能再用文件型 sqlite。本仓库已**完成迁移到 MySQL**（通过 `mysql2/promise` 连接池 + 兼容 shim，上层代码仅需在调用处加 `await`）：
 
-### 方案 A：临时态 sqlite（MVP 快上线）
-- 云托管「服务设置」→ 实例副本数最小值设为 **1**（单实例常驻，降低重启概率）。
-- 加一个定时任务（云托管「定时触发器」或容器内 cron）把 `data/credit.db` 备份到**对象存储 COS**。
-- 启动时若检测到库文件不存在，从 COS 拉回最近备份。
-- **优点**：零代码改动，半天可上线。
-- **缺点**：容器被平台调度重启且备份间隔内的数据会丢；不适合长期生产。
+- `server/src/db.js`：`node:sqlite DatabaseSync` → `mysql2/promise` 连接池；提供 `db.prepare().get/run/all` + `db.exec/query/close` 的兼容 shim，返回结构与原先一致（`get`→row，`run`→`{lastInsertRowid, changes}`，`all`→rows[]）。
+- SQL 方言已调整：`INTEGER PRIMARY KEY AUTOINCREMENT`→`INT PRIMARY KEY AUTO_INCREMENT`、`datetime('now')`→`CURRENT_TIMESTAMP`、去除 `PRAGMA`/WAL、索引内联到建表语句。
+- 所有 route / service / middleware 的查询已转 `async/await`（`forEach`+`await` 改为 `for…of`，`.map(async)`/`Promise.all` 已规范化，`rbac` 同步辅助函数改为 `await` 调用）。
+- `server/src/index.js`：启动时用 `await db.init()` 在建表 + 种子 + 迁移完成后才 `app.listen`，DB 不可达会中止启动。
+- `server/package.json` 已加入 `mysql2` 依赖。
 
-### 方案 B：迁移腾讯云数据库 MySQL（生产稳健）
-- 新建 **TencentDB for MySQL**（基础版，按量很低），记下连接串。
-- 把 `server/src/db.js` 的 `node:sqlite` 换成 `mysql2`：
-  - `DatabaseSync` → `mysql2/promise` 连接池
-  - SQL 方言调整：`AUTOINCREMENT`→`AUTO_INCREMENT`、`datetime('now')`→`NOW()`/`CURRENT_TIMESTAMP`、`last_insert_rowid()`→`LAST_INSERT_ID()`、去掉 `PRAGMA`、WAL 相关配置删除
-  - `db.prepare(...).get()/.run()/.all()` → `await pool.query(...)`（Promise 化，route 层需 `async/await`）
-- 各 route 文件的查询同步改异步（工作量中等，约 10 个文件）。
-- 环境变量注入 `DB_HOST/DB_PORT/DB_USER/DB_PASS/DB_NAME`（云托管环境变量配置，不写进镜像）。
-- **优点**：真正持久、可随流量扩缩容。
-- **缺点**：需做一次 DB 层重写。
+### 数据库连接配置（环境变量，不写进镜像）
+复制 `server/.env.example` 为 `server/.env`（本地）/ 在云托管「环境变量」中注入：
 
-> 本仓库当前代码仍是 `node:sqlite`。**上线前必须先选 A 或 B**，否则数据会丢。
+| 变量 | 说明 |
+|------|------|
+| `DB_HOST` | 腾讯云 MySQL 内网/外网地址（本地 compose 用 `db`） |
+| `DB_PORT` | 默认 3306 |
+| `DB_USER` | 默认 root |
+| `DB_PASSWORD` | 实例密码 |
+| `DB_NAME` | 库名，默认 `credit` |
+| `DB_SSL` | 公网连接建议 `1`（内网可省略） |
+| `DB_POOL_SIZE` | 连接池大小，默认 10 |
+
+> 首次启动 `init()` 会自动 `CREATE TABLE IF NOT EXISTS` + 种子数据 + 幂等迁移（补齐科目、超级管理员、微信登录字段等），无需手动建库。
+
+### 本地无腾讯云账号也能验证
+`server/docker-compose.yml` 一键起 **MySQL 8 + 后端**：
+```bash
+cd server
+docker compose up --build      # 访问 http://localhost:8080
+docker compose down -v         # 停止并清空数据，下次重新 seed
+```
+compose 内 `app` 已注入 `DB_HOST=db` 等变量，并 `depends_on: db.service_healthy`，确保库就绪后再启动后端。
+
+> ⚠ 仍走临时态 sqlite（方案 A）亦可，但本仓库代码已不再支持文件库，必须接外部 MySQL。
 
 ---
 

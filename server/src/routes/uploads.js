@@ -45,7 +45,7 @@ const upload = multer({
 
 // multer 在流式接收中检测到 fileSize 超限会通过 next(err) 传递 LIMIT_FILE_SIZE，
 // 默认会落到 express 的 HTML 500。用 wrapper 拦截转换为友好的 413 JSON 响应。
-function uploadSingle(req, res, next) {
+async function uploadSingle(req, res, next) {
   upload.single('file')(req, res, (err) => {
     if (err && err.code === 'LIMIT_FILE_SIZE') {
       return fail(res, 413, '文件超过 30MB 上限，请压缩后上传');
@@ -56,7 +56,7 @@ function uploadSingle(req, res, next) {
 }
 
 // 上传进度 SSE（鉴权由中间件处理；EventSource 用 ?token= 携带）
-router.get('/progress/:jobId', (req, res) => {
+router.get('/progress/:jobId', async (req, res) => {
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache, no-transform',
@@ -85,12 +85,12 @@ router.post('/', uploadSingle, async (req, res) => {
     if (jobId) jobEmit(jobId, { type: 'progress', percent: 0, message: '处理中…', indeterminate: true });
     const { buf, outMime, ext, storageEnc, width, height, method } =
       await processUpload(req.file.buffer, req.file.mimetype, originalName,
-        jobId ? (pct, msg, ind) => jobEmit(jobId, { type: 'progress', percent: pct, message: msg, indeterminate: !!ind }) : null);
+        jobId ? async (pct, msg, ind) => jobEmit(jobId, { type: 'progress', percent: pct, message: msg, indeterminate: !!ind }) : null);
 
     const storedName = crypto.randomBytes(12).toString('hex') + ext;
     fs.writeFileSync(path.join(UPLOAD_DIR, storedName), buf);
 
-    const info = db.prepare(`INSERT INTO attachment
+    const info = await db.prepare(`INSERT INTO attachment
       (completion_record_id, task_id, student_id, uploader_id, original_name, stored_name, mime, size_original, size_compressed, width, height, storage_enc)
       VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`)
       .run(null, taskId, studentId, req.user.id, originalName, storedName, outMime, sizeOriginal, buf.length, width, height, storageEnc);
@@ -116,14 +116,14 @@ router.post('/', uploadSingle, async (req, res) => {
     console.error('[upload] error', e);
     fail(res, 500, '上传失败：' + (e.message || ''));
   } finally {
-    if (jobId) setTimeout(() => jobEnd(jobId), 5000); // 给 SSE 客户端留出接收 done 的时间
+    if (jobId) setTimeout(async () => jobEnd(jobId), 5000); // 给 SSE 客户端留出接收 done 的时间
   }
 });
 
 // 存储用量统计（管理端展示 + 回答“能存多大/多久”）
-router.get('/stats/usage', (req, res) => {
+router.get('/stats/usage', async (req, res) => {
   if (!['ADMIN', 'TEACHER', 'REP'].includes(req.user.role)) return fail(res, 403, '无权查看');
-  const agg = db.prepare(`SELECT COUNT(*) AS files,
+  const agg = await db.prepare(`SELECT COUNT(*) AS files,
       COALESCE(SUM(size_compressed),0) AS used,
       COALESCE(SUM(size_original),0) AS original
     FROM attachment`).get();
@@ -141,10 +141,10 @@ router.get('/stats/usage', (req, res) => {
 });
 
 // 查看/下载（鉴权；学生仅能访问自己的附件）
-router.get('/:storedName', (req, res) => {
+router.get('/:storedName', async (req, res) => {
   const name = req.params.storedName;
   if (/[\/\\]/.test(name) || name.includes('..')) return fail(res, 400, '非法文件名');
-  const row = db.prepare('SELECT * FROM attachment WHERE stored_name=?').get(name);
+  const row = await db.prepare('SELECT * FROM attachment WHERE stored_name=?').get(name);
   if (!row) return fail(res, 404, '文件不存在');
   if (req.user.role === 'STUDENT' && row.student_id !== req.user.studentId) {
     return fail(res, 403, '无权访问该附件');
@@ -166,14 +166,14 @@ router.get('/:storedName', (req, res) => {
 });
 
 // 删除（上传者本人或管理员）
-router.delete('/:id', (req, res) => {
-  const row = db.prepare('SELECT * FROM attachment WHERE id=?').get(Number(req.params.id));
+router.delete('/:id', async (req, res) => {
+  const row = await db.prepare('SELECT * FROM attachment WHERE id=?').get(Number(req.params.id));
   if (!row) return fail(res, 404, '附件不存在');
   if (req.user.role !== 'ADMIN' && row.uploader_id !== req.user.id) {
     return fail(res, 403, '无权删除该附件');
   }
   try { fs.unlinkSync(path.join(UPLOAD_DIR, row.stored_name)); } catch (_) {}
-  db.prepare('DELETE FROM attachment WHERE id=?').run(row.id);
+  await db.prepare('DELETE FROM attachment WHERE id=?').run(row.id);
   ok(res, { ok: true });
 });
 

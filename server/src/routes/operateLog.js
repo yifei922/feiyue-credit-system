@@ -5,7 +5,7 @@ const { ok, fmtDate } = require('../util');
 const { requireRole } = require('../middleware/rbac');
 
 // 操作日志查询（管理员/老师/课代表可看）
-router.get('/', requireRole('ADMIN', 'TEACHER', 'REP'), (req, res) => {
+router.get('/', requireRole('ADMIN', 'TEACHER', 'REP'), async (req, res) => {
   const params = [];
   let sql = 'SELECT * FROM operate_log WHERE 1=1';
   if (req.query.operateType) { sql += ' AND operate_type=?'; params.push(req.query.operateType); }
@@ -13,7 +13,7 @@ router.get('/', requireRole('ADMIN', 'TEACHER', 'REP'), (req, res) => {
   if (req.query.startTime) { sql += ' AND create_time >= ?'; params.push(req.query.startTime); }
   if (req.query.endTime) { sql += ' AND create_time <= ?'; params.push(req.query.endTime); }
   sql += ' ORDER BY id DESC';
-  const rows = db.prepare(sql).all(...params);
+  const rows = await db.prepare(sql).all(...params);
   const records = rows.map(r => ({
     id: r.id,
     operatorName: r.operator_name,

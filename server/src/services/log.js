@@ -1,9 +1,9 @@
 // 操作日志写入（指令6：审计）
 const { db } = require('../db');
 
-function recordLog(operator, operateType, tableName, recordId, before, after) {
+async function recordLog(operator, operateType, tableName, recordId, before, after) {
   if (!operator) return;
-  db.prepare(
+  await db.prepare(
     `INSERT INTO operate_log(operator_id, operator_name, operate_type, table_name, record_id, before_snapshot, after_snapshot)
      VALUES(?,?,?,?,?,?,?)`
   ).run(

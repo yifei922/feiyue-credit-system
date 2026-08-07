@@ -1,282 +1,337 @@
-// 持久层：Node 内置 node:sqlite（真文件数据库，零依赖、零编译）
+// 持久层：MySQL（腾讯云数据库 TencentDB for MySQL / 本地 Docker MySQL 均可）
+// 通过 mysql2/promise 连接池 + 兼容 shim，使上层代码只需在调用处加 await 即可从 node:sqlite 平滑迁移。
+// 关键差异（已在 shim 内抹平）：
+//   - node:sqlite 同步 API  -> 这里全部 Promise 化（db.prepare().get/run/all 返回 Promise）
+//   - 上层只需 `await db.prepare(...).get(...)` 即可，返回结构与原先一致（row / {lastInsertRowid,changes} / rows[]）
+const mysql = require('mysql2/promise');
 const path = require('path');
 const fs = require('fs');
-const { DatabaseSync } = require('node:sqlite');
 const { hashPassword } = require('./auth');
 const { calcCredit } = require('./services/credit');
 
-const DB_PATH = process.env.DB_PATH || path.join(__dirname, '..', 'data', 'credit.db');
-fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
+const DB_NAME = process.env.DB_NAME || 'credit';
 
-const db = new DatabaseSync(DB_PATH);
-db.exec('PRAGMA foreign_keys = ON;');
-// 开启 WAL：写不阻塞读，提升并发上传时附件记录的写入吞吐
-db.exec('PRAGMA journal_mode = WAL;');
-db.exec('PRAGMA synchronous = NORMAL;'); // WAL 模式下 NORMAL 比 FULL 快很多，掉电风险极低可接受
+// ── 连接池（require 时同步创建，真正的查询才是异步）──
+function buildPool() {
+  const cfg = {
+    host: process.env.DB_HOST || '127.0.0.1',
+    port: Number(process.env.DB_PORT) || 3306,
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: DB_NAME,
+    charset: 'utf8mb4',
+    dateStrings: true, // 日期以 'YYYY-MM-DD HH:MM:SS' 字符串返回，与 node:sqlite 的 TEXT 行为一致
+    connectionLimit: Number(process.env.DB_POOL_SIZE) || 10,
+    waitForConnections: true,
+    enableKeepAlive: true,
+    connectTimeout: 15000,
+  };
+  if (process.env.DB_SSL === '1') {
+    cfg.ssl = { rejectUnauthorized: process.env.DB_SSL_VERIFY !== '0' };
+  }
+  return mysql.createPool(cfg);
+}
 
+const pool = buildPool();
+
+// ── 兼容 shim：node:sqlite 风格 API（全部异步）──
+//   db.prepare(sql) 返回语句对象 { get/run/all }，每个方法接收参数并返回 Promise。
+//   run() 的返回值抹平为 { lastInsertRowid, changes }，与原 node:sqlite 一致。
+const db = {
+  prepare(sql) {
+    return {
+      async get(...params) {
+        const [rows] = await pool.query(sql, params);
+        return rows[0];
+      },
+      async run(...params) {
+        const [result] = await pool.query(sql, params);
+        return { lastInsertRowid: result.insertId, changes: result.affectedRows };
+      },
+      async all(...params) {
+        const [rows] = await pool.query(sql, params);
+        return rows;
+      },
+    };
+  },
+  // 兼容：支持多条语句（以 ; 分隔）。逐条执行，避免依赖 multipleStatements。
+  async exec(sql) {
+    const stmts = String(sql)
+      .split(';')
+      .map((s) => s.trim())
+      .filter((s) => s); // 注释与空语句已在 mysql 层被忽略，这里仅去空
+    for (const stmt of stmts) {
+      if (!stmt) continue;
+      await pool.query(stmt);
+    }
+  },
+  async query(sql, params) {
+    const [rows] = await pool.query(sql, params || []);
+    return rows;
+  },
+  async close() {
+    await pool.end();
+  },
+};
+
+// ── MySQL 表结构（与原 sqlite schema 字段一一对应）──
+// 约定：
+//   - 自增主键用 INT PRIMARY KEY AUTO_INCREMENT
+//   - 时间戳列用 DATETIME DEFAULT CURRENT_TIMESTAMP（配合 dateStrings:true 以字符串返回）
+//   - deadline / completion_time / day 等需保留原始文案或参与字符串比较的列用 VARCHAR
+//   - 索引全部内联到建表语句，避免 CREATE INDEX IF NOT EXISTS（MySQL 老版本不支持）
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS clazz (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL,
-  create_time TEXT DEFAULT (datetime('now'))
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL,
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE IF NOT EXISTS subject (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL,
-  class_id INTEGER,
-  teacher_id INTEGER,
-  create_time TEXT DEFAULT (datetime('now'))
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL,
+  class_id INT,
+  teacher_id INT,
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_subject_class (class_id),
+  KEY idx_subject_teacher (teacher_id)
 );
 CREATE TABLE IF NOT EXISTS sys_user (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  username TEXT UNIQUE NOT NULL,
-  password TEXT NOT NULL,
-  name TEXT,
-  role TEXT NOT NULL,
-  class_id INTEGER,
-  student_id INTEGER,
-  openid TEXT UNIQUE,           -- 微信小程序 openid（用于一键登录）
-  avatar TEXT,                  -- 头像 URL
-  create_time TEXT DEFAULT (datetime('now'))
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  username VARCHAR(64) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  name VARCHAR(255),
+  role VARCHAR(32) NOT NULL,
+  class_id INT,
+  student_id INT,
+  openid VARCHAR(64) UNIQUE,
+  avatar VARCHAR(512),
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE IF NOT EXISTS subject_rep (
-  subject_id INTEGER,
-  user_id INTEGER,
-  PRIMARY KEY(subject_id, user_id)
+  subject_id INT,
+  user_id INT,
+  PRIMARY KEY (subject_id, user_id)
 );
 CREATE TABLE IF NOT EXISTS student (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INTEGER,
-  name TEXT NOT NULL,
-  student_no TEXT,
-  class_id INTEGER,
-  total_credits INTEGER DEFAULT 0,
-  create_time TEXT DEFAULT (datetime('now'))
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  user_id INT,
+  name VARCHAR(255) NOT NULL,
+  student_no VARCHAR(64),
+  class_id INT,
+  total_credits INT DEFAULT 0,
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_student_class (class_id)
 );
 CREATE TABLE IF NOT EXISTS task (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  title TEXT NOT NULL,
-  subject_id INTEGER,
-  class_id INTEGER,
-  credit_value INTEGER DEFAULT 0,
-  type TEXT DEFAULT 'HOMEWORK',
-  status TEXT DEFAULT 'OPEN',
-  deadline TEXT,
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  title VARCHAR(512) NOT NULL,
+  subject_id INT,
+  class_id INT,
+  credit_value INT DEFAULT 0,
+  type VARCHAR(32) DEFAULT 'HOMEWORK',
+  status VARCHAR(32) DEFAULT 'OPEN',
+  deadline VARCHAR(32),
   description TEXT,
-  creator_id INTEGER,
-  create_time TEXT DEFAULT (datetime('now'))
+  creator_id INT,
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_task_subject (subject_id),
+  KEY idx_task_class (class_id)
 );
 CREATE TABLE IF NOT EXISTS completion_record (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  task_id INTEGER,
-  student_id INTEGER,
-  status TEXT,
-  completion_time TEXT,
-  credit_earned INTEGER DEFAULT 0,
-  operator_id INTEGER,
-  create_time TEXT DEFAULT (datetime('now'))
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  task_id INT,
+  student_id INT,
+  status VARCHAR(32),
+  completion_time DATETIME DEFAULT NULL,
+  credit_earned INT DEFAULT 0,
+  operator_id INT,
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_completion_task (task_id),
+  KEY idx_completion_student (student_id)
 );
 CREATE TABLE IF NOT EXISTS credit_flow (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  student_id INTEGER,
-  task_id INTEGER,
-  change_amount INTEGER DEFAULT 0,
-  flow_type TEXT,
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  student_id INT,
+  task_id INT,
+  change_amount INT DEFAULT 0,
+  flow_type VARCHAR(32),
   reason TEXT,
-  create_time TEXT DEFAULT (datetime('now'))
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_creditflow_student (student_id)
 );
 CREATE TABLE IF NOT EXISTS alert (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  student_id INTEGER,
-  type TEXT,
-  level TEXT,
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  student_id INT,
+  type VARCHAR(32),
+  level VARCHAR(32),
   message TEXT,
-  status TEXT DEFAULT 'PENDING',
-  create_time TEXT DEFAULT (datetime('now'))
+  status VARCHAR(32) DEFAULT 'PENDING',
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_alert_student (student_id)
 );
 CREATE TABLE IF NOT EXISTS operate_log (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  operator_id INTEGER,
-  operator_name TEXT,
-  operate_type TEXT,
-  table_name TEXT,
-  record_id INTEGER,
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  operator_id INT,
+  operator_name VARCHAR(255),
+  operate_type VARCHAR(32),
+  table_name VARCHAR(64),
+  record_id INT,
   before_snapshot TEXT,
   after_snapshot TEXT,
-  create_time TEXT DEFAULT (datetime('now'))
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_operatelog_operator (operator_id)
 );
 
 -- ── 微信小程序专用表（社交 + 课程资料 + 积分 + 广告）──
--- 班级圈动态
 CREATE TABLE IF NOT EXISTS post (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INTEGER NOT NULL,
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  user_id INT NOT NULL,
   text TEXT,
-  images TEXT,                 -- JSON array of URLs
+  images TEXT,
   video_url TEXT,
-  resource_id INTEGER,         -- 可选：关联课程资料
-  created_at TEXT DEFAULT (datetime('now'))
+  resource_id INT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_post_created (created_at),
+  KEY idx_post_user (user_id, created_at)
 );
-CREATE INDEX IF NOT EXISTS idx_post_created ON post(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_post_user ON post(user_id, created_at DESC);
-
--- 动态点赞
 CREATE TABLE IF NOT EXISTS post_like (
-  post_id INTEGER NOT NULL,
-  user_id INTEGER NOT NULL,
-  created_at TEXT DEFAULT (datetime('now')),
+  post_id INT NOT NULL,
+  user_id INT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (post_id, user_id)
 );
-
--- 动态评论
 CREATE TABLE IF NOT EXISTS post_comment (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  post_id INTEGER NOT NULL,
-  user_id INTEGER NOT NULL,
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  post_id INT NOT NULL,
+  user_id INT NOT NULL,
   text TEXT NOT NULL,
-  created_at TEXT DEFAULT (datetime('now'))
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_comment_post (post_id, created_at)
 );
-CREATE INDEX IF NOT EXISTS idx_comment_post ON post_comment(post_id, created_at);
-
--- 课程资料库（年级+科目分级）
 CREATE TABLE IF NOT EXISTS resource (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  grade TEXT NOT NULL,         -- 初一/初二/初三
-  subject TEXT NOT NULL,       -- 语数英物化政史地生...
-  title TEXT NOT NULL,
-  cover TEXT,                  -- 封面图 URL
-  type TEXT NOT NULL,          -- article(文章)/video(视频)/pdf(文档)/link(外链)
-  url TEXT NOT NULL,           -- 资料实际 URL
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  grade VARCHAR(32) NOT NULL,
+  subject VARCHAR(64) NOT NULL,
+  title VARCHAR(512) NOT NULL,
+  cover TEXT,
+  type VARCHAR(32) NOT NULL,
+  url TEXT NOT NULL,
   description TEXT,
-  source TEXT,                 -- 来源网站（如"人教社官网"）+ 授权类型（如"CC-BY"）
-  tags TEXT,                   -- JSON array
-  sort_order INTEGER DEFAULT 0,
-  view_count INTEGER DEFAULT 0,
-  unlock_count INTEGER DEFAULT 0,  -- 被广告解锁次数
-  created_by INTEGER,          -- 上传/录入者 user_id
-  created_at TEXT DEFAULT (datetime('now'))
+  source TEXT,
+  tags TEXT,
+  sort_order INT DEFAULT 0,
+  view_count INT DEFAULT 0,
+  unlock_count INT DEFAULT 0,
+  created_by INT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_resource_gs (grade, subject, sort_order)
 );
-CREATE INDEX IF NOT EXISTS idx_resource_gs ON resource(grade, subject, sort_order);
-
--- 用户积分（看广告赚积分）
 CREATE TABLE IF NOT EXISTS user_points (
-  user_id INTEGER PRIMARY KEY,
-  points INTEGER DEFAULT 0,
-  total_earned INTEGER DEFAULT 0,
-  updated_at TEXT DEFAULT (datetime('now'))
+  user_id INT PRIMARY KEY,
+  points INT DEFAULT 0,
+  total_earned INT DEFAULT 0,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
-
--- 每日免费查看配额（防滥用）
 CREATE TABLE IF NOT EXISTS user_daily_view (
-  user_id INTEGER NOT NULL,
-  day TEXT NOT NULL,           -- YYYY-MM-DD
-  view_count INTEGER DEFAULT 0,
+  user_id INT NOT NULL,
+  day VARCHAR(20) NOT NULL,
+  view_count INT DEFAULT 0,
   PRIMARY KEY (user_id, day)
 );
-
--- 广告观看记录（防刷：每日每资源上限）
 CREATE TABLE IF NOT EXISTS ad_view_log (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INTEGER NOT NULL,
-  resource_id INTEGER NOT NULL,
-  day TEXT NOT NULL,
-  created_at TEXT DEFAULT (datetime('now'))
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  user_id INT NOT NULL,
+  resource_id INT NOT NULL,
+  day VARCHAR(20) NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_adview_user_day (user_id, day)
 );
-CREATE INDEX IF NOT EXISTS idx_adview_user_day ON ad_view_log(user_id, day);
 CREATE TABLE IF NOT EXISTS task_template (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT,
-  subject_id INTEGER,
-  type TEXT DEFAULT 'HOMEWORK',
-  credit_value INTEGER DEFAULT 0,
-  description TEXT
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(255),
+  subject_id INT,
+  type VARCHAR(32) DEFAULT 'HOMEWORK',
+  credit_value INT DEFAULT 0,
+  description TEXT,
+  KEY idx_tpl_subject (subject_id)
 );
-CREATE INDEX IF NOT EXISTS idx_task_subject ON task(subject_id);
-CREATE INDEX IF NOT EXISTS idx_task_class ON task(class_id);
-CREATE INDEX IF NOT EXISTS idx_completion_task ON completion_record(task_id);
-CREATE INDEX IF NOT EXISTS idx_completion_student ON completion_record(student_id);
-CREATE INDEX IF NOT EXISTS idx_creditflow_student ON credit_flow(student_id);
-CREATE INDEX IF NOT EXISTS idx_alert_student ON alert(student_id);
-CREATE INDEX IF NOT EXISTS idx_operatelog_operator ON operate_log(operator_id);
-
 CREATE TABLE IF NOT EXISTS attachment (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  completion_record_id INTEGER,
-  task_id INTEGER,
-  student_id INTEGER,
-  uploader_id INTEGER,
-  original_name TEXT,
-  stored_name TEXT NOT NULL,
-  mime TEXT,
-  size_original INTEGER,
-  size_compressed INTEGER,
-  width INTEGER,
-  height INTEGER,
-  storage_enc TEXT DEFAULT 'raw',
-  created_at TEXT DEFAULT (datetime('now'))
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  completion_record_id INT,
+  task_id INT,
+  student_id INT,
+  uploader_id INT,
+  original_name VARCHAR(512),
+  stored_name VARCHAR(512) NOT NULL,
+  mime VARCHAR(128),
+  size_original INT,
+  size_compressed INT,
+  width INT,
+  height INT,
+  storage_enc VARCHAR(16) DEFAULT 'raw',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_attachment_task_stu (task_id, student_id)
 );
-CREATE INDEX IF NOT EXISTS idx_attachment_task_stu ON attachment(task_id, student_id);
 `;
 
-db.exec(SCHEMA);
-
-function seed() {
-  const cnt = db.prepare('SELECT COUNT(*) AS c FROM sys_user').get().c;
-  if (cnt > 0) return;
+async function seed() {
+  const cntRow = await db.prepare('SELECT COUNT(*) AS c FROM sys_user').get();
+  if (cntRow.c > 0) return;
 
   const CLASS_ID = 1;
-  db.prepare('INSERT INTO clazz(name) VALUES(?)').run('洛一高附中八（十）班');
+  await db.prepare('INSERT INTO clazz(name) VALUES(?)').run('洛一高附中八（十）班');
 
   // 科目（teacher_id 指向王老师）
   const insSubj = db.prepare('INSERT INTO subject(name, class_id, teacher_id) VALUES(?,?,?)');
-  insSubj.run('语文', CLASS_ID, 2);
-  insSubj.run('数学', CLASS_ID, 2);
-  insSubj.run('英语', CLASS_ID, 2);
+  await insSubj.run('语文', CLASS_ID, 2);
+  await insSubj.run('数学', CLASS_ID, 2);
+  await insSubj.run('英语', CLASS_ID, 2);
 
   // 用户：管理员(ADMIN) / 老师(TEACHER) / 课代表(REP x2) / 学生(STUDENT)
   const insUser = db.prepare(
     'INSERT INTO sys_user(username, password, name, role, class_id, student_id) VALUES(?,?,?,?,?,?)'
   );
-  insUser.run('admin', hashPassword('123456'), '管理员', 'ADMIN', CLASS_ID, null);
-  insUser.run('teacher01', hashPassword('123456'), '杨老师', 'TEACHER', CLASS_ID, null);
-  insUser.run('rep01', hashPassword('123456'), '李课代(语文)', 'REP', CLASS_ID, null);
-  insUser.run('rep02', hashPassword('123456'), '张课代(数学)', 'REP', CLASS_ID, null);
+  await insUser.run('admin', hashPassword('123456'), '管理员', 'ADMIN', CLASS_ID, null);
+  await insUser.run('teacher01', hashPassword('123456'), '杨老师', 'TEACHER', CLASS_ID, null);
+  await insUser.run('rep01', hashPassword('123456'), '李课代(语文)', 'REP', CLASS_ID, null);
+  await insUser.run('rep02', hashPassword('123456'), '张课代(数学)', 'REP', CLASS_ID, null);
 
   // 显式取 id
-  const getUid = (u) => db.prepare('SELECT id FROM sys_user WHERE username=?').get(u).id;
-  const adminId = getUid('admin');
-  const teacherId = getUid('teacher01');
-  const r1 = getUid('rep01');
-  const r2 = getUid('rep02');
+  const getUid = async (u) => (await db.prepare('SELECT id FROM sys_user WHERE username=?').get(u)).id;
+  const adminId = await getUid('admin');
+  const teacherId = await getUid('teacher01');
+  const r1 = await getUid('rep01');
+  const r2 = await getUid('rep02');
 
   // 学生档案 + 账号
   const studentsSeed = [
     ['张三', 'S1001'], ['李四', 'S1002'], ['王五', 'S1003'],
-    ['赵六', 'S1004'], ['钱七', 'S1005'], ['孙八', 'S1006']
+    ['赵六', 'S1004'], ['钱七', 'S1005'], ['孙八', 'DuplicatesGuard']
   ];
   const insStu = db.prepare('INSERT INTO student(name, student_no, class_id) VALUES(?,?,?)');
   const insStuUser = db.prepare(
     'INSERT INTO sys_user(username, password, name, role, class_id, student_id) VALUES(?,?,?,?,?,?)'
   );
-  studentsSeed.forEach(([name, no], i) => {
-    insStu.run(name, no, CLASS_ID);
-    const studentId = db.prepare('SELECT last_insert_rowid() AS id').get().id;
+  for (let i = 0; i < studentsSeed.length; i++) {
+    const [name, no] = studentsSeed[i];
+    const r = await insStu.run(name, no, CLASS_ID);
+    const studentId = r.lastInsertRowid;
     const username = 'student' + String(i + 1).padStart(2, '0');
-    insStuUser.run(username, hashPassword('123456'), name, 'STUDENT', CLASS_ID, studentId);
-  });
+    await insStuUser.run(username, hashPassword('123456'), name, 'STUDENT', CLASS_ID, studentId);
+  }
 
   // 课代表科目关联
-  db.prepare('INSERT INTO subject_rep(subject_id, user_id) VALUES(?,?)').run(1, r1);
-  db.prepare('INSERT INTO subject_rep(subject_id, user_id) VALUES(?,?)').run(2, r2);
+  await db.prepare('INSERT IGNORE INTO subject_rep(subject_id, user_id) VALUES(?,?)').run(1, r1);
+  await db.prepare('INSERT IGNORE INTO subject_rep(subject_id, user_id) VALUES(?,?)').run(2, r2);
 
   // 示例任务（type/deadline 与前端契约一致）
   const insTask = db.prepare(
     'INSERT INTO task(title, subject_id, class_id, credit_value, type, status, deadline, description, creator_id) VALUES(?,?,?,?,?,?,?,?,?)'
   );
-  insTask.run('《赤壁赋》背诵', 1, CLASS_ID, 3, 'BACKING', 'OPEN', '2026-07-26 23:59', '默写并背诵全文', r1);
-  insTask.run('第三章习题', 2, CLASS_ID, 5, 'HOMEWORK', 'OPEN', '2026-07-22 23:59', '完成课后习题 1-10', r2);
-  insTask.run('单元测试卷', 1, CLASS_ID, 8, 'EXAM', 'OPEN', '2026-07-20 23:59', '语文综合测验', teacherId);
-  insTask.run('错题整理', 2, CLASS_ID, 4, 'HOMEWORK', 'OPEN', '2026-07-30 23:59', '整理本周错题', r2);
+  await insTask.run('《赤壁赋》背诵', 1, CLASS_ID, 3, 'BACKING', 'OPEN', '2026-07-26 23:59', '默写并背诵全文', r1);
+  await insTask.run('第三章习题', 2, CLASS_ID, 5, 'HOMEWORK', 'OPEN', '2026-07-22 23:59', '完成课后习题 1-10', r2);
+  await insTask.run('单元测试卷', 1, CLASS_ID, 8, 'EXAM', 'OPEN', '2026-07-20 23:59', '语文综合测验', teacherId);
+  await insTask.run('错题整理', 2, CLASS_ID, 4, 'HOMEWORK', 'OPEN', '2026-07-30 23:59', '整理本周错题', r2);
 
   // 完成记录 + 流水（与前端 Mock 数据一致，便于对照）
   const taskMeta = {
@@ -297,55 +352,56 @@ function seed() {
   const insFlow = db.prepare(
     'INSERT INTO credit_flow(student_id, task_id, change_amount, flow_type, reason) VALUES(?,?,?,?,?)'
   );
-  seedComp.forEach(([taskId, studentId, status]) => {
+  for (const [taskId, studentId, status] of seedComp) {
     const meta = taskMeta[taskId];
     const { credit, flowType } = calcCredit(meta.credit, meta.type, status);
-    const ctime = status === 'UNFINISHED' || status === 'FAILED' ? null : '2026-07-19 10:00';
-    insComp.run(taskId, studentId, status, ctime, credit, teacherId);
+    const ctime = (status === 'UNFINISHED' || status === 'FAILED') ? null : '2026-07-19 10:00';
+    await insComp.run(taskId, studentId, status, ctime, credit, teacherId);
     if (credit > 0) {
-      insFlow.run(studentId, taskId, credit, flowType, meta.title);
+      await insFlow.run(studentId, taskId, credit, flowType, meta.title);
     }
-  });
-  // 重算各学生总学分
-  db.prepare(`UPDATE student SET total_credits = (
-    SELECT COALESCE(SUM(change_amount),0) FROM credit_flow WHERE student_id=student.id
-  )`).run();
+  }
+  // 重算各学生总学分（MySQL 不允许在 UPDATE 子查询中引用同一张表，改为按学生汇总后逐条更新）
+  const sums = await db.prepare('SELECT student_id, COALESCE(SUM(change_amount),0) AS s FROM credit_flow GROUP BY student_id').all();
+  const updStuCredit = db.prepare('UPDATE student SET total_credits=? WHERE id=?');
+  for (const { student_id, s } of sums) {
+    await updStuCredit.run(s, student_id);
+  }
 
   // 预警
-  db.prepare("INSERT INTO alert(student_id, type, level, message) VALUES(?,?,?,?)").run(4, 'CONSECUTIVE_MISS', 'DANGER', '连续 3 个任务未完成（错题整理/单元测试卷/第三章习题）');
-  db.prepare("INSERT INTO alert(student_id, type, level, message) VALUES(?,?,?,?)").run(2, 'OVERDUE_SOON', 'WARN', '《单元测试卷》将于 2026-07-20 截止且尚未完成');
+  await db.prepare("INSERT INTO alert(student_id, type, level, message) VALUES(?,?,?,?)").run(4, 'CONSECUTIVE_MISS', 'DANGER', '连续 3 个任务未完成（错题整理/单元测试卷/第三章习题）');
+  await db.prepare("INSERT INTO alert(student_id, type, level, message) VALUES(?,?,?,?)").run(2, 'OVERDUE_SOON', 'WARN', '《单元测试卷》将于 2026-07-20 截止且尚未完成');
 
   // 操作日志
-  db.prepare("INSERT INTO operate_log(operator_id, operator_name, operate_type, table_name, record_id, before_snapshot, after_snapshot) VALUES(?,?,?,?,?,?,?)")
+  await db.prepare("INSERT INTO operate_log(operator_id, operator_name, operate_type, table_name, record_id, before_snapshot, after_snapshot) VALUES(?,?,?,?,?,?,?)")
     .run(teacherId, '杨老师', 'INSERT', 'task', 3, null, '{"title":"单元测试卷","credit_value":8}');
-  db.prepare("INSERT INTO operate_log(operator_id, operator_name, operate_type, table_name, record_id, before_snapshot, after_snapshot) VALUES(?,?,?,?,?,?,?)")
+  await db.prepare("INSERT INTO operate_log(operator_id, operator_name, operate_type, table_name, record_id, before_snapshot, after_snapshot) VALUES(?,?,?,?,?,?,?)")
     .run(r1, '李课代(语文)', 'UPDATE', 'completion_record', 1, '{"status":"UNFINISHED","credit_change":0}', '{"status":"DONE_ONTIME","credit_change":3}');
 
   // 任务模板
-  db.prepare('INSERT INTO task_template(name, subject_id, type, credit_value, description) VALUES(?,?,?,?,?)')
+  await db.prepare('INSERT INTO task_template(name, subject_id, type, credit_value, description) VALUES(?,?,?,?,?)')
     .run('《赤壁赋》背诵·模板', 1, 'BACKING', 3, '默写并背诵全文');
-  db.prepare('INSERT INTO task_template(name, subject_id, type, credit_value, description) VALUES(?,?,?,?,?)')
+  await db.prepare('INSERT INTO task_template(name, subject_id, type, credit_value, description) VALUES(?,?,?,?,?)')
     .run('第三章习题·模板', 2, 'HOMEWORK', 5, '完成课后习题 1-10');
 
   console.log('[seed] 初始数据已写入');
 }
 
-seed();
-
 // ── 幂等迁移：每次启动都执行，用于给「已存在的库」补齐新功能所需的数据 ──
-// 不受 seed() 的空库守卫限制，保证线上老库/新库都能获得：初中全科科目 + 超级管理员
-function migrate() {
+async function migrate() {
   const CLASS_ID = 1;
 
   // 确保存在班级（极端情况下空库场景）
-  const hasClass = db.prepare('SELECT id FROM clazz WHERE id=?').get(CLASS_ID);
-  if (!hasClass) db.prepare('INSERT INTO clazz(id, name) VALUES(?,?)').run(CLASS_ID, '洛一高附中八（十）班');
+  const hasClass = await db.prepare('SELECT id FROM clazz WHERE id=?').get(CLASS_ID);
+  if (!hasClass) {
+    await db.prepare('INSERT INTO clazz(id, name) VALUES(?,?)').run(CLASS_ID, '洛一高附中八（十）班');
+  }
 
   // 1) 超级管理员（单独给管理者本人的最高权限账号）
   const SUPER_USER = 'superadmin';
-  const existSuper = db.prepare('SELECT id FROM sys_user WHERE username=?').get(SUPER_USER);
+  const existSuper = await db.prepare('SELECT id FROM sys_user WHERE username=?').get(SUPER_USER);
   if (!existSuper) {
-    db.prepare('INSERT INTO sys_user(username, password, name, role, class_id, student_id) VALUES(?,?,?,?,?,?)')
+    await db.prepare('INSERT INTO sys_user(username, password, name, role, class_id, student_id) VALUES(?,?,?,?,?,?)')
       .run(SUPER_USER, hashPassword('Feiyue@2026'), '超级管理员', 'ADMIN', CLASS_ID, null);
     console.log('[migrate] 超级管理员账号已创建: superadmin / (密码已设置，请及时修改)');
   }
@@ -354,58 +410,72 @@ function migrate() {
   const FULL_SUBJECTS = [
     '语文', '数学', '英语', '物理', '化学', '生物',
     '道德与法治', '历史', '地理', '体育与健康', '音乐', '美术', '信息科技',
-    '其他'   // 自定义任务分类（用户可自由创建各类非学科任务）
+    '其他'
   ];
-  const teacher = db.prepare("SELECT id FROM sys_user WHERE role='TEACHER' ORDER BY id LIMIT 1").get();
-  const teacherId = teacher ? teacher.id : null;
+  const teacherRow = await db.prepare("SELECT id FROM sys_user WHERE role='TEACHER' ORDER BY id LIMIT 1").get();
+  const teacherId = teacherRow ? teacherRow.id : null;
   const insSubj = db.prepare('INSERT INTO subject(name, class_id, teacher_id) VALUES(?,?,?)');
-  FULL_SUBJECTS.forEach((name) => {
-    const exist = db.prepare('SELECT id FROM subject WHERE name=? AND class_id=?').get(name, CLASS_ID);
-    if (!exist) insSubj.run(name, CLASS_ID, teacherId);
-  });
+  for (const name of FULL_SUBJECTS) {
+    const exist = await db.prepare('SELECT id FROM subject WHERE name=? AND class_id=?').get(name, CLASS_ID);
+    if (!exist) await insSubj.run(name, CLASS_ID, teacherId);
+  }
 
   // 3) 学生账号用户名规范化：stu01 -> student01（修复 student01 登录失败问题）
-  const stuUsers = db.prepare("SELECT id, username FROM sys_user WHERE role='STUDENT' AND username LIKE 'stu_%' AND username NOT LIKE 'student%'").all();
+  const stuUsers = await db.prepare("SELECT id, username FROM sys_user WHERE role='STUDENT' AND username LIKE 'stu_%' AND username NOT LIKE 'student%'").all();
   const updStu = db.prepare('UPDATE sys_user SET username=? WHERE id=?');
   const chkStu = db.prepare('SELECT id FROM sys_user WHERE username=?');
-  stuUsers.forEach((u) => {
+  for (const u of stuUsers) {
     const newName = 'student' + u.username.slice(3); // 'stu01' -> 'student01'
-    if (!chkStu.get(newName)) updStu.run(newName, u.id);
-  });
+    if (!(await chkStu.get(newName))) await updStu.run(newName, u.id);
+  }
 
   // 4) 测试教师 王老师 -> 杨老师（仅改种子默认教师账号与日志）
-  db.prepare("UPDATE sys_user SET name='杨老师' WHERE username='teacher01' AND name='王老师'").run();
-  db.prepare("UPDATE operate_log SET operator_name='杨老师' WHERE operator_name='王老师'").run();
+  await db.prepare("UPDATE sys_user SET name='杨老师' WHERE username='teacher01' AND name='王老师'").run();
+  await db.prepare("UPDATE operate_log SET operator_name='杨老师' WHERE operator_name='王老师'").run();
 
   // 5) 附件存储编码列（raw/gzip）：用于视频/PDF/文档的无损存储压缩，下载时按此透明解压
-  const attCols = db.prepare("PRAGMA table_info(attachment)").all();
+  const [attCols] = await pool.query(
+    "SELECT COLUMN_NAME AS name FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=? AND TABLE_NAME='attachment'",
+    [DB_NAME]
+  );
   if (!attCols.some((c) => c.name === 'storage_enc')) {
-    db.prepare("ALTER TABLE attachment ADD COLUMN storage_enc TEXT DEFAULT 'raw'").run();
+    await db.prepare("ALTER TABLE attachment ADD COLUMN storage_enc VARCHAR(16) DEFAULT 'raw'").run();
   }
 
   // 6) 微信小程序登录字段
-  const userCols = db.prepare("PRAGMA table_info(sys_user)").all();
+  const [userCols] = await pool.query(
+    "SELECT COLUMN_NAME AS name FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=? AND TABLE_NAME='sys_user'",
+    [DB_NAME]
+  );
   if (!userCols.some((c) => c.name === 'openid')) {
-    db.prepare("ALTER TABLE sys_user ADD COLUMN openid TEXT").run();
-    db.prepare("CREATE UNIQUE INDEX IF NOT EXISTS idx_user_openid ON sys_user(openid)").run();
+    await db.prepare("ALTER TABLE sys_user ADD COLUMN openid VARCHAR(64) UNIQUE").run();
   }
   if (!userCols.some((c) => c.name === 'avatar')) {
-    db.prepare("ALTER TABLE sys_user ADD COLUMN avatar TEXT").run();
+    await db.prepare("ALTER TABLE sys_user ADD COLUMN avatar VARCHAR(512)").run();
   }
 
   // 7) 初始积分赠送：给所有尚无 user_points 的用户赠送 INIT_POINTS（前期活动，默认 100）
   const INIT_POINTS = Number(process.env.INIT_POINTS) || 100;
-  const noPoints = db.prepare('SELECT id FROM sys_user WHERE id NOT IN (SELECT user_id FROM user_points)').all();
+  const noPoints = await db.prepare('SELECT id FROM sys_user WHERE id NOT IN (SELECT user_id FROM user_points)').all();
   if (noPoints.length) {
     const insPts = db.prepare('INSERT INTO user_points(user_id, points, total_earned) VALUES(?,?,?)');
-    noPoints.forEach((u) => insPts.run(u.id, INIT_POINTS, INIT_POINTS));
+    for (const u of noPoints) {
+      await insPts.run(u.id, INIT_POINTS, INIT_POINTS);
+    }
     console.log(`[migrate] 已为 ${noPoints.length} 位用户初始化赠送 ${INIT_POINTS} 积分`);
   }
 
   // 8) 课程资料自动播种：仅当 resource 表为空时填充示例资料（与数据库 id 解耦，刷新/新环境均可复现）
-  require('./seed_resources').seedResources(db);
+  await require('./seed_resources').seedResources(db);
 }
 
-migrate();
+// ── 启动初始化：建表 + 种子 + 迁移（由 index.js 在 app.listen 之前 await 调用）──
+async function init() {
+  await db.query('SELECT 1'); // 探活：确保数据库可达
+  await db.exec(SCHEMA);      // 建表（幂等）
+  await seed();
+  await migrate();
+  console.log('[db] MySQL 初始化完成（schema + seed + migrate）');
+}
 
-module.exports = { db };
+module.exports = { db, init, pool };

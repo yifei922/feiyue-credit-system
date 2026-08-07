@@ -7,26 +7,26 @@ const { calcCredit } = require('../services/credit');
 const { recordLog } = require('../services/log');
 
 // 写入单条完成记录 + 流水 + 重算总学分（被 /register 与 /import 复用，保证幂等）
-function registerCompletion(task, sid, status, operator) {
+async function registerCompletion(task, sid, status, operator) {
   const { credit, flowType } = calcCredit(task.credit_value, task.type, status);
   const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
   const isDone = status === 'DONE_ONTIME' || status === 'DONE_OVERDUE';
-  db.prepare('DELETE FROM completion_record WHERE task_id=? AND student_id=?').run(task.id, sid);
-  db.prepare('DELETE FROM credit_flow WHERE task_id=? AND student_id=?').run(task.id, sid);
-  const info = db.prepare('INSERT INTO completion_record(task_id, student_id, status, completion_time, credit_earned, operator_id) VALUES(?,?,?,?,?,?)')
+  await db.prepare('DELETE FROM completion_record WHERE task_id=? AND student_id=?').run(task.id, sid);
+  await db.prepare('DELETE FROM credit_flow WHERE task_id=? AND student_id=?').run(task.id, sid);
+  const info = await db.prepare('INSERT INTO completion_record(task_id, student_id, status, completion_time, credit_earned, operator_id) VALUES(?,?,?,?,?,?)')
     .run(task.id, sid, status, isDone ? now : null, credit, operator.id);
   const recId = info.lastInsertRowid;
   if (credit > 0) {
-    db.prepare('INSERT INTO credit_flow(student_id, task_id, change_amount, flow_type, reason) VALUES(?,?,?,?,?)')
+    await db.prepare('INSERT INTO credit_flow(student_id, task_id, change_amount, flow_type, reason) VALUES(?,?,?,?,?)')
       .run(sid, task.id, credit, flowType, task.title);
   }
-  db.prepare('UPDATE student SET total_credits = (SELECT COALESCE(SUM(change_amount),0) FROM credit_flow WHERE student_id=?) WHERE id=?')
+  await db.prepare('UPDATE student SET total_credits = (SELECT COALESCE(SUM(change_amount),0) FROM credit_flow WHERE student_id=?) WHERE id=?')
     .run(sid, sid);
   return { credit, recId };
 }
 
 // 完成登记：计算学分、写入完成记录 + 流水、更新总学分
-router.post('/register', requireRole('ADMIN', 'TEACHER', 'REP', 'STUDENT'), (req, res) => {
+router.post('/register', requireRole('ADMIN', 'TEACHER', 'REP', 'STUDENT'), async (req, res) => {
   const { taskId, studentIds, status } = req.body || {};
   if (!taskId || !status) return fail(res, 400, '缺少任务或状态');
 
@@ -39,16 +39,19 @@ router.post('/register', requireRole('ADMIN', 'TEACHER', 'REP', 'STUDENT'), (req
   }
   if (sids.length === 0) return fail(res, 400, '请选择学生');
 
-  const task = db.prepare('SELECT * FROM task WHERE id=?').get(taskId);
+  const task = await db.prepare('SELECT * FROM task WHERE id=?').get(taskId);
   if (!task) return fail(res, 404, '任务不存在');
 
   // 课代表只能登记自己负责的科目
-  if (req.user.role === 'REP' && !canManageSubject(req.user, task.subject_id)) {
+  if (req.user.role === 'REP' && !(await canManageSubject(req.user, task.subject_id))) {
     return fail(res, 403, '你只能登记自己负责的科目');
   }
 
   let gained = 0;
-  sids.forEach((sid) => { gained += registerCompletion(task, sid, status, req.user).credit; });
+  for (const sid of sids) {
+    const r = await registerCompletion(task, sid, status, req.user);
+    gained += r.credit;
+  }
 
   recordLog(req.user, 'UPSERT', 'completion_record', taskId, null, { studentIds: sids, status, gained });
   ok(res, { affected: sids.length, gained });
@@ -56,7 +59,7 @@ router.post('/register', requireRole('ADMIN', 'TEACHER', 'REP', 'STUDENT'), (req
 
 // 成绩导入（管理员/老师/课代表）：CSV 或 JSON 数组
 // CSV 表头支持：student_no / student_name / task_id / task_title / status（也可无表头，按列序 学号,任务ID,状态）
-router.post('/import', requireRole('ADMIN', 'TEACHER', 'REP'), (req, res) => {
+router.post('/import', requireRole('ADMIN', 'TEACHER', 'REP'), async (req, res) => {
   const body = req.body || {};
   let rows = [];
   if (body.csv) {
@@ -99,19 +102,19 @@ router.post('/import', requireRole('ADMIN', 'TEACHER', 'REP'), (req, res) => {
   for (const r of rows) {
     // 解析学生
     let student = null;
-    if (r.studentNo) student = db.prepare('SELECT * FROM student WHERE student_no=?').get(r.studentNo);
-    if (!student && r.studentName) student = db.prepare('SELECT * FROM student WHERE name=?').get(r.studentName);
+    if (r.studentNo) student = await db.prepare('SELECT * FROM student WHERE student_no=?').get(r.studentNo);
+    if (!student && r.studentName) student = await db.prepare('SELECT * FROM student WHERE name=?').get(r.studentName);
     if (!student) { skipped++; errors.push(`学生未找到: ${r.studentNo || r.studentName}`); continue; }
     // 解析任务
     let task = null;
-    if (r.taskId && /^\d+$/.test(String(r.taskId))) task = db.prepare('SELECT * FROM task WHERE id=?').get(Number(r.taskId));
-    if (!task && r.taskTitle) task = db.prepare('SELECT * FROM task WHERE title LIKE ?').get('%' + r.taskTitle + '%');
+    if (r.taskId && /^\d+$/.test(String(r.taskId))) task = await db.prepare('SELECT * FROM task WHERE id=?').get(Number(r.taskId));
+    if (!task && r.taskTitle) task = await db.prepare('SELECT * FROM task WHERE title LIKE ?').get('%' + r.taskTitle + '%');
     if (!task) { skipped++; errors.push(`任务未找到: ${r.taskId || r.taskTitle}`); continue; }
     // 状态校验
     const status = String(r.status).toUpperCase();
     if (!validStatus.includes(status)) { skipped++; errors.push(`状态非法: ${r.status}`); continue; }
     // 课代表科目隔离
-    if (req.user.role === 'REP' && !canManageSubject(req.user, task.subject_id)) {
+    if (req.user.role === 'REP' && !(await canManageSubject(req.user, task.subject_id))) {
       skipped++; errors.push(`无权限科目: ${task.title}`); continue;
     }
     registerCompletion(task, student.id, status, req.user);
@@ -122,7 +125,7 @@ router.post('/import', requireRole('ADMIN', 'TEACHER', 'REP'), (req, res) => {
 });
 
 // 成绩明细导出（角色隔离：学生仅本人，课代表仅负责科目）
-router.get('/export', (req, res) => {
+router.get('/export', async (req, res) => {
   const format = String(req.query.format || 'csv').toLowerCase();
   const params = [];
   let sql = `SELECT cr.student_id AS studentId, s.student_no AS studentNo, s.name AS studentName,
@@ -135,7 +138,7 @@ router.get('/export', (req, res) => {
   if (req.user.role === 'STUDENT') {
     sql += ' AND cr.student_id=?'; params.push(req.user.studentId);
   } else if (req.user.role === 'REP') {
-    const ids = getManagedSubjectIds(req.user);
+    const ids = await getManagedSubjectIds(req.user);
     if (ids.length === 0) return ok(res, []);
     sql += ` AND t.subject_id IN (${ids.map(() => '?').join(',')})`;
     params.push(...ids);
@@ -146,7 +149,7 @@ router.get('/export', (req, res) => {
   }
   if (req.query.taskId) { sql += ' AND cr.task_id=?'; params.push(Number(req.query.taskId)); }
   sql += ' ORDER BY cr.id DESC';
-  const rows = db.prepare(sql).all(...params);
+  const rows = await db.prepare(sql).all(...params);
 
   if (format === 'json') return ok(res, rows);
 
@@ -161,7 +164,7 @@ router.get('/export', (req, res) => {
 });
 
 // 完成记录列表
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   const params = [];
   let sql = `SELECT cr.*, s.name AS studentName, t.title AS taskTitle, t.subject_id AS subjectId
              FROM completion_record cr
@@ -171,7 +174,7 @@ router.get('/', (req, res) => {
     sql += ' AND cr.student_id=?';
     params.push(req.user.studentId);
   } else if (req.user.role === 'REP') {
-    const ids = getManagedSubjectIds(req.user);
+    const ids = await getManagedSubjectIds(req.user);
     if (ids.length === 0) return ok(res, []);
     sql += ` AND t.subject_id IN (${ids.map(() => '?').join(',')})`;
     params.push(...ids);
@@ -179,8 +182,8 @@ router.get('/', (req, res) => {
   if (req.query.taskId) { sql += ' AND cr.task_id=?'; params.push(Number(req.query.taskId)); }
   if (req.query.studentId) { sql += ' AND cr.student_id=?'; params.push(Number(req.query.studentId)); }
   sql += ' ORDER BY cr.id DESC';
-  const rows = db.prepare(sql).all(...params);
-  const attStmt = db.prepare('SELECT id, original_name AS originalName, stored_name AS storedName, mime, size_original AS sizeOriginal, size_compressed AS sizeCompressed, width, height FROM attachment WHERE task_id=? AND student_id=?');
+  const rows = await db.prepare(sql).all(...params);
+  const attStmt = await db.prepare('SELECT id, original_name AS originalName, stored_name AS storedName, mime, size_original AS sizeOriginal, size_compressed AS sizeCompressed, width, height FROM attachment WHERE task_id=? AND student_id=?');
   ok(res, rows.map(r => ({
     id: r.id, taskId: r.task_id, studentId: r.student_id, studentName: r.studentName,
     taskTitle: r.taskTitle, status: r.status, completionTime: r.completion_time, creditEarned: r.credit_earned,

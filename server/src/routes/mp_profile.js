@@ -6,7 +6,7 @@ const router = express.Router();
 const { db } = require('../db');
 const { ok, fail } = require('../util');
 
-router.post('/profile', (req, res) => {
+router.post('/profile', async (req, res) => {
   const u = req.user;
   const { name, studentId, avatar } = req.body || {};
   const sets = [];
@@ -24,8 +24,8 @@ router.post('/profile', (req, res) => {
   }
   if (sets.length === 0) return fail(res, 400, '没有要更新的字段');
   args.push(u.id);
-  db.prepare('UPDATE sys_user SET ' + sets.join(', ') + ' WHERE id=?').run(...args);
-  const row = db.prepare('SELECT id, username, name, role, student_id, avatar FROM sys_user WHERE id=?').get(u.id);
+  await db.prepare('UPDATE sys_user SET ' + sets.join(', ') + ' WHERE id=?').run(...args);
+  const row = await db.prepare('SELECT id, username, name, role, student_id, avatar FROM sys_user WHERE id=?').get(u.id);
   ok(res, { id: row.id, name: row.name, studentId: row.student_id, avatar: row.avatar, role: row.role });
 });
 

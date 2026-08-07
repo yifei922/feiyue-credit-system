@@ -1,0 +1,57 @@
+# 本地一键起：MySQL 8 + 学分后端（无需腾讯云账号即可验证 MySQL 迁移）
+# 用法：
+#   cd server
+#   docker compose up --build        # 构建后端镜像并启动，访问 http://localhost:8080
+#   docker compose down              # 停止（数据保留在 mysql_data 卷）
+#   docker compose down -v           # 停止并清空数据库（重新 seed）
+#
+# 注：生产部署请用微信云托管（docs/cloudrun-deploy.md），此 compose 仅用于本地开发/验证。
+
+services:
+  db:
+    image: mysql:8.0
+    command:
+      - --default-authentication-plugin=mysql_native_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: credit_dev_pass
+      MYSQL_DATABASE: credit
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      # 用环境变量里的 root 密码探活；$$ 转义避免 compose 变量展开
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p$${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # 连接 compose 内的 db 服务（不是 127.0.0.1）
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_USER: root
+      DB_PASSWORD: credit_dev_pass
+      DB_NAME: credit
+      NODE_ENV: production
+      PORT: "80"
+      # ⚠️ 以下为本地开发占位，生产请替换为真实值（见 .env.example）
+      JWT_SECRET: dev_only_local_placeholder_change_me
+      WX_APP_ID: wxYOURFORMALAPPID
+      WX_APP_SECRET: your_formal_app_secret
+      INIT_POINTS: "100"
+      RESOURCE_VIEW_COST: "5"
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+volumes:
+  mysql_data:

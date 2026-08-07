@@ -324,14 +324,14 @@ function slugOf(e) {
 }
 
 // 仅当 resource 表为空时播种，保证幂等且不覆盖老师后续增删
-function seedResources(db) {
+async function seedResources(db) {
   try {
-    const cnt = db.prepare('SELECT COUNT(*) AS c FROM resource').get().c;
+    const cnt = await (await db.prepare('SELECT COUNT(*) AS c FROM resource').get()).c;
     if (cnt > 0) return;
     fs.mkdirSync(STUDY_DIR, { recursive: true });
-    const admin = db.prepare("SELECT id FROM sys_user WHERE role='ADMIN' ORDER BY id LIMIT 1").get();
+    const admin = await db.prepare("SELECT id FROM sys_user WHERE role='ADMIN' ORDER BY id LIMIT 1").get();
     const createdBy = admin ? admin.id : null;
-    const ins = db.prepare(
+    const ins = await db.prepare(
       'INSERT INTO resource(grade,subject,title,cover,type,url,description,source,tags,sort_order,created_by) VALUES(?,?,?,?,?,?,?,?,?,?,?)'
     );
     let n = 0;

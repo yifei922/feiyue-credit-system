@@ -6,12 +6,12 @@ const { ok, fail } = require('../util');
 const authMiddleware = require('../middleware/auth');
 const { getManagedSubjectIds } = require('../middleware/rbac');
 
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   const { username, password } = req.body || {};
   if (!username || !password) return fail(res, 400, '请输入账号和密码');
-  const user = db.prepare('SELECT * FROM sys_user WHERE username=?').get(username);
+  const user = await db.prepare('SELECT * FROM sys_user WHERE username=?').get(username);
   if (!user || !verifyPassword(password, user.password)) return fail(res, 401, '用户名或密码错误');
-  const managedSubjects = getManagedSubjectIds({ id: user.id, role: user.role });
+  const managedSubjects = await getManagedSubjectIds({ id: user.id, role: user.role });
   const token = signToken({
     id: user.id, username: user.username, role: user.role, name: user.name, studentId: user.student_id
   });
@@ -29,10 +29,10 @@ router.post('/login', (req, res) => {
   });
 });
 
-router.get('/me', authMiddleware, (req, res) => {
-  const user = db.prepare('SELECT id,username,name,role,class_id,student_id FROM sys_user WHERE id=?').get(req.user.id);
+router.get('/me', authMiddleware, async (req, res) => {
+  const user = await db.prepare('SELECT id,username,name,role,class_id,student_id FROM sys_user WHERE id=?').get(req.user.id);
   if (!user) return fail(res, 404, '用户不存在');
-  const managedSubjects = getManagedSubjectIds({ id: user.id, role: user.role });
+  const managedSubjects = await getManagedSubjectIds({ id: user.id, role: user.role });
   ok(res, {
     id: user.id,
     username: user.username,

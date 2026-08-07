@@ -8,24 +8,24 @@ const { requireRole } = require('../middleware/rbac');
 const { recordLog } = require('../services/log');
 
 // 列表：管理员/老师/课代表看全班；学生仅看自己
-router.get('/', authMiddleware, (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   let rows;
   if (req.user.role === 'STUDENT') {
-    rows = db.prepare(`SELECT s.*, c.name AS className FROM student s LEFT JOIN clazz c ON s.class_id=c.id WHERE s.id=?`)
+    rows = await db.prepare(`SELECT s.*, c.name AS className FROM student s LEFT JOIN clazz c ON s.class_id=c.id WHERE s.id=?`)
       .all(req.user.studentId);
   } else {
-    rows = db.prepare(`SELECT s.*, c.name AS className FROM student s LEFT JOIN clazz c ON s.class_id=c.id ORDER BY s.id`).all();
+    rows = await db.prepare(`SELECT s.*, c.name AS className FROM student s LEFT JOIN clazz c ON s.class_id=c.id ORDER BY s.id`).all();
   }
-  ok(res, rows.map(r => ({
+  ok(res, await Promise.all(rows.map(async r => ({
     id: r.id, studentNo: r.student_no, name: r.name, classId: r.class_id,
     totalCredits: r.total_credits, className: r.className
-  })));
+  }))));
 });
 
 // 名单导出（管理员/老师/课代表）：CSV（带 BOM 兼容 Excel）或 JSON，含总学分
-router.get('/export', authMiddleware, requireRole('ADMIN', 'TEACHER', 'REP'), (req, res) => {
+router.get('/export', authMiddleware, requireRole('ADMIN', 'TEACHER', 'REP'), async (req, res) => {
   const format = String(req.query.format || 'csv').toLowerCase();
-  const rows = db.prepare(
+  const rows = await db.prepare(
     `SELECT s.student_no AS studentNo, s.name, c.name AS className, s.total_credits AS totalCredits
      FROM student s LEFT JOIN clazz c ON s.class_id=c.id ORDER BY s.id`
   ).all();
@@ -43,7 +43,7 @@ router.get('/export', authMiddleware, requireRole('ADMIN', 'TEACHER', 'REP'), (r
 });
 
 // 名单导入（管理员/老师）：支持 JSON 数组或 CSV 文本
-router.post('/import', authMiddleware, requireRole('ADMIN', 'TEACHER'), (req, res) => {
+router.post('/import', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (req, res) => {
   const body = req.body || {};
   let list = [];
   if (body.csv) {
@@ -61,13 +61,13 @@ router.post('/import', authMiddleware, requireRole('ADMIN', 'TEACHER'), (req, re
   if (list.length === 0) return fail(res, 400, '没有可导入的学生（请检查数据格式）');
 
   const classId = req.user.class_id || 1;
-  const insStu = db.prepare('INSERT INTO student(name, student_no, class_id) VALUES(?,?,?)');
-  const insUser = db.prepare('INSERT INTO sys_user(username, password, name, role, class_id, student_id) VALUES(?,?,?,?,?,?)');
+  const insStu = await db.prepare('INSERT INTO student(name, student_no, class_id) VALUES(?,?,?)');
+  const insUser = await db.prepare('INSERT INTO sys_user(username, password, name, role, class_id, student_id) VALUES(?,?,?,?,?,?)');
   let imported = 0;
   const importedRows = [];
   for (const s of list) {
     // 按学号去重
-    const exist = db.prepare('SELECT id FROM student WHERE student_no=?').get(s.studentNo);
+    const exist = await db.prepare('SELECT id FROM student WHERE student_no=?').get(s.studentNo);
     let studentId, isNew = false;
     if (exist) {
       studentId = exist.id;
@@ -77,7 +77,7 @@ router.post('/import', authMiddleware, requireRole('ADMIN', 'TEACHER'), (req, re
       isNew = true;
     }
     // 关联账号（若尚无对应 STUDENT 账号）
-    const hasUser = db.prepare("SELECT id FROM sys_user WHERE role='STUDENT' AND student_id=?").get(studentId);
+    const hasUser = await db.prepare("SELECT id FROM sys_user WHERE role='STUDENT' AND student_id=?").get(studentId);
     if (!hasUser) {
       const username = 'stu' + String(studentId).padStart(2, '0');
       insUser.run(username, hashPassword('123456'), s.name, 'STUDENT', classId, studentId);
@@ -91,48 +91,48 @@ router.post('/import', authMiddleware, requireRole('ADMIN', 'TEACHER'), (req, re
 });
 
 // 重置学生登录密码（管理员/老师/课代表）；不传 password 则重置为 123456
-router.post('/:id/reset-password', authMiddleware, requireRole('ADMIN', 'TEACHER', 'REP'), (req, res) => {
-  const student = db.prepare('SELECT * FROM student WHERE id=?').get(req.params.id);
+router.post('/:id/reset-password', authMiddleware, requireRole('ADMIN', 'TEACHER', 'REP'), async (req, res) => {
+  const student = await db.prepare('SELECT * FROM student WHERE id=?').get(req.params.id);
   if (!student) return fail(res, 404, '学生不存在');
-  const user = db.prepare("SELECT * FROM sys_user WHERE role='STUDENT' AND student_id=?").get(student.id);
+  const user = await db.prepare("SELECT * FROM sys_user WHERE role='STUDENT' AND student_id=?").get(student.id);
   if (!user) return fail(res, 404, '该学生尚无登录账号');
   const newPwd = String(req.body?.password || '').trim() || '123456';
   if (newPwd.length < 4) return fail(res, 400, '密码至少 4 位');
-  db.prepare('UPDATE sys_user SET password=? WHERE id=?').run(hashPassword(newPwd), user.id);
+  await db.prepare('UPDATE sys_user SET password=? WHERE id=?').run(hashPassword(newPwd), user.id);
   recordLog(req.user, 'UPDATE', 'sys_user', user.id, { username: user.username }, { action: 'reset-password' });
   ok(res, { ok: true, username: user.username, password: newPwd });
 });
 
 // 新增单个学生（管理员/老师）
-router.post('/', authMiddleware, requireRole('ADMIN', 'TEACHER'), (req, res) => {
+router.post('/', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (req, res) => {
   const { name, studentNo } = req.body || {};
   if (!name) return fail(res, 400, '请填写学生姓名');
-  const r = db.prepare('INSERT INTO student(name, student_no, class_id) VALUES(?,?,?)').run(name, studentNo || '', req.user.class_id || 1);
+  const r = await db.prepare('INSERT INTO student(name, student_no, class_id) VALUES(?,?,?)').run(name, studentNo || '', req.user.class_id || 1);
   const studentId = r.lastInsertRowid;
   const username = 'stu' + String(studentId).padStart(2, '0');
-  db.prepare('INSERT INTO sys_user(username, password, name, role, class_id, student_id) VALUES(?,?,?,?,?,?)')
+  await db.prepare('INSERT INTO sys_user(username, password, name, role, class_id, student_id) VALUES(?,?,?,?,?,?)')
     .run(username, hashPassword('123456'), name, 'STUDENT', req.user.class_id || 1, studentId);
   recordLog(req.user, 'INSERT', 'student', studentId, null, { name, studentNo });
   ok(res, { id: studentId, name, studentNo, username });
 });
 
 // 更新
-router.put('/:id', authMiddleware, requireRole('ADMIN', 'TEACHER'), (req, res) => {
+router.put('/:id', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (req, res) => {
   const { name, studentNo } = req.body || {};
-  const before = db.prepare('SELECT * FROM student WHERE id=?').get(req.params.id);
+  const before = await db.prepare('SELECT * FROM student WHERE id=?').get(req.params.id);
   if (!before) return fail(res, 404, '学生不存在');
-  db.prepare('UPDATE student SET name=?, student_no=? WHERE id=?').run(name ?? before.name, studentNo ?? before.student_no, req.params.id);
-  db.prepare('UPDATE sys_user SET name=? WHERE role=? AND student_id=?').run(name ?? before.name, 'STUDENT', req.params.id);
+  await db.prepare('UPDATE student SET name=?, student_no=? WHERE id=?').run(name ?? before.name, studentNo ?? before.student_no, req.params.id);
+  await db.prepare('UPDATE sys_user SET name=? WHERE role=? AND student_id=?').run(name ?? before.name, 'STUDENT', req.params.id);
   recordLog(req.user, 'UPDATE', 'student', req.params.id, before, { name, studentNo });
   ok(res, { ok: true });
 });
 
 // 删除
-router.delete('/:id', authMiddleware, requireRole('ADMIN', 'TEACHER'), (req, res) => {
-  const before = db.prepare('SELECT * FROM student WHERE id=?').get(req.params.id);
+router.delete('/:id', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (req, res) => {
+  const before = await db.prepare('SELECT * FROM student WHERE id=?').get(req.params.id);
   if (!before) return fail(res, 404, '学生不存在');
-  db.prepare('DELETE FROM sys_user WHERE role=? AND student_id=?').run('STUDENT', req.params.id);
-  db.prepare('DELETE FROM student WHERE id=?').run(req.params.id);
+  await db.prepare('DELETE FROM sys_user WHERE role=? AND student_id=?').run('STUDENT', req.params.id);
+  await db.prepare('DELETE FROM student WHERE id=?').run(req.params.id);
   recordLog(req.user, 'DELETE', 'student', req.params.id, before, null);
   ok(res, { ok: true });
 });

@@ -22,6 +22,7 @@ const mpResourcesRouter = require('./routes/mp_resources');
 const mpPointsRouter = require('./routes/mp_points');
 const mpProfileRouter = require('./routes/mp_profile');
 const mpAdminRouter = require('./routes/mp_admin');
+const { init: initDb } = require('./db');
 
 const app = express();
 app.use(express.json());
@@ -98,6 +99,16 @@ app.use((req, res, next) => {
 });
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`[server] 洛一高附中八（十）班学分系统已启动: http://localhost:${PORT}`);
-});
+
+// 启动前必须完成数据库初始化（建表 + 种子 + 迁移），否则路由会用到尚未建好的表
+(async () => {
+  try {
+    await initDb();
+  } catch (e) {
+    console.error('[db] 初始化失败，服务启动中止：', e);
+    process.exit(1);
+  }
+  app.listen(PORT, () => {
+    console.log(`[server] 洛一高附中八（十）班学分系统已启动: http://localhost:${PORT}`);
+  });
+})();

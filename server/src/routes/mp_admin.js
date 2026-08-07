@@ -8,13 +8,13 @@ const { ok, fail } = require('../util');
 function today() { return new Date().toISOString().slice(0, 10); }
 
 // 概览
-router.get('/admin/stats', (req, res) => {
+router.get('/admin/stats', async (req, res) => {
   const role = req.user.role;
   if (!['ADMIN', 'TEACHER', 'REP'].includes(role)) return fail(res, 403, '无权查看');
-  const resources = db.prepare('SELECT COUNT(*) AS c FROM resource').get().c;
-  const users = db.prepare("SELECT COUNT(*) AS c FROM sys_user WHERE role='STUDENT'").get().c;
-  const todayViews = db.prepare('SELECT COUNT(*) AS c FROM ad_view_log WHERE day=?').get(today()).c;
-  const totalPoints = db.prepare('SELECT COALESCE(SUM(points),0) AS s FROM user_points').get().s;
+  const resources = await (await db.prepare('SELECT COUNT(*) AS c FROM resource').get()).c;
+  const users = await (await db.prepare("SELECT COUNT(*) AS c FROM sys_user WHERE role='STUDENT'").get()).c;
+  const todayViews = await (await db.prepare('SELECT COUNT(*) AS c FROM ad_view_log WHERE day=?').get(today())).c;
+  const totalPoints = await (await db.prepare('SELECT COALESCE(SUM(points),0) AS s FROM user_points').get()).s;
   ok(res, {
     resources,
     users,

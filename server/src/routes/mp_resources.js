@@ -17,19 +17,19 @@ const AD_DAILY_LIMIT = 20;              // 每天最多看广告解锁次数（�
 function today() { return new Date().toISOString().slice(0, 10); }
 function isAdmin(u) { return u && (u.role === 'ADMIN' || u.role === 'TEACHER'); }
 function safeTags(t) { try { return JSON.parse(t || '[]'); } catch (_) { return []; } }
-function watchedAdToday(uid, rid) {
-  return db.prepare('SELECT COUNT(*) AS c FROM ad_view_log WHERE user_id=? AND resource_id=? AND day=?')
+async function watchedAdToday(uid, rid) {
+  return await db.prepare('SELECT COUNT(*) AS c FROM ad_view_log WHERE user_id=? AND resource_id=? AND day=?')
     .get(uid, rid, today()).c > 0;
 }
-function balanceOf(uid) {
-  const r = db.prepare('SELECT points FROM user_points WHERE user_id=?').get(uid);
+async function balanceOf(uid) {
+  const r = await db.prepare('SELECT points FROM user_points WHERE user_id=?').get(uid);
   return r ? r.points : 0;
 }
 
 // ── 学生端 ──
 
 // 列表：按年级+科目筛选
-router.get('/resources', (req, res) => {
+router.get('/resources', async (req, res) => {
   const { grade, subject, page = 1 } = req.query;
   const lim = 20, off = (Math.max(1, +page) - 1) * lim;
   const where = [];
@@ -39,15 +39,15 @@ router.get('/resources', (req, res) => {
   const sql = `SELECT id, grade, subject, title, cover, type, description, source, tags, view_count, unlock_count
                FROM resource ${where.length ? 'WHERE ' + where.join(' AND ') : ''}
                ORDER BY sort_order ASC, id DESC LIMIT ? OFFSET ?`;
-  const list = db.prepare(sql).all(...args, lim, off);
+  const list = await db.prepare(sql).all(...args, lim, off);
   list.forEach((r) => { r.tags = safeTags(r.tags); });
   ok(res, { list, hasMore: list.length === lim, viewCostPoints: VIEW_COST_POINTS });
 });
 
 // 详情：返回是否需看广告、积分是否足够等元信息（url 仅当天已看广告后才返回）
-router.get('/resources/:id', (req, res) => {
+router.get('/resources/:id', async (req, res) => {
   const id = Number(req.params.id);
-  const r = db.prepare('SELECT * FROM resource WHERE id=?').get(id);
+  const r = await db.prepare('SELECT * FROM resource WHERE id=?').get(id);
   if (!r) return fail(res, 404, '资料不存在');
 
   const uid = req.user.id;
@@ -67,25 +67,25 @@ router.get('/resources/:id', (req, res) => {
 });
 
 // 前端看完激励视频广告后回调：记录广告观看（当天该资源只记一次）
-router.post('/resources/:id/ad-done', (req, res) => {
+router.post('/resources/:id/ad-done', async (req, res) => {
   const id = Number(req.params.id);
-  if (!db.prepare('SELECT id FROM resource WHERE id=?').get(id)) return fail(res, 404, '资料不存在');
+  if (!await db.prepare('SELECT id FROM resource WHERE id=?').get(id)) return fail(res, 404, '资料不存在');
   const uid = req.user.id, day = today();
-  const used = db.prepare('SELECT COUNT(*) AS c FROM ad_view_log WHERE user_id=? AND resource_id IS NULL AND day=?').get(uid, day).c;
+  const used = await (await db.prepare('SELECT COUNT(*) AS c FROM ad_view_log WHERE user_id=? AND resource_id IS NULL AND day=?').get(uid, day)).c;
   // 注意：此处只统计 resource_id IS NULL 的「每日广告奖励」计数，避免与资料解锁计数冲突
-  const adCount = db.prepare('SELECT COUNT(*) AS c FROM ad_view_log WHERE user_id=? AND day=?').get(uid, day).c;
+  const adCount = await (await db.prepare('SELECT COUNT(*) AS c FROM ad_view_log WHERE user_id=? AND day=?').get(uid, day)).c;
   if (adCount >= AD_DAILY_LIMIT) return fail(res, 429, `今日广告解锁已达上限 ${AD_DAILY_LIMIT} 次，明天再来`);
   if (!watchedAdToday(uid, id)) {
-    db.prepare('INSERT INTO ad_view_log(user_id, resource_id, day) VALUES(?,?,?)').run(uid, id, day);
-    db.prepare('UPDATE resource SET unlock_count = unlock_count + 1 WHERE id=?').run(id);
+    await db.prepare('INSERT INTO ad_view_log(user_id, resource_id, day) VALUES(?,?,?)').run(uid, id, day);
+    await db.prepare('UPDATE resource SET unlock_count = unlock_count + 1 WHERE id=?').run(id);
   }
   ok(res, { ok: true, requiresAd: false });
 });
 
 // 实际查阅/下载：校验当天已看广告，并扣积分后返回 url
-router.post('/resources/:id/access', (req, res) => {
+router.post('/resources/:id/access', async (req, res) => {
   const id = Number(req.params.id);
-  const r = db.prepare('SELECT * FROM resource WHERE id=?').get(id);
+  const r = await db.prepare('SELECT * FROM resource WHERE id=?').get(id);
   if (!r) return fail(res, 404, '资料不存在');
   const uid = req.user.id;
   if (!watchedAdToday(uid, id)) return fail(res, 425, '请先看完广告再查看资料');
@@ -94,67 +94,67 @@ router.post('/resources/:id/access', (req, res) => {
     return fail(res, 402, `积分不足，查阅需 ${VIEW_COST_POINTS} 积分（当前 ${balance}）。去看广告或完成任务赚积分吧`);
   }
   // 扣积分
-  const cur = db.prepare('SELECT points, total_earned FROM user_points WHERE user_id=?').get(uid);
+  const cur = await db.prepare('SELECT points, total_earned FROM user_points WHERE user_id=?').get(uid);
   if (cur) {
-    db.prepare("UPDATE user_points SET points=points-?, updated_at=datetime('now') WHERE user_id=?")
+    await db.prepare("UPDATE user_points SET points=points-?, updated_at=NOW() WHERE user_id=?")
       .run(VIEW_COST_POINTS, uid);
   } else {
-    db.prepare('INSERT INTO user_points(user_id, points, total_earned) VALUES(?,?,0)')
+    await db.prepare('INSERT INTO user_points(user_id, points, total_earned) VALUES(?,?,0)')
       .run(uid, -VIEW_COST_POINTS);
   }
-  db.prepare('UPDATE resource SET view_count = view_count + 1 WHERE id=?').run(id);
+  await db.prepare('UPDATE resource SET view_count = view_count + 1 WHERE id=?').run(id);
   ok(res, { url: r.url, type: r.type, title: r.title, pointsLeft: balance - VIEW_COST_POINTS });
 });
 
 // ── 后台管理（ADMIN/TEACHER）──
-router.get('/admin/resources', (req, res) => {
+router.get('/admin/resources', async (req, res) => {
   if (!isAdmin(req.user)) return fail(res, 403, '无权操作');
   const { grade, subject } = req.query;
   const where = []; const args = [];
   if (grade) { where.push('grade=?'); args.push(grade); }
   if (subject) { where.push('subject=?'); args.push(subject); }
-  const list = db.prepare(`SELECT * FROM resource ${where.length ? 'WHERE ' + where.join(' AND ') : ''}
+  const list = await db.prepare(`SELECT * FROM resource ${where.length ? 'WHERE ' + where.join(' AND ') : ''}
                            ORDER BY grade, subject, sort_order ASC, id DESC`).all(...args);
   list.forEach((r) => { try { r.tags = JSON.parse(r.tags || '[]'); } catch (_) { r.tags = []; } });
   ok(res, { list });
 });
 
-router.post('/admin/resources', (req, res) => {
+router.post('/admin/resources', async (req, res) => {
   if (!isAdmin(req.user)) return fail(res, 403, '无权操作');
   const { grade, subject, title, cover, type, url, description, source, tags, sort_order } = req.body || {};
   if (!grade || !subject || !title || !type || !url) return fail(res, 400, '缺少必填字段');
-  const info = db.prepare(`INSERT INTO resource(grade, subject, title, cover, type, url, description, source, tags, sort_order, created_by)
+  const info = await db.prepare(`INSERT INTO resource(grade, subject, title, cover, type, url, description, source, tags, sort_order, created_by)
                            VALUES(?,?,?,?,?,?,?,?,?,?,?)`)
     .run(grade, subject, title, cover || null, type, url, description || null,
          source || null, JSON.stringify(tags || []), +sort_order || 0, req.user.id);
   ok(res, { id: info.lastInsertRowid });
 });
 
-router.put('/admin/resources/:id', (req, res) => {
+router.put('/admin/resources/:id', async (req, res) => {
   if (!isAdmin(req.user)) return fail(res, 403, '无权操作');
   const id = Number(req.params.id);
-  const cur = db.prepare('SELECT id FROM resource WHERE id=?').get(id);
+  const cur = await db.prepare('SELECT id FROM resource WHERE id=?').get(id);
   if (!cur) return fail(res, 404, '资料不存在');
   const { grade, subject, title, cover, type, url, description, source, tags, sort_order } = req.body || {};
-  db.prepare(`UPDATE resource SET grade=?, subject=?, title=?, cover=?, type=?, url=?, description=?, source=?, tags=?, sort_order=? WHERE id=?`)
+  await db.prepare(`UPDATE resource SET grade=?, subject=?, title=?, cover=?, type=?, url=?, description=?, source=?, tags=?, sort_order=? WHERE id=?`)
     .run(grade, subject, title, cover || null, type, url, description || null,
          source || null, JSON.stringify(tags || []), +sort_order || 0, id);
   ok(res, { ok: true });
 });
 
-router.delete('/admin/resources/:id', (req, res) => {
+router.delete('/admin/resources/:id', async (req, res) => {
   if (!isAdmin(req.user)) return fail(res, 403, '无权操作');
-  db.prepare('DELETE FROM resource WHERE id=?').run(Number(req.params.id));
+  await db.prepare('DELETE FROM resource WHERE id=?').run(Number(req.params.id));
   ok(res, { ok: true });
 });
 
 // 批量导入（教师/管理员一次性录入多条；支持 JSON 数组）
-router.post('/admin/resources/batch', (req, res) => {
+router.post('/admin/resources/batch', async (req, res) => {
   if (!isAdmin(req.user)) return fail(res, 403, '无权操作');
   const list = Array.isArray(req.body?.list) ? req.body.list : [];
   if (list.length === 0) return fail(res, 400, 'list 不能为空');
   if (list.length > 500) return fail(res, 400, '单次最多 500 条');
-  const insert = db.prepare(`INSERT INTO resource(grade, subject, title, type, url, description, source, tags, sort_order, created_by)
+  const insert = await db.prepare(`INSERT INTO resource(grade, subject, title, type, url, description, source, tags, sort_order, created_by)
                              VALUES(?,?,?,?,?,?,?,?,?,?)`);
   let inserted = 0, skipped = 0;
   const errors = [];
