@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>点滴进步 · 微信云托管部署图文手册（小白版）</title>
+<style>
+  :root{
+    --wx:#07C160; --wx-d:#06AD56; --ink:#1f2329; --sub:#646a73;
+    --line:#e5e6eb; --bg:#f5f6f8; --card:#fff; --warn:#ff8800; --blue:#3370ff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    color:var(--ink);background:var(--bg);line-height:1.7}
+  a{color:var(--blue);text-decoration:none}
+  .wrap{max-width:920px;margin:0 auto;padding:24px 18px 80px}
+  header.top{background:linear-gradient(135deg,var(--wx),#23c971);color:#fff;
+    border-radius:16px;padding:30px 28px;margin-bottom:26px}
+  header.top h1{margin:0 0 6px;font-size:25px}
+  header.top p{margin:0;opacity:.95;font-size:14px}
+  .ctx{background:#eafaf1;border:1px solid #b8ebcd;border-radius:12px;
+    padding:14px 16px;margin-bottom:26px;font-size:13.5px}
+  .ctx b{color:var(--wx-d)}
+  h2{font-size:21px;margin:38px 0 14px;padding-left:12px;border-left:5px solid var(--wx)}
+  h3{font-size:16.5px;margin:24px 0 10px;color:var(--wx-d)}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:18px 20px;margin:14px 0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  .step .num{display:inline-flex;width:26px;height:26px;background:var(--wx);color:#fff;
+    border-radius:50%;align-items:center;justify-content:center;font-weight:700;font-size:14px;
+    margin-right:10px;vertical-align:middle}
+  .step h3{display:inline-block;margin:0;vertical-align:middle;color:var(--ink)}
+  .step p{margin:10px 0 0;font-size:14px;color:#333}
+  .mock{background:#fafbfc;border:1px solid var(--line);border-radius:10px;
+    padding:14px;margin:14px 0;overflow:hidden}
+  .mock .label{font-size:12px;color:var(--sub);margin-bottom:8px;font-weight:600;
+    text-transform:uppercase;letter-spacing:.5px}
+  .win{border:1px solid #d0d3d9;border-radius:8px;overflow:hidden;background:#fff}
+  .win-bar{background:#ebeef3;padding:8px 12px;font-size:12px;color:#444;
+    display:flex;align-items:center;gap:8px;border-bottom:1px solid #d0d3d9}
+  .dot{width:11px;height:11px;border-radius:50%}
+  .r{background:#ff5f57}.y{background:#febc2e}.g{background:#28c840}
+  .win-body{display:flex;min-height:190px}
+  .win-side{width:150px;background:#f3f5f8;border-right:1px solid #e3e6eb;padding:8px 0;font-size:12.5px}
+  .win-side .it{padding:7px 14px;color:#444}
+  .win-side .it.on{background:#e3f6ec;color:var(--wx-d);font-weight:600;border-left:3px solid var(--wx)}
+  .win-main{flex:1;padding:14px;font-size:13px;color:#333}
+  .nav{list-style:none;margin:0;padding:0}
+  .nav li{padding:9px 14px;font-size:13px;border-bottom:1px solid #f0f1f3}
+  .nav li.on{background:#e3f6ec;color:var(--wx-d);font-weight:700}
+  .card-ui{background:#fff;border:1px solid var(--line);border-radius:8px;padding:14px;margin-top:8px}
+  .btn{display:inline-block;background:var(--wx);color:#fff;border:none;border-radius:6px;
+    padding:7px 16px;font-size:13px;cursor:pointer}
+  .btn.gray{background:#f2f3f5;color:#333}
+  .btn.blue{background:var(--blue)}
+  .field{display:flex;align-items:center;gap:8px;margin:8px 0;font-size:12.5px}
+  .field label{width:108px;color:#666}
+  .field input{flex:1;border:1px solid var(--line);border-radius:6px;padding:6px 9px;font-size:12.5px;background:#fafbfc}
+  .pill{display:inline-block;background:#eef0f3;border-radius:20px;padding:2px 11px;font-size:12px;color:#555;margin:3px}
+  .ok{color:var(--wx-d);font-weight:700}
+  .note{background:#fff8ec;border-left:4px solid var(--warn);padding:10px 14px;
+    border-radius:0 8px 8px 0;font-size:13px;margin:12px 0}
+  .tip{background:#eef4ff;border-left:4px solid var(--blue);padding:10px 14px;
+    border-radius:0 8px 8px 0;font-size:13px;margin:12px 0}
+  .file{background:#1e1e2e;color:#d4d4d4;border-radius:8px;padding:12px 14px;
+    font-family:"SF Mono",Consolas,monospace;font-size:12.5px;overflow:auto;margin:10px 0}
+  .file .c{color:#6a9955}.file .k{color:#569cd6}.file .s{color:#ce9178}
+  table.t{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+  table.t th,table.t td{border:1px solid var(--line);padding:8px 10px;text-align:left}
+  table.t th{background:#f3f5f8;color:#444}
+  .toc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:24px}
+  .toc b{color:var(--wx-d)}
+  .toc ol{margin:8px 0 0;padding-left:20px}
+  .toc li{margin:5px 0;font-size:14px}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0}
+  .flow .b{background:#eef0f3;border-radius:8px;padding:8px 12px;font-size:13px}
+  .flow .arw{color:var(--wx);font-weight:700}
+  footer{text-align:center;color:var(--sub);font-size:12.5px;margin-top:40px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1>点滴进步 · 微信云托管部署图文手册</h1>
+  <p>面向小白：把后端一键跑在微信云托管，小程序免域名、免 ICP 备案，照图操作即可</p>
+</header>
+
+<div class="ctx">
+  📌 <b>你项目里已经备好的（先记一下）</b><br>
+  • 后端已 Docker 化：<code>server/Dockerfile</code> + <code>server/.dockerignore</code> ✅<br>
+  • 数据库已迁外部 MySQL：<code>db.js</code> 用 <code>mysql2</code> 连接池 ✅<br>
+  • 小程序调用层已支持云托管：改 <code>miniprogram/config/env.js</code> 即可 ✅<br>
+  • 提审测试账号：<b>student01 / 123456</b><br>
+  • 文字版完整手册：<code>docs/cloudrun-deploy.md</code>
+</div>
+
+<div class="toc">
+  <b>📑 部署流程目录</b>
+  <ol>
+    <li><b>开通微信云托管</b>（拿环境 ID + 默认公网域名）</li>
+    <li><b>准备数据库</b>（腾讯云 MySQL / TencentDB）</li>
+    <li><b>部署后端镜像</b>（上传 server 目录，平台自动构建）</li>
+    <li><b>配置环境变量</b>（DB_* / WX_* / JWT_SECRET）</li>
+    <li><b>小程序侧配置</b>（env.js 切到云托管）</li>
+    <li><b>联调 + 提审</b>（student01/123456）</li>
+  </ol>
+</div>
+
+<div class="flow">
+  <span class="b">①开通云托管</span><span class="arw">→</span>
+  <span class="b">②建MySQL</span><span class="arw">→</span>
+  <span class="b">③部署后端</span><span class="arw">→</span>
+  <span class="b">④填环境变量</span><span class="arw">→</span>
+  <span class="b">⑤改env.js</span><span class="arw">→</span>
+  <span class="b">⑥联调提审</span>
+</div>
+
+<!-- Step 1 -->
+<div class="step">
+  <span class="num">1</span><h3>开通微信云托管（拿环境 ID + 默认公网域名）</h3>
+  <p>云托管是微信官方的容器服务，小程序用 <code>wx.callContainer</code> 调它，<b>不用配 request 域名、不用 ICP 备案</b>。</p>
+  <div class="mock">
+    <div class="label">界面示意 · 公众平台 → 云托管</div>
+    <div class="win">
+      <div class="win-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>&nbsp;微信云托管控制台</div>
+      <div class="win-body">
+        <ul class="nav">
+          <li class="on">概览</li>
+          <li>服务管理</li>
+          <li>数据库</li>
+          <li>服务设置</li>
+        </ul>
+        <div class="win-main">
+          <div class="card-ui">
+            <p style="margin:0 0 6px"><b>开通云托管</b></p>
+            <span class="pill">第一步：开通，选按量计费</span>
+            <p style="font-size:12px;color:#888;margin-top:8px">
+              开通后会得到两个值（记下来，第⑤步要用）：<br>
+              • <b>环境 ID</b>（如：prod-1a2b3c）<br>
+              • <b>默认公网域名</b>（如：xxxx.ap-shanghai.run.tcloudbase.com）
+            </p>
+            <button class="btn">立即开通</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p><b>操作步骤：</b>公众平台 → 左侧「<b>云托管</b>」→ 点「开通」→ 选「按量计费」（先用多少付多少）→ 开通完成后，在「服务设置」里抄下 <b>环境 ID</b> 和 <b>默认公网域名</b>。</p>
+  <div class="tip">💡 这两个值是第⑤步小程序 <code>env.js</code> 必填项，先存到记事本。</div>
+</div>
+
+<!-- Step 2 -->
+<div class="step">
+  <span class="num">2</span><h3>准备数据库（腾讯云 MySQL / TencentDB）</h3>
+  <p>后端数据必须存外部 MySQL（云托管容器本身不持久化文件，所以不能用本地 sqlite）。</p>
+  <div class="mock">
+    <div class="label">界面示意 · 腾讯云 MySQL 购买</div>
+    <div class="win">
+      <div class="win-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>&nbsp;腾讯云 · 云数据库 MySQL</div>
+      <div class="win-main" style="padding:16px">
+        <div class="field"><label>实例规格</label><input value="入门型 1核1G（够用）"></div>
+        <div class="field"><label>数据库名</label><input value="credit"></div>
+        <div class="field"><label>root 密码</label><input value="你自己设一个强密码"></div>
+        <p style="font-size:12px;color:#888">创建后在「实例详情」拿到 <b>内网/外网地址</b>，填进后端环境变量</p>
+      </div>
+    </div>
+  </div>
+  <p><b>操作步骤：</b>腾讯云控制台 →「云数据库 MySQL」→「新建实例」→ 选入门规格、库名 <code>credit</code>、设 root 密码 → 创建完成后在「实例详情」复制 <b>连接地址</b>（内网优先）。</p>
+  <div class="note">⚠️ 后端首次启动会自动建表 + 灌种子数据（含 student01 等测试账号），<b>你不用手动建库建表</b>。公网连接建议把 <code>DB_SSL=1</code> 打开。</div>
+  <div class="tip">💡 纯本地想先试跑：用仓库自带的 <code>server/docker-compose.yml</code> 起一个本地 MySQL，命令见 <code>docs/cloudrun-deploy.md</code> 第五节。</div>
+</div>
+
+<!-- Step 3 -->
+<div class="step">
+  <span class="num">3</span><h3>部署后端镜像（上传 server 目录，平台自动构建）</h3>
+  <p>把 <code>server/</code> 整个文件夹交给云托管，它会按里面的 <code>Dockerfile</code> 自动打包成服务。</p>
+  <div class="mock">
+    <div class="label">界面示意 · 云托管 → 新建服务</div>
+    <div class="win">
+      <div class="win-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>&nbsp;新建服务</div>
+      <div class="win-main" style="padding:16px">
+        <div class="field"><label>服务名称</label><input value="feiyue-credit-server"></div>
+        <div class="field"><label>代码来源</label><input value="本地代码包 / 代码仓库（选一个）</div>
+        <div class="field"><label>服务端口</label><input value="80（与 Dockerfile EXPOSE 80 一致）"></div>
+        <p style="font-size:12px;color:#888">上传 server/ 目录 → 平台读 Dockerfile 自动构建 → 部署</p>
+        <button class="btn">上传并部署</button>
+      </div>
+    </div>
+  </div>
+  <p><b>操作步骤：</b>云托管 →「服务管理」→「新建服务」→ 名称填 <code>feiyue-credit-server</code> → 代码来源选「本地代码包」并上传你电脑上的 <code>server/</code> 文件夹 → 服务端口填 <code>80</code> → 确认，平台会自动构建并部署。</p>
+  <div class="tip">💡 你的 <code>Dockerfile</code> 已写好（基于 node:22-slim，自动装依赖、监听 <code>process.env.PORT</code>），不用改。上传时<b>别把 <code>.env</code> 一起传</b>（已在 .dockerignore 排除）。</div>
+</div>
+
+<!-- Step 4 -->
+<div class="step">
+  <span class="num">4</span><h3>配置环境变量（DB_* / WX_* / JWT_SECRET）</h3>
+  <p>数据库账号、微信凭证、JWT 密钥通过「环境变量」注入，<b>不写进代码</b>。</p>
+  <div class="mock">
+    <div class="label">界面示意 · 服务设置 → 环境变量</div>
+    <div class="win">
+      <div class="win-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>&nbsp;环境变量</div>
+      <div class="win-main" style="padding:16px">
+        <div class="field"><label>DB_HOST</label><input value="MySQL内网地址"></div>
+        <div class="field"><label>DB_PORT</label><input value="3306"></div>
+        <div class="field"><label>DB_USER</label><input value="root"></div>
+        <div class="field"><label>DB_PASSWORD</label><input value="你设的MySQL密码"></div>
+        <div class="field"><label>DB_NAME</label><input value="credit"></div>
+        <div class="field"><label>WX_APP_ID</label><input value="wx0fe78d74fdc47c1b"></div>
+        <div class="field"><label>WX_APP_SECRET</label><input value="正式小程序密钥"></div>
+        <div class="field"><label>JWT_SECRET</label><input value="一串随机字符串"></div>
+        <button class="btn">保存并重启</button>
+      </div>
+    </div>
+  </div>
+  <p><b>操作步骤：</b>云托管 → 服务 →「服务设置」→「环境变量」→ 按上图逐项添加（值来自第②步 MySQL 和第①步小程序 AppSecret）→ 点「保存」触发重启。</p>
+  <div class="file">
+<span class="c"># 对应关系（与 server/.env.example 一致）</span><br>
+<span class="k">DB_HOST</span>=MySQL地址 &nbsp; <span class="k">DB_PORT</span>=3306 &nbsp; <span class="k">DB_USER</span>=root<br>
+<span class="k">DB_PASSWORD</span>=密码 &nbsp; <span class="k">DB_NAME</span>=credit<br>
+<span class="k">WX_APP_ID</span>=wx0fe78d74fdc47c1b &nbsp; <span class="k">WX_APP_SECRET</span>=密钥<br>
+<span class="k">JWT_SECRET</span>=<span class="s">随机字符串(生产必须，缺失服务会拒绝启动)</span><br>
+<span class="k">NODE_ENV</span>=production
+  </div>
+  <div class="note">⚠️ <code>JWT_SECRET</code> 必填，否则后端启动会失败。本地生成一串：<code>node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"</code></div>
+</div>
+
+<!-- Step 5 -->
+<div class="step">
+  <span class="num">5</span><h3>小程序侧配置（env.js 切到云托管）</h3>
+  <p>改一个文件，小程序就会自动改用 <code>wx.callContainer</code> 调你的云托管后端。</p>
+  <div class="file">
+<span class="c">// miniprogram/config/env.js</span><br>
+<span class="k">const</span> IS_PROD = <span class="s">true</span>;<br>
+<span class="k">const</span> PROD = {<br>
+&nbsp;&nbsp;USE_CLOUD_RUN: <span class="s">true</span>,<br>
+&nbsp;&nbsp;CLOUD_RUN_ENV: <span class="s">'第①步抄的环境ID'</span>,<br>
+&nbsp;&nbsp;CLOUD_RUN_PUBLIC_HOST: <span class="s">'第①步抄的默认公网域名'</span>,<br>
+};
+  </div>
+  <p><b>操作步骤：</b>打开 <code>miniprogram/config/env.js</code> → 把 <code>IS_PROD</code> 改成 <code>true</code> → 在 <code>PROD</code> 里填 <code>USE_CLOUD_RUN=true</code>、<code>CLOUD_RUN_ENV</code> 和 <code>CLOUD_RUN_PUBLIC_HOST</code>（第①步记的值）→ 保存。</p>
+  <div class="tip">💡 改完用微信开发者工具「上传」一个新版本（如 1.0.1）即可，调用层无需改其他代码，<code>app.js</code> 会自动切换。</div>
+  <div class="note">⚠️ 走云托管后，<b>不需要</b>在公众平台配 request 合法域名，也<b>不需要</b> ICP 备案——这正是选它的好处。</div>
+</div>
+
+<!-- Step 6 -->
+<div class="step">
+  <span class="num">6</span><h3>联调 + 提审（student01 / 123456）</h3>
+  <p>先在开发者工具里确认能登录、刷动态、看资料，再按上一本手册提审。</p>
+  <div class="flow">
+    <span class="b">开发者工具编译</span><span class="arw">→</span>
+    <span class="b">登录 student01/123456</span><span class="arw">→</span>
+    <span class="b">刷动态/看资料 OK</span><span class="arw">→</span>
+    <span class="b">上传新版本</span><span class="arw">→</span>
+    <span class="b">提审(测号同)</span><span class="arw">→</span>
+    <span class="b" style="background:#e3f6ec;color:var(--wx-d)">过审发布</span>
+  </div>
+  <p><b>联调要点：</b>开发者工具里把 <code>IS_PROD</code> 临时设回可联调，确认能用 student01/123456 登录、看到动态和资料；没问题就把正式版（IS_PROD=true）上传并提审。</p>
+  <div class="tip">💡 提审时测试账号仍填 <b>student01 / 123456</b>（同学视角，不暴露管理端），审核员用它登录验收。</div>
+  <div class="note">⚠️ 文件上传/静态资源当前走云托管「默认公网域名」，官方建议仅用于测试；正式放量前建议绑定已备案自定义域名，或改为小程序直传 COS（详见 cloudrun-deploy.md 第八节）。</div>
+</div>
+
+<div class="ctx" style="margin-top:30px">
+  ✅ <b>一句话路线</b>：公众平台开通云托管（抄环境ID+公网域名）→ 腾讯云建 MySQL(credit) → 云托管上传 server/ 部署 → 填 DB_*/WX_*/JWT_SECRET 环境变量 → 改 env.js(IS_PROD=true+USE_CLOUD_RUN=true) → 开发者工具联调 student01/123456 → 上传提审 → 过审发布。<b>全程免域名、免备案。</b>
+</div>
+
+<footer>点滴进步 · 云托管部署图文手册 ｜ 配合：docs/cloudrun-deploy.md、docs/mp_publish_guide.html、miniprogram/config/env.js、server/.env.example</footer>
+
+</div>
+</body>
+</html>

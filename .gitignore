@@ -4,6 +4,9 @@ node_modules/
 # 前端构建产物（部署时由 CI 重新构建）
 frontend/dist/
 
+# 部署产物（云托管代码包，由 tools/package_server.py 生成，勿入库）
+/dist/
+
 # 本地数据库（运行时生成，含种子数据；部署后由新环境自动初始化）
 server/data/
 

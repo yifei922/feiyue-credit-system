@@ -9,15 +9,45 @@ const fs = require('fs');
 const { hashPassword } = require('./auth');
 const { calcCredit } = require('./services/credit');
 
-const DB_NAME = process.env.DB_NAME || 'credit';
+const DB_NAME = process.env.DB_NAME || process.env.MYSQL_DATABASE || 'credit';
+
+// ── 兼容云托管 MYSQL_* 命名 ──
+// 云托管控制台默认用 MYSQL_ADDRESS / MYSQL_USERNAME / MYSQL_PASSWORD
+// 本地/.env 用 DB_HOST / DB_USER / DB_PASSWORD
+// 优先读 DB_*，fallback 到 MYSQL_*
+function resolveDbConfig() {
+  const host = process.env.DB_HOST || '';
+  const port = process.env.DB_PORT || '';
+  const user = process.env.DB_USER || '';
+  const password = process.env.DB_PASSWORD || '';
+
+  // 如果 DB_* 全没填，尝试从云托管的 MYSQL_* 解析
+  if (!host && !user) {
+    const addr = process.env.MYSQL_ADDRESS || ''; // 格式 "10.18.108.46:3306"
+    const [mysqlHost, mysqlPort] = addr.split(':');
+    return {
+      host: mysqlHost || '127.0.0.1',
+      port: Number(mysqlPort) || 3306,
+      user: process.env.MYSQL_USERNAME || 'root',
+      password: process.env.MYSQL_PASSWORD || '',
+    };
+  }
+  return {
+    host: host || '127.0.0.1',
+    port: Number(port) || 3306,
+    user: user || 'root',
+    password: password || '',
+  };
+}
 
 // ── 连接池（require 时同步创建，真正的查询才是异步）──
 function buildPool() {
+  const dbc = resolveDbConfig();
   const cfg = {
-    host: process.env.DB_HOST || '127.0.0.1',
-    port: Number(process.env.DB_PORT) || 3306,
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
+    host: dbc.host,
+    port: dbc.port,
+    user: dbc.user,
+    password: dbc.password,
     database: DB_NAME,
     charset: 'utf8mb4',
     dateStrings: true, // 日期以 'YYYY-MM-DD HH:MM:SS' 字符串返回，与 node:sqlite 的 TEXT 行为一致
@@ -486,8 +516,35 @@ async function migrate() {
   await require('./seed_resources').seedResources(db);
 }
 
+// ── 自动建库：云托管/新环境首次启动时，若目标库不存在则自动创建 ──
+// 避免 "Unknown database 'credit'" 导致启动直接崩溃（无需手动建库）。
+async function ensureDatabase() {
+  const dbc = resolveDbConfig();
+  if (!/^[A-Za-z0-9_]+$/.test(DB_NAME)) {
+    throw new Error(`非法数据库名: ${DB_NAME}`);
+  }
+  // 不带 database 的连接，仅用于执行 CREATE DATABASE
+  const conn = await mysql.createConnection({
+    host: dbc.host,
+    port: dbc.port,
+    user: dbc.user,
+    password: dbc.password,
+    charset: 'utf8mb4',
+    connectTimeout: 15000,
+  });
+  try {
+    await conn.query(
+      `CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci`
+    );
+    console.log(`[db] 数据库 '${DB_NAME}' 已就绪（不存在则已自动创建）`);
+  } finally {
+    await conn.end();
+  }
+}
+
 // ── 启动初始化：建表 + 种子 + 迁移（由 index.js 在 app.listen 之前 await 调用）──
 async function init() {
+  await ensureDatabase();      // 先确保库存在（不存在则自动创建）
   await db.query('SELECT 1'); // 探活：确保数据库可达
   await db.exec(SCHEMA);      // 建表（幂等）
   await seed();
@@ -495,4 +552,4 @@ async function init() {
   console.log('[db] MySQL 初始化完成（schema + seed + migrate）');
 }
 
-module.exports = { db, init, pool };
+module.exports = { db, init, pool, resolveDbConfig };

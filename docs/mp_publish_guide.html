@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>点滴进步小程序 · 上线实操图文手册（小白版）</title>
+<style>
+  :root{
+    --wx:#07C160; --wx-d:#06AD56; --ink:#1f2329; --sub:#646a73;
+    --line:#e5e6eb; --bg:#f5f6f8; --card:#fff; --warn:#ff8800; --blue:#3370ff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    color:var(--ink);background:var(--bg);line-height:1.7}
+  a{color:var(--blue);text-decoration:none}
+  .wrap{max-width:920px;margin:0 auto;padding:24px 18px 80px}
+  header.top{background:linear-gradient(135deg,var(--wx),#23c971);color:#fff;
+    border-radius:16px;padding:30px 28px;margin-bottom:26px}
+  header.top h1{margin:0 0 6px;font-size:26px}
+  header.top p{margin:0;opacity:.95;font-size:14px}
+  .ctx{background:#eafaf1;border:1px solid #b8ebcd;border-radius:12px;
+    padding:14px 16px;margin-bottom:26px;font-size:13.5px}
+  .ctx b{color:var(--wx-d)}
+  h2{font-size:21px;margin:38px 0 14px;padding-left:12px;border-left:5px solid var(--wx)}
+  h3{font-size:16.5px;margin:24px 0 10px;color:var(--wx-d)}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:18px 20px;margin:14px 0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  .step .num{display:inline-flex;width:26px;height:26px;background:var(--wx);color:#fff;
+    border-radius:50%;align-items:center;justify-content:center;font-weight:700;font-size:14px;
+    margin-right:10px;vertical-align:middle}
+  .step h3{display:inline-block;margin:0;vertical-align:middle;color:var(--ink)}
+  .step p{margin:10px 0 0;font-size:14px;color:#333}
+  .mock{background:#fafbfc;border:1px solid var(--line);border-radius:10px;
+    padding:14px;margin:14px 0;overflow:hidden}
+  .mock .label{font-size:12px;color:var(--sub);margin-bottom:8px;font-weight:600;
+    text-transform:uppercase;letter-spacing:.5px}
+  /* ---- 窗口仿真 ---- */
+  .win{border:1px solid #d0d3d9;border-radius:8px;overflow:hidden;background:#fff}
+  .win-bar{background:#ebeef3;padding:8px 12px;font-size:12px;color:#444;
+    display:flex;align-items:center;gap:8px;border-bottom:1px solid #d0d3d9}
+  .dot{width:11px;height:11px;border-radius:50%}
+  .r{background:#ff5f57}.y{background:#febc2e}.g{background:#28c840}
+  .win-body{display:flex;min-height:200px}
+  .win-side{width:150px;background:#f3f5f8;border-right:1px solid #e3e6eb;padding:8px 0;font-size:12.5px}
+  .win-side .it{padding:7px 14px;color:#444}
+  .win-side .it.on{background:#e3f6ec;color:var(--wx-d);font-weight:600;border-left:3px solid var(--wx)}
+  .win-main{flex:1;padding:14px;font-size:13px;color:#333}
+  .nav{list-style:none;margin:0;padding:0}
+  .nav li{padding:9px 14px;font-size:13px;border-bottom:1px solid #f0f1f3}
+  .nav li.on{background:#e3f6ec;color:var(--wx-d);font-weight:700}
+  .card-ui{background:#fff;border:1px solid var(--line);border-radius:8px;padding:14px;margin-top:8px}
+  .btn{display:inline-block;background:var(--wx);color:#fff;border:none;border-radius:6px;
+    padding:7px 16px;font-size:13px;cursor:pointer}
+  .btn.gray{background:#f2f3f5;color:#333}
+  .btn.blue{background:var(--blue)}
+  .field{display:flex;align-items:center;gap:8px;margin:8px 0;font-size:12.5px}
+  .field label{width:96px;color:#666}
+  .field input{flex:1;border:1px solid var(--line);border-radius:6px;padding:6px 9px;font-size:12.5px;background:#fafbfc}
+  .pill{display:inline-block;background:#eef0f3;border-radius:20px;padding:2px 11px;font-size:12px;color:#555;margin:3px}
+  .ok{color:var(--wx-d);font-weight:700}
+  .badge{display:inline-block;font-size:11px;padding:1px 8px;border-radius:4px;margin-left:6px;vertical-align:middle}
+  .badge.done{background:#e3f6ec;color:var(--wx-d)}
+  .badge.do{background:#fff3e0;color:var(--warn)}
+  .badge.no{background:#fde8e8;color:#e54545}
+  .note{background:#fff8ec;border-left:4px solid var(--warn);padding:10px 14px;
+    border-radius:0 8px 8px 0;font-size:13px;margin:12px 0}
+  .tip{background:#eef4ff;border-left:4px solid var(--blue);padding:10px 14px;
+    border-radius:0 8px 8px 0;font-size:13px;margin:12px 0}
+  .file{background:#1e1e2e;color:#d4d4d4;border-radius:8px;padding:12px 14px;
+    font-family:"SF Mono",Consolas,monospace;font-size:12.5px;overflow:auto;margin:10px 0}
+  .file .c{color:#6a9955}.file .k{color:#569cd6}.file .s{color:#ce9178}
+  table.t{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+  table.t th,table.t td{border:1px solid var(--line);padding:8px 10px;text-align:left}
+  table.t th{background:#f3f5f8;color:#444}
+  .toc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:24px}
+  .toc b{color:var(--wx-d)}
+  .toc ol{margin:8px 0 0;padding-left:20px}
+  .toc li{margin:5px 0;font-size:14px}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0}
+  .flow .b{background:#eef0f3;border-radius:8px;padding:8px 12px;font-size:13px}
+  .flow .arw{color:var(--wx);font-weight:700}
+  footer{text-align:center;color:var(--sub);font-size:12.5px;margin-top:40px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1>点滴进步小程序 · 上线实操图文手册</h1>
+  <p>面向小白：从「下载开发者工具」到「上传代码 → 提审 → 发布」，再到「服务器/域名配置」一步步来</p>
+</header>
+
+<div class="ctx">
+  📌 <b>你项目里已经配好的关键信息（先记一下）</b><br>
+  • 小程序 AppID：<b>wx0fe78d74fdc47c1b</b>（写在 <code>miniprogram/project.config.json</code>）<br>
+  • 微信凭证填在：<code>server/.env</code> 的 <b>WX_APP_ID / WX_APP_SECRET</b><br>
+  • 提审用的测试账号：<b>student01 / 123456</b><br>
+  • 云托管免域名方案：把 <code>miniprogram/config/env.js</code> 的 <b>IS_PROD=true</b> + <b>USE_CLOUD_RUN=true</b><br>
+  • 完整后端部署见 <code>docs/cloudrun-deploy.md</code>
+</div>
+
+<div class="toc">
+  <b>📑 目录</b>
+  <ol>
+    <li><b>第一部分　开发工具 & 上传 & 发布 & 提审</b>
+      <ol style="list-style:lower-alpha">
+        <li>下载并安装微信开发者工具</li>
+        <li>用开发者工具打开你的项目</li>
+        <li>本地预览 / 调试（模拟器）</li>
+        <li>上传代码（生成"开发版本"）</li>
+        <li>添加开发者 / 体验成员</li>
+        <li>提交审核（提审）</li>
+        <li>审核通过 → 发布正式版</li>
+      </ol>
+    </li>
+    <li><b>第二部分　服务器 & 域名配置</b>
+      <ol style="list-style:lower-alpha">
+        <li>配置 AppID / AppSecret</li>
+        <li>配置服务器域名（request 合法域名 / 云托管免配）</li>
+        <li>业务域名 + SSL 证书绑定（免费）</li>
+      </ol>
+    </li>
+  </ol>
+</div>
+
+<!-- ============ 第一部分 ============ -->
+<h2>第一部分　开发工具 & 上传 & 发布 & 提审</h2>
+
+<div class="flow">
+  <span class="b">①下载工具</span><span class="arw">→</span>
+  <span class="b">②打开项目</span><span class="arw">→</span>
+  <span class="b">③本地预览</span><span class="arw">→</span>
+  <span class="b">④上传代码</span><span class="arw">→</span>
+  <span class="b">⑤加成员</span><span class="arw">→</span>
+  <span class="b">⑥提审</span><span class="arw">→</span>
+  <span class="b">⑦发布</span>
+</div>
+
+<!-- Step 1 -->
+<div class="step">
+  <span class="num">1</span><h3>下载并安装微信开发者工具</h3>
+  <p>这是官方唯一工具，写代码、看效果、上传代码全靠它。</p>
+  <div class="mock">
+    <div class="label">界面示意 · 下载页</div>
+    <div class="win">
+      <div class="win-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        &nbsp;微信开发者工具 官网</div>
+      <div class="win-body">
+        <div class="win-side">
+          <div class="it on">下载</div>
+          <div class="it">稳定版 Stable</div>
+          <div class="it">预览版 RC</div>
+          <div class="it">文档</div>
+        </div>
+        <div class="win-main">
+          <div class="card-ui">
+            <p style="margin:0 0 8px"><b>微信小程序开发者工具</b></p>
+            <span class="pill">Windows 64位</span><span class="pill">Windows 32位</span>
+            <span class="pill">macOS Intel</span><span class="pill">macOS ARM</span>
+            <p style="font-size:12px;color:#888;margin:10px 0 0">选 <b>稳定版 Stable</b> + 你的系统版本下载安装即可</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p><b>操作步骤：</b>浏览器打开
+    <a href="https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html" target="_blank">developers.weixin.qq.com/miniprogram/dev/devtools/download.html</a>
+    → 点「下载」→ 选 <b>稳定版 Stable</b> → 下载后一路"下一步"安装。</p>
+  <div class="tip">💡 安装完第一次打开会让你「扫码登录」微信，用你注册小程序的那个微信号扫码。</div>
+</div>
+
+<!-- Step 2 -->
+<div class="step">
+  <span class="num">2</span><h3>用开发者工具打开你的项目</h3>
+  <p>把本机上的 <code>miniprogram/</code> 文件夹导入工具。</p>
+  <div class="mock">
+    <div class="label">界面示意 · 导入项目窗口</div>
+    <div class="win">
+      <div class="win-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        &nbsp;导入项目</div>
+      <div class="win-main" style="padding:16px">
+        <div class="field"><label>项目目录</label><input value="C:\Users\...\feiyue-credit\miniprogram"></div>
+        <div class="field"><label>AppID</label><input value="wx0fe78d74fdc47c1b（已自动识别）"></div>
+        <div class="field"><label>项目名称</label><input value="点滴进步"></div>
+        <p style="font-size:12px;color:#888">✅ 你的 AppID 已写在 project.config.json，工具会自动填上，无需手填。</p>
+        <button class="btn">导入</button>
+        <span class="pill" style="margin-left:10px">没有 AppID？可点「测试号」临时体验</span>
+      </div>
+    </div>
+  </div>
+  <p><b>操作步骤：</b>打开工具 → 点「+」或「导入项目」→ 项目目录选你电脑上的
+    <code>feiyue-credit/miniprogram</code> 文件夹 → AppID 已自动识别 → 点「导入」。</p>
+  <div class="note">⚠️ 如果你还没注册正式小程序，可先选「测试号」练手；但正式提审必须用正式 AppID（<b>wx0fe78d74fdc47c1b</b>）。</div>
+</div>
+
+<!-- Step 3 -->
+<div class="step">
+  <span class="num">3</span><h3>本地预览 / 调试（用模拟器看效果）</h3>
+  <p>导入后工具会编译并在右侧「模拟器」里显示小程序界面，左边是代码，下面是调试信息。</p>
+  <div class="mock">
+    <div class="label">界面示意 · 开发者工具主界面</div>
+    <div class="win">
+      <div class="win-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        &nbsp;点滴进步 - 微信开发者工具</div>
+      <div class="win-body">
+        <div class="win-side">
+          <div class="it on">编辑器</div>
+          <div class="it">调试器</div>
+          <div class="it">模拟器</div>
+        </div>
+        <div class="win-main" style="display:flex;gap:10px;align-items:stretch">
+          <div style="flex:1;background:#fff;border:1px solid var(--line);border-radius:6px;padding:8px;font-size:11px;color:#999">代码区<br>（pages/ 下各页面）</div>
+          <div style="width:120px;background:#fff7;border:1px solid #d0d3d9;border-radius:10px;padding:10px;font-size:11px;text-align:center">📱 模拟器<br><br>小程序界面预览</div>
+        </div>
+      </div>
+      <div style="background:#f3f5f8;border-top:1px solid var(--line);padding:7px 12px;font-size:12px">
+        <span class="btn gray">编译</span>&nbsp;<span class="btn gray">预览</span>&nbsp;
+        <span class="btn gray">真机调试</span>&nbsp;<span class="btn">上传 ▲</span>
+      </div>
+    </div>
+  </div>
+  <p><b>这一步你要做：</b>确认界面正常、能登录（默认账号 student01/123456）、能刷动态、看资料。没问题就可以上传了。</p>
+  <div class="tip">💡 想用自己手机看效果，点「预览」会出个二维码，微信扫一下就能在真机上看。</div>
+</div>
+
+<!-- Step 4 -->
+<div class="step">
+  <span class="num">4</span><h3>上传代码（生成"开发版本"）</h3>
+  <p>上传后，代码就进了微信后台的「开发版本」，后面提审、发布都基于这个版本。</p>
+  <div class="mock">
+    <div class="label">界面示意 · 上传弹窗</div>
+    <div class="win">
+      <div class="win-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>&nbsp;上传代码</div>
+      <div class="win-main" style="padding:16px">
+        <div class="field"><label>版本号</label><input value="1.0.0"></div>
+        <div class="field"><label>项目备注</label><input value="首版：积分/动态/资料/管理端"></div>
+        <p style="font-size:12px;color:#888">上传后 → 后台「管理 / 版本管理 / 开发版本」里能看到这条记录</p>
+        <button class="btn">上传</button>
+      </div>
+    </div>
+  </div>
+  <p><b>操作步骤：</b>工具右上角点「<b>上传</b> ▲」→ 填版本号（如 <code>1.0.0</code>）+ 备注 → 确定。
+    上传成功后会提示「上传成功」。</p>
+  <div class="note">⚠️ 上传前请确认 <code>miniprogram/config/env.js</code> 里配置正确：
+    如果用云托管，<code>IS_PROD=true</code> + <code>USE_CLOUD_RUN=true</code>；如果用自有备案域名，<code>API_BASE</code> 填你的 https 域名。</div>
+</div>
+
+<!-- Step 5 -->
+<div class="step">
+  <span class="num">5</span><h3>添加开发者 / 体验成员</h3>
+  <p>把同事/测试同学的微信加进来，他们才能在「体验版」里试用、帮你验收。</p>
+  <div class="mock">
+    <div class="label">界面示意 · 公众平台后台 → 成员管理</div>
+    <div class="win">
+      <div class="win-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        &nbsp;微信公众平台 · 管理</div>
+      <div class="win-body">
+        <ul class="nav">
+          <li>基本管理</li>
+          <li>成员管理 <span class="badge on" style="background:#e3f6ec;color:var(--wx-d)">当前</span></li>
+          <li>开发管理</li>
+          <li>用户隐私</li>
+        </ul>
+        <div class="win-main">
+          <div class="card-ui">
+            <p style="margin:0 0 8px"><b>成员管理</b></p>
+            <span class="pill">管理员：你</span><span class="pill">开发者：+ 添加</span>
+            <span class="pill">体验成员：+ 添加</span>
+            <p style="font-size:12px;color:#888;margin-top:8px">点「添加」→ 输入对方微信号 → 对方确认即可</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p><b>操作步骤：</b>浏览器登录 <a href="https://mp.weixin.qq.com" target="_blank">mp.weixin.qq.com</a>
+    → 左侧「管理」→「成员管理」→ 在「体验成员 / 开发者」栏点「添加」→ 填对方微信号 → 对方微信确认。</p>
+  <div class="tip">💡 「体验成员」够用了（能装体验版试用）；「开发者」才能上传代码，按需给。</div>
+</div>
+
+<!-- Step 6 -->
+<div class="step">
+  <span class="num">6</span><h3>提交审核（提审）</h3>
+  <p>上传后的「开发版本」提交给微信官方审核，通过后才可以发布。</p>
+  <div class="mock">
+    <div class="label">界面示意 · 版本管理 → 提交审核</div>
+    <div class="win">
+      <div class="win-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        &nbsp;版本管理</div>
+      <div class="win-main" style="padding:16px">
+        <div class="card-ui">
+          <p style="margin:0 0 6px"><b>开发版本</b> <span class="badge done">已上传</span></p>
+          <p style="font-size:12px;color:#888">版本号 1.0.0 · 上传时间 刚刚</p>
+          <hr style="border:none;border-top:1px solid var(--line);margin:12px 0">
+          <p style="font-size:13px"><b>提交审核</b>需要填：</p>
+          <span class="pill">功能页面路径 pages/index/index</span>
+          <span class="pill">测试账号 student01</span>
+          <span class="pill">密码 123456</span>
+          <p style="font-size:12px;color:#888;margin-top:8px">填完点「提交审核」，进入微信审核队列（通常几小时~1天）</p>
+          <button class="btn blue" style="margin-top:8px">提交审核</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p><b>操作步骤：</b>公众平台 → 左侧「管理」→「版本管理」→ 在「开发版本」下点「<b>提交审核</b>」→
+    填：<b>功能页面</b>（一般填 <code>pages/index/index</code>）、<b>测试账号 student01 / 123456</b> → 提交。</p>
+  <div class="note">⚠️ 测试账号务必用 <b>student01 / 123456</b>（同学视角，不暴露管理端），审核员会用它登录验收。</div>
+</div>
+
+<!-- Step 7 -->
+<div class="step">
+  <span class="num">7</span><h3>审核通过 → 发布正式版</h3>
+  <p>微信审核结果会微信通知你。通过后「开发版本」变成「审核通过版本」，点一下就发布上线。</p>
+  <div class="flow">
+    <span class="b">提交审核</span><span class="arw">→</span>
+    <span class="b">微信审核中</span><span class="arw">→</span>
+    <span class="b">审核通过</span><span class="arw">→</span>
+    <span class="b" style="background:#e3f6ec;color:var(--wx-d)">发布上线 🎉</span>
+  </div>
+  <p><b>操作步骤：</b>收到「审核通过」通知 → 回到「版本管理」→ 在「审核通过版本」下点「<b>发布</b>」→
+    选择发布方式（一般选「全量发布」）→ 正式上线，用户就能搜到并使用了。</p>
+  <div class="tip">💡 发布前记得确认「小程序备案」已在走流程（见你后台第①步第3项），最晚上架前通过即可；「微信认证」不强制，但认证后才能用搜索和分享朋友圈。</div>
+</div>
+
+<!-- ============ 第二部分 ============ -->
+<h2>第二部分　服务器 & 域名配置</h2>
+
+<!-- 2.1 -->
+<div class="step">
+  <span class="num">A</span><h3>配置 AppID / AppSecret</h3>
+  <p>后端要靠这对凭证帮用户换登录态，必须填正式小程序的，不能用测试号。</p>
+  <div class="mock">
+    <div class="label">界面示意 · 公众平台 → 开发管理 → 开发设置</div>
+    <div class="win">
+      <div class="win-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        &nbsp;开发设置</div>
+      <div class="win-main" style="padding:16px">
+        <div class="field"><label>AppID</label><input value="wx0fe78d74fdc47c1b（已显示）"></div>
+        <div class="field"><label>AppSecret</label><input value="****************（点"重置"获取）"></div>
+        <p style="font-size:12px;color:#888">AppSecret 只显示一次，复制保存好；丢失需重新重置</p>
+      </div>
+    </div>
+  </div>
+  <p><b>操作步骤：</b>公众平台 →「开发管理」→「开发设置」→ 复制 <b>AppID</b>（你已是 wx0fe78d74fdc47c1b）→
+    点 AppSecret 的「重置 / 生成」拿到密钥 → 填进服务器。</p>
+  <p>填到你项目的 <code>server/.env</code> 文件（没有就复制 <code>.env.example</code> 改名）：</p>
+  <div class="file">
+<span class="c"># server/.env  （不要把 .env 提交到代码仓库）</span><br>
+<span class="k">WX_APP_ID</span>=wx0fe78d74fdc47c1b<br>
+<span class="k">WX_APP_SECRET</span>=你刚重置拿到的密钥<br>
+<span class="k">JWT_SECRET</span>=<span class="s">一串随机字符串(生产必须)</span><br>
+<span class="k">DB_HOST</span>=<span class="s">你的MySQL地址</span> &nbsp;<span class="c"># 云托管/腾讯云MySQL</span>
+  </div>
+  <div class="note">⚠️ AppSecret 是敏感信息，<b>绝不要</b>写进前端代码或提交到 git。后端放在服务器环境变量里。</div>
+</div>
+
+<!-- 2.2 -->
+<div class="step">
+  <span class="num">B</span><h3>配置服务器域名（request 合法域名 / 云托管免配）</h3>
+  <p>小程序默认<b>只能请求白名单里的 https 域名</b>。但用「微信云托管」可以免掉这一步。</p>
+
+  <h3 style="color:var(--ink);font-size:15px">方案 B（推荐）：云托管免配域名</h3>
+  <p>在 <code>miniprogram/config/env.js</code> 改成下面这样，小程序走微信私有协议调用后端，
+    <b>不需要在后台配任何域名，也不需要 ICP 备案</b>：</p>
+  <div class="file">
+<span class="k">const</span> IS_PROD = <span class="s">true</span>;<br>
+<span class="c">// PROD 对象里：</span><br>
+<span class="k">USE_CLOUD_RUN</span>: <span class="s">true</span>,<br>
+<span class="k">CLOUD_RUN_ENV</span>: <span class="s">'你的云托管环境ID'</span>,<br>
+<span class="k">CLOUD_RUN_PUBLIC_HOST</span>: <span class="s">'xxxx.ap-shanghai.run.tcloudbase.com'</span>
+  </div>
+  <div class="tip">💡 云托管环境ID和默认公网域名在：公众平台 → 左侧「云托管」→ 开通后获取。详细见 <code>docs/cloudrun-deploy.md</code>。</div>
+
+  <h3 style="color:var(--ink);font-size:15px">方案 A：自有备案域名（才需要配白名单）</h3>
+  <div class="mock">
+    <div class="label">界面示意 · 开发设置 → 服务器域名</div>
+    <div class="win">
+      <div class="win-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        &nbsp;服务器域名</div>
+      <div class="win-main" style="padding:16px">
+        <div class="field"><label>request合法域名</label><input value="https://你的备案域名.com"></div>
+        <div class="field"><label>uploadFile合法域名</label><input value="https://你的备案域名.com"></div>
+        <div class="field"><label>downloadFile合法域名</label><input value="https://你的备案域名.com"></div>
+        <p style="font-size:12px;color:#888">必须是 https，且域名已完成 ICP 备案</p>
+      </div>
+    </div>
+  </div>
+  <p><b>操作步骤（仅方案 A 需要）：</b>公众平台 →「开发管理」→「开发设置」→「服务器域名」→
+    填你的 https 域名到 request / uploadFile / downloadFile 三栏 → 保存。</p>
+  <div class="note">⚠️ 域名必须是 <b>https</b> 且 <b>已 ICP 备案</b>；同时把 <code>env.js</code> 的 <code>API_BASE</code> 改成 <code>https://你的备案域名.com</code>、<code>USE_CLOUD_RUN=false</code>。</div>
+  <table class="t">
+    <tr><th>对比</th><th>方案 A 自有备案域名</th><th>方案 B 云托管（推荐）</th></tr>
+    <tr><td>是否要配服务器域名</td><td>要</td><td><span class="ok">不用</span></td></tr>
+    <tr><td>是否要 ICP 备案</td><td>要</td><td><span class="ok">不用</span></td></tr>
+    <tr><td>上线速度</td><td>慢（等备案）</td><td><span class="ok">快</span></td></tr>
+  </table>
+</div>
+
+<!-- 2.3 -->
+<div class="step">
+  <span class="num">C</span><h3>业务域名 + SSL 证书绑定（免费）</h3>
+  <p>「业务域名」用于网页授权/内嵌网页等场景；SSL 证书让域名支持 https（小程序强制要求）。</p>
+
+  <h3 style="color:var(--ink);font-size:15px">1) 免费 SSL 证书（HTTPS）</h3>
+  <p>腾讯云 / DNSPod 提供 <b>免费 DV 证书（1 年期）</b>，够小程序用：</p>
+  <div class="flow">
+    <span class="b">登录腾讯云 SSL</span><span class="arw">→</span>
+    <span class="b">申请免费证书</span><span class="arw">→</span>
+    <span class="b">DNS 验证</span><span class="arw">→</span>
+    <span class="b">下载部署到服务器</span>
+  </div>
+  <p>免费证书入口：腾讯云控制台 →「SSL 证书」→「免费证书」→ 选 DV 型 → 填域名 → 按提示做 DNS 解析验证 → 下载并部署到你的 Web 服务器 / 云托管。</p>
+
+  <h3 style="color:var(--ink);font-size:15px">2) 配置业务域名</h3>
+  <div class="mock">
+    <div class="label">界面示意 · 开发设置 → 业务域名</div>
+    <div class="win">
+      <div class="win-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        &nbsp;业务域名</div>
+      <div class="win-main" style="padding:16px">
+        <div class="field"><label>业务域名</label><input value="https://你的备案域名.com"></div>
+        <p style="font-size:12px;color:#888">需下载校验文件 → 放到域名根目录 → 点「保存」自动校验</p>
+        <button class="btn">下载校验文件并配置</button>
+      </div>
+    </div>
+  </div>
+  <p><b>操作步骤：</b>公众平台 →「开发管理」→「开发设置」→「业务域名」→ 填域名 →
+    下载 <code>校验文件.txt</code> → 放到你服务器网站根目录（能被 <code>https://域名/校验文件.txt</code> 访问到）→ 回后台点「保存」即可通过校验。</p>
+  <div class="note">⚠️ 如果走「方案 B 云托管」，业务域名通常也不用配（云托管自带 https 与合法调用通道）。免费证书主要服务于「方案 A 自有域名」。</div>
+  <div class="tip">💡 对小白最省事的路线：<b>直接用云托管（方案 B）</b>，SSL、域名白名单、备案一次性全免，只剩「申请云托管环境 + 填 env.js」两件事。</div>
+</div>
+
+<div class="ctx" style="margin-top:30px">
+  ✅ <b>一句话路线（小白推荐）</b>：下载开发者工具 → 导入 miniprogram → 改 env.js（IS_PROD=true+USE_CLOUD_RUN=true）→
+  上传 1.0.0 → 加体验成员 → 提审（测号 student01/123456）→ 过审发布；后端用云托管部署（详见 cloudrun-deploy.md），域名/备案/SSL 全免。
+</div>
+
+<footer>点滴进步 · 上线实操图文手册 ｜ 配套文件：docs/cloudrun-deploy.md、miniprogram/config/env.js、server/.env.example</footer>
+
+</div>
+</body>
+</html>

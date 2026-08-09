@@ -1,6 +1,6 @@
 // app.js - 全局入口与状态
 const { getToken, setToken, clearAuth } = require('./utils/auth.js');
-const { API_BASE, USE_CLOUD_RUN, CLOUD_RUN_ENV } = require('./config/env.js');
+const { API_BASE, USE_CLOUD_RUN, CLOUD_RUN_ENV, CLOUD_RUN_SERVICE } = require('./config/env.js');
 
 App({
   globalData: {
@@ -117,11 +117,12 @@ App({
         resolve({ ...res.data, headers: res.header || {} });
       };
       if (USE_CLOUD_RUN) {
+        // 云托管必须通过 X-WX-SERVICE 指定服务名，否则网关无法把请求路由到容器
         wx.callContainer({
           config: { env: CLOUD_RUN_ENV },
           path: url,
           method: (method || 'GET').toUpperCase(),
-          header: headers,
+          header: { ...headers, 'X-WX-SERVICE': CLOUD_RUN_SERVICE },
           data: data || {},
           timeout: 30000,
           success: (res) => {
