@@ -353,7 +353,7 @@ async function seedResources(db) {
     const admin = await db.prepare("SELECT id FROM sys_user WHERE role='ADMIN' ORDER BY id LIMIT 1").get();
     const createdBy = admin ? admin.id : null;
     const ins = await db.prepare(
-      'INSERT INTO resource(grade,subject,title,cover,type,url,description,source,tags,content,sort_order,created_by) VALUES(?,?,?,?,?,?,?,?,?,?,?)'
+      'INSERT INTO resource(grade,subject,title,cover,type,url,description,source,tags,content,sort_order,created_by) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)'
     );
     let n = 0;
     for (const e of KB) {
