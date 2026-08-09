@@ -85,6 +85,7 @@ const db = {
     };
   },
   // 兼容：支持多条语句（以 ; 分隔）。逐条执行，避免依赖 multipleStatements。
+  // 单条 DDL（CREATE/ALTER）失败仅 warn 不中断，确保后续表仍能创建（云托管兼容）
   async exec(sql) {
     const stmts = String(sql)
       .split(';')
@@ -92,7 +93,14 @@ const db = {
       .filter((s) => s); // 注释与空语句已在 mysql 层被忽略，这里仅去空
     for (const stmt of stmts) {
       if (!stmt) continue;
-      await pool.query(stmt);
+      try {
+        await pool.query(stmt);
+      } catch (e) {
+        // DDL 幂等语句（IF NOT EXISTS / IF NOT EXISTS / ADD COLUMN IF NOT）在并发或部分执行场景可能报错
+        // 仅记录警告，不中断后续建表流程
+        console.warn('[db.exec] 语句执行警告（已跳过）:', e.message.slice(0, 200));
+        console.warn('[db.exec] 对应 SQL:', stmt.slice(0, 150));
+      }
     }
   },
   async query(sql, params) {

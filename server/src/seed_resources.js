@@ -326,6 +326,27 @@ function slugOf(e) {
 // 仅当 resource 表为空时播种，保证幂等且不覆盖老师后续增删
 async function seedResources(db) {
   try {
+    // ── 安全网：确保 resource 表存在（防御 exec 部分失败导致表未建）──
+    try { await db.prepare(`CREATE TABLE IF NOT EXISTS resource (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      grade VARCHAR(32) NOT NULL,
+      subject VARCHAR(64) NOT NULL,
+      title VARCHAR(512) NOT NULL,
+      cover TEXT,
+      type VARCHAR(32) NOT NULL,
+      url TEXT NOT NULL,
+      description TEXT,
+      source TEXT,
+      tags TEXT,
+      content TEXT,
+      sort_order INT DEFAULT 0,
+      view_count INT DEFAULT 0,
+      unlock_count INT DEFAULT 0,
+      created_by INT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      KEY idx_resource_gs (grade, subject, sort_order)
+    )`).run(); } catch (_) { /* 表已存在或建表失败，继续尝试 */ }
+
     const cnt = await (await db.prepare('SELECT COUNT(*) AS c FROM resource').get()).c;
     if (cnt > 0) return;
     fs.mkdirSync(STUDY_DIR, { recursive: true });
