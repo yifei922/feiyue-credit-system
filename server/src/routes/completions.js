@@ -125,7 +125,7 @@ router.post('/import', requireRole('ADMIN', 'TEACHER', 'REP'), async (req, res) 
     if (req.user.role === 'REP' && !(await canManageSubject(req.user, task.subject_id))) {
       skipped++; errors.push(`无权限科目: ${task.title}`); continue;
     }
-    registerCompletion(task, student.id, status, req.user);
+    await registerCompletion(task, student.id, status, req.user);
     imported++;
   }
   recordLog(req.user, 'IMPORT', 'completion_record', null, null, { imported, skipped, sample: rows.slice(0, 5) });

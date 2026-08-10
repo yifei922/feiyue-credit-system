@@ -1,5 +1,7 @@
 // pages/admin/resources.js - 资料管理（教师/管理员）
 const app = getApp();
+
+const { requireRole } = require('../../utils/auth-guard.js');
 const TYPES = ['article', 'doc', 'video', 'link', 'pdf'];
 const SUBJECTS = ['语文','数学','英语','物理','化学','道德与法治','历史','地理','生物'];
 
@@ -15,7 +17,8 @@ Page({
     typeLabel: { article: '图文', doc: '文档', video: '视频', link: '链接', pdf: 'PDF' },
   },
 
-  onShow() { this.load(); },
+  onShow() {
+    if (!this._roleChecked && !requireRole(['ADMIN', 'TEACHER'])) return; this._roleChecked = true; this.load(); },
 
   async load() {
     this.setData({ loading: true });

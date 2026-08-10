@@ -1,5 +1,7 @@
 // pages/admin/index.js - 管理后台工作台（对标网页端 MainLayout + Dashboard）
 const app = getApp();
+
+const { requireRole } = require('../../utils/auth-guard.js');
 Page({
   data: {
     role: '',
@@ -10,6 +12,7 @@ Page({
   },
 
   onShow() {
+    if (!this._roleChecked && !requireRole(['ADMIN', 'TEACHER', 'REP'])) return; this._roleChecked = true;
     const u = app.globalData.user || {};
     const role = u.role;
     this.setData({

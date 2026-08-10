@@ -98,7 +98,7 @@ router.post('/remind-unfinished', requireRole('ADMIN', 'TEACHER', 'REP'), async 
     // 先清掉该生旧的待处理提醒，避免堆积重复
     await db.prepare("UPDATE alert SET status='RESOLVED' WHERE student_id=? AND type='REMIND' AND status='PENDING'").run(studentId);
     const list = titles.slice(0, 5).join('、') + (titles.length > 5 ? ` 等${titles.length}项` : '');
-    insAlert.run(studentId, 'REMIND', 'WARN', `你还有 ${titles.length} 项任务未完成：${list}，请尽快完成！`);
+    await insAlert.run(studentId, 'REMIND', 'WARN', `你还有 ${titles.length} 项任务未完成：${list}，请尽快完成！`);
     count++;
   }
   recordLog(req.user, 'REMIND', 'alert', null, null, { count });

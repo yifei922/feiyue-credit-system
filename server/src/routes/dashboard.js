@@ -16,7 +16,7 @@ async function scopeTasks(user) {
 
 // 看板总览
 router.get('/overview', async (req, res) => {
-  const tasks = scopeTasks(req.user);
+  const tasks = await scopeTasks(req.user);
   const taskIds = await Promise.all(tasks.map(async t => t.id));
 
   // 各科目完成率

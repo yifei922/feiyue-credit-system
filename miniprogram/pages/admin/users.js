@@ -1,6 +1,8 @@
 // pages/admin/users.js - 用户管理（教师/管理员）
 // 对标网页端 SystemSettings → 账号管理 Tab
 const app = getApp();
+
+const { requireRole } = require('../../utils/auth-guard.js');
 Page({
   data: {
     list: [],
@@ -33,6 +35,7 @@ Page({
   },
 
   onShow() {
+    if (!this._roleChecked && !requireRole(['ADMIN', 'TEACHER'])) return; this._roleChecked = true;
     const u = app.globalData.user || {};
     this.setData({ canManageUsers: u.role === 'ADMIN' || u.role === 'TEACHER' });
     this.load(true);

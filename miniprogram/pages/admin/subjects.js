@@ -1,6 +1,8 @@
 // pages/admin/subjects.js - 科目管理 + 课代表任命
 // 对标网页端 SystemSettings → 课代表任命 Tab
 const app = getApp();
+
+const { requireRole } = require('../../utils/auth-guard.js');
 Page({
   data: {
     subjects: [],
@@ -17,7 +19,8 @@ Page({
     savingRep: false,
   },
 
-  onShow() { this.loadSubjects(); this.loadRepCandidates(); },
+  onShow() {
+    if (!this._roleChecked && !requireRole(['ADMIN', 'TEACHER'])) return; this._roleChecked = true; this.loadSubjects(); this.loadRepCandidates(); },
   onPullDownRefresh() { this.loadSubjects().then(() => wx.stopPullDownRefresh()); },
   onRetry() { this.loadSubjects(); },
 

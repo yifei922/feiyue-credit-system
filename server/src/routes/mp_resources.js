@@ -8,7 +8,7 @@
 // - DELETE /api/mp/admin/resources/:id                    后台删除
 const express = require('express');
 const router = express.Router();
-const { db } = require('../db');
+const { db, pool } = require('../db');
 const { ok, fail } = require('../util');
 
 const VIEW_COST_POINTS = Number(process.env.RESOURCE_VIEW_COST) || 5; // 每次查阅/下载扣除积分
@@ -92,7 +92,7 @@ router.post('/resources/:id/ad-done', async (req, res) => {
   // 注意：此处只统计 resource_id IS NULL 的「每日广告奖励」计数，避免与资料解锁计数冲突
   const adCount = await (await db.prepare('SELECT COUNT(*) AS c FROM ad_view_log WHERE user_id=? AND day=?').get(uid, day)).c;
   if (adCount >= AD_DAILY_LIMIT) return fail(res, 429, `今日广告解锁已达上限 ${AD_DAILY_LIMIT} 次，明天再来`);
-  if (!watchedAdToday(uid, id)) {
+  if (!(await watchedAdToday(uid, id))) {
     await db.prepare('INSERT INTO ad_view_log(user_id, resource_id, day) VALUES(?,?,?)').run(uid, id, day);
     await db.prepare('UPDATE resource SET unlock_count = unlock_count + 1 WHERE id=?').run(id);
   }
@@ -105,19 +105,18 @@ router.post('/resources/:id/access', async (req, res) => {
   const r = await db.prepare('SELECT * FROM resource WHERE id=?').get(id);
   if (!r) return fail(res, 404, '资料不存在');
   const uid = req.user.id;
-  if (!watchedAdToday(uid, id)) return fail(res, 425, '请先看完广告再查看资料');
-  const balance = balanceOf(uid);
+  if (!(await watchedAdToday(uid, id))) return fail(res, 425, '请先看完广告再查看资料');
+  const balance = await balanceOf(uid);
   if (balance < VIEW_COST_POINTS) {
     return fail(res, 402, `积分不足，查阅需 ${VIEW_COST_POINTS} 积分（当前 ${balance}）。去看广告或完成任务赚积分吧`);
   }
-  // 扣积分
-  const cur = await db.prepare('SELECT points, total_earned FROM user_points WHERE user_id=?').get(uid);
-  if (cur) {
-    await db.prepare("UPDATE user_points SET points=points-?, updated_at=NOW() WHERE user_id=?")
-      .run(VIEW_COST_POINTS, uid);
-  } else {
-    await db.prepare('INSERT INTO user_points(user_id, points, total_earned) VALUES(?,?,0)')
-      .run(uid, -VIEW_COST_POINTS);
+  // 扣积分：用 GREATEST(0, points-?) 兜底，避免并发或异常情况下出现负数
+  const [decResult] = await pool.query(
+    "UPDATE user_points SET points=GREATEST(0, points-?) WHERE user_id=? AND points>=?",
+    [VIEW_COST_POINTS, uid, VIEW_COST_POINTS]
+  );
+  if (decResult.affectedRows === 0) {
+    return fail(res, 402, '积分不足，无法查阅');
   }
   await db.prepare('UPDATE resource SET view_count = view_count + 1 WHERE id=?').run(id);
   ok(res, { url: r.url, type: r.type, title: r.title, pointsLeft: balance - VIEW_COST_POINTS });
@@ -171,25 +170,25 @@ router.post('/admin/resources/batch', async (req, res) => {
   const list = Array.isArray(req.body?.list) ? req.body.list : [];
   if (list.length === 0) return fail(res, 400, 'list 不能为空');
   if (list.length > 500) return fail(res, 400, '单次最多 500 条');
-  const insert = await db.prepare(`INSERT INTO resource(grade, subject, title, type, url, description, source, tags, sort_order, created_by)
-                             VALUES(?,?,?,?,?,?,?,?,?,?)`);
   let inserted = 0, skipped = 0;
   const errors = [];
-  const tx = db.transaction((items) => {
-    for (let i = 0; i < items.length; i++) {
+  await db.transaction(async (conn) => {
+    // 在事务连接上 prepare，让 run() 复用该连接，事务回滚才生效
+    const insert = db.prepare(`INSERT INTO resource(grade, subject, title, type, url, description, source, tags, sort_order, created_by)
+                               VALUES(?,?,?,?,?,?,?,?,?,?)`, conn);
+    for (let i = 0; i < list.length; i++) {
       const r = items[i];
       if (!r.grade || !r.subject || !r.title || !r.type || !r.url) {
         skipped++; errors.push(`#${i+1}: 缺少必填字段`); continue;
       }
       try {
-        insert.run(r.grade, r.subject, r.title, r.type, r.url,
+        await insert.run(r.grade, r.subject, r.title, r.type, r.url,
           r.description || null, r.source || null,
           JSON.stringify(r.tags || []), +r.sort_order || 0, req.user.id);
         inserted++;
       } catch (e) { skipped++; errors.push(`#${i+1}: ${e.message}`); }
     }
   });
-  try { tx(list); } catch (e) { return fail(res, 500, e.message); }
   ok(res, { inserted, skipped, total: list.length, errors: errors.slice(0, 10) });
 });
 

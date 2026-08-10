@@ -42,7 +42,7 @@ function code2Session(code) {
     }
 
     const url = `https://api.weixin.qq.com/sns/jscode2session?appid=${APP_ID}&secret=${encodeURIComponent(APP_SECRET)}&js_code=${encodeURIComponent(code)}&grant_type=authorization_code`;
-    https.get(url, (res) => {
+    const req = https.get(url, (res) => {
       const chunks = [];
       res.on('data', (c) => chunks.push(c));
       res.on('end', () => {
@@ -55,7 +55,9 @@ function code2Session(code) {
           reject(new Error('code2Session 返回非 JSON: ' + raw.slice(0, 200)));
         }
       });
-    }).on('error', (e) => reject(e));
+    });
+    req.setTimeout(5000, () => req.destroy(new Error('wx code2Session timeout (5s)')));
+    req.on('error', (e) => reject(e));
   });
 }
 

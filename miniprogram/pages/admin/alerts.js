@@ -1,6 +1,8 @@
 // pages/admin/alerts.js - 预警中心
 // 对标网页端 WarningCenter.vue (/alerts)
 const app = getApp();
+
+const { requireRole } = require('../../utils/auth-guard.js');
 Page({
   data: {
     alerts: [],
@@ -14,7 +16,8 @@ Page({
     scanning: false,
   },
 
-  onShow() { this.load(); },
+  onShow() {
+    if (!this._roleChecked && !requireRole(['ADMIN', 'TEACHER', 'REP'])) return; this._roleChecked = true; this.load(); },
   onPullDownRefresh() { this.load().then(() => wx.stopPullDownRefresh()); },
 
   async load() {

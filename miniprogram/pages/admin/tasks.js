@@ -1,6 +1,8 @@
 // pages/admin/tasks.js - 任务/作业管理（教师/管理员/课代表）
 const app = getApp();
 
+const { requireRole } = require('../../utils/auth-guard.js');
+
 Page({
   data: {
     tasks: [],
@@ -16,6 +18,7 @@ Page({
   },
 
   onShow() {
+    if (!this._roleChecked && !requireRole(['ADMIN', 'TEACHER', 'REP'])) return; this._roleChecked = true;
     this.loadSubjects();
     this.loadTasks();
   },

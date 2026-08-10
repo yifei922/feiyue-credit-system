@@ -1,5 +1,7 @@
 // pages/admin/students.js - 学生管理（教师/管理员）
 const app = getApp();
+
+const { requireRole } = require('../../utils/auth-guard.js');
 const PAGE_SIZE = 100;
 
 Page({
@@ -16,7 +18,8 @@ Page({
     total: 0,
   },
 
-  onShow() { this.loadStudents(true); },
+  onShow() {
+    if (!this._roleChecked && !requireRole(['ADMIN', 'TEACHER', 'REP'])) return; this._roleChecked = true; this.loadStudents(true); },
   onPullDownRefresh() { this.loadStudents(true).then(() => wx.stopPullDownRefresh()); },
   onReachBottom() { if (this.data.hasMore && !this.data.loading) this.loadStudents(false); },
   onRetry() { this.loadStudents(true); },

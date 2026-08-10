@@ -1,6 +1,8 @@
 // pages/admin/credits-adjust.js - 手动积分调整（教师/管理员/课代表）
 const app = getApp();
 
+const { requireRole } = require('../../utils/auth-guard.js');
+
 Page({
   data: {
     students: [],
@@ -17,7 +19,8 @@ Page({
     recentAdjusts: [],
   },
 
-  onShow() { this.loadBase(); },
+  onShow() {
+    if (!this._roleChecked && !requireRole(['ADMIN', 'TEACHER', 'REP'])) return; this._roleChecked = true; this.loadBase(); },
 
   async loadBase() {
     try {

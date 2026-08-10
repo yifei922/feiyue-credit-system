@@ -1,6 +1,8 @@
 // pages/admin/operate-log.js - 操作日志
 // 对标网页端 SystemSettings.vue 的「操作日志」Tab (/settings?tab=log)
 const app = getApp();
+
+const { requireRole } = require('../../utils/auth-guard.js');
 Page({
   data: {
     records: [],
@@ -29,7 +31,8 @@ Page({
     snap: null,
   },
 
-  onShow() { this.load(true); },
+  onShow() {
+    if (!this._roleChecked && !requireRole(['ADMIN', 'TEACHER', 'REP'])) return; this._roleChecked = true; this.load(true); },
   onPullDownRefresh() { this.load(true).then(() => wx.stopPullDownRefresh()); },
   onReachBottom() { if (this.data.hasMore && !this.data.loading) this.load(false); },
   onRetry() { this.load(true); },

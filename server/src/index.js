@@ -103,6 +103,16 @@ app.use((req, res, next) => {
 
 const PORT = process.env.PORT || 3001;
 
+// ── 全局异步兜底：未捕获的 Promise 拒绝与未捕获异常必须记录并安全退出 ──
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[unhandledRejection]', reason, '\n  at:', promise);
+});
+process.on('uncaughtException', (err) => {
+  console.error('[uncaughtException] 进程即将退出:', err);
+  // 短暂延迟确保日志落盘
+  setTimeout(() => process.exit(1), 500);
+});
+
 // 启动前必须完成数据库初始化（建表 + 种子 + 迁移），否则路由会用到尚未建好的表
 (async () => {
   try {

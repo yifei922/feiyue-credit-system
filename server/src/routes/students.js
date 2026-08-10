@@ -78,7 +78,7 @@ router.post('/import', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (r
     if (exist) {
       studentId = exist.id;
     } else {
-      const r = insStu.run(s.name, s.studentNo, classId);
+      const r = await insStu.run(s.name, s.studentNo, classId);
       studentId = r.lastInsertRowid;
       isNew = true;
     }
@@ -86,7 +86,7 @@ router.post('/import', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (r
     const hasUser = await db.prepare("SELECT id FROM sys_user WHERE role='STUDENT' AND student_id=?").get(studentId);
     if (!hasUser) {
       const username = 'stu' + String(studentId).padStart(2, '0');
-      insUser.run(username, hashPassword('123456'), s.name, 'STUDENT', classId, studentId);
+      await insUser.run(username, hashPassword('123456'), s.name, 'STUDENT', classId, studentId);
     }
     if (isNew) imported++;
     importedRows.push({ id: studentId, name: s.name, studentNo: s.studentNo });

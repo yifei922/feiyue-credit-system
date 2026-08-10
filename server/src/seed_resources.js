@@ -361,7 +361,7 @@ async function seedResources(db) {
       const url = `/study/${slug}.html`;
       const contentJson = JSON.stringify({ sections: e.sections || [], tags: e.tags || [] });
       fs.writeFileSync(path.join(STUDY_DIR, `${slug}.html`), renderHtml(e), 'utf-8');
-      ins.run(e.grade, e.subject, e.title, null, 'article', url, e.desc, SOURCE,
+      await ins.run(e.grade, e.subject, e.title, null, 'article', url, e.desc, SOURCE,
         JSON.stringify(e.tags || []), contentJson, 0, createdBy);
       n++;
     }

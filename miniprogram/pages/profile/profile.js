@@ -94,7 +94,7 @@ Page({
       // 同步到全局 + 本地存储
       const u = Object.assign({}, app.globalData.user, {
         name: r.data.name,
-        student_id: r.data.studentId,
+        studentId: r.data.studentId,
         avatar: r.data.avatar,
       });
       app.globalData.user = u;

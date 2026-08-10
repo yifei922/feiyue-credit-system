@@ -68,18 +68,20 @@ const pool = buildPool();
 //   db.prepare(sql) 返回语句对象 { get/run/all }，每个方法接收参数并返回 Promise。
 //   run() 的返回值抹平为 { lastInsertRowid, changes }，与原 node:sqlite 一致。
 const db = {
-  prepare(sql) {
+  // prepare(sql, conn?) — 第二个参数为某事务内的连接，让 run/get/all 走该连接以共享事务
+  prepare(sql, conn) {
+    const exec = conn ? conn.query.bind(conn) : pool.query.bind(pool);
     return {
       async get(...params) {
-        const [rows] = await pool.query(sql, params);
+        const [rows] = await exec(sql, params);
         return rows[0];
       },
       async run(...params) {
-        const [result] = await pool.query(sql, params);
+        const [result] = await exec(sql, params);
         return { lastInsertRowid: result.insertId, changes: result.affectedRows };
       },
       async all(...params) {
-        const [rows] = await pool.query(sql, params);
+        const [rows] = await exec(sql, params);
         return rows;
       },
     };
@@ -106,6 +108,24 @@ const db = {
   async query(sql, params) {
     const [rows] = await pool.query(sql, params || []);
     return rows;
+  },
+  // ── 事务包装：与 node:sqlite 的 db.transaction(fn) 同语义，回调里可用 await ──
+  // 失败自动 ROLLBACK，成功 COMMIT。回调抛错即视为整体失败。
+  async transaction(fn) {
+    const conn = await pool.getConnection();
+    try {
+      await conn.beginTransaction();
+      try {
+        const result = await fn(conn);
+        await conn.commit();
+        return result;
+      } catch (innerErr) {
+        try { await conn.rollback(); } catch (_) { /* rollback 失败不掩盖原错 */ }
+        throw innerErr;
+      }
+    } finally {
+      conn.release();
+    }
   },
   async close() {
     await pool.end();

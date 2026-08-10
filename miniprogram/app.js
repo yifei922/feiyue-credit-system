@@ -110,11 +110,16 @@ App({
           this.globalData.user = null;
           done(false, '未登录');
           wx.showToast({ title: '登录已过期，请重新登录', icon: 'none' });
+          // 延迟跳转，让用户看到 toast；同时阻断后续请求堆积在死页
+          setTimeout(() => wx.reLaunch({ url: '/pages/login/login' }), 700);
           return reject(new Error('未登录'));
         }
         done(res.data && res.data.code === 0, res.data && res.data.code ? ('code ' + res.data.code) : '');
-        // 透传响应头（用于列表分页 X-Has-More / X-Total-Count 等元信息）
-        resolve({ ...res.data, headers: res.header || {} });
+        // 透传响应头（微信返回小写头；统一转大写便于页面读 X-Has-More / X-Total-Count 等）
+        const upperHeaders = {};
+        const lowerHeaders = res.header || {};
+        Object.keys(lowerHeaders).forEach(k => { upperHeaders[k.toUpperCase()] = lowerHeaders[k]; });
+        resolve({ ...res.data, headers: upperHeaders });
       };
       if (USE_CLOUD_RUN) {
         // 云托管必须通过 X-WX-SERVICE 指定服务名，否则网关无法把请求路由到容器
