@@ -473,4 +473,4 @@ async function writeAll(db) {
   console.log(`[seed_resources] 已播种 ${KB.length} 条通用兴趣类资料到 study-content/`);
 }
 
-module.exports = { writeAll, KB };
+module.exports = { writeAll, seedResources: writeAll, KB };

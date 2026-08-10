@@ -541,7 +541,7 @@ async function migrate() {
   }
 
   // 9) 课程资料自动播种：仅当 resource 表为空时填充示例资料（与数据库 id 解耦，刷新/新环境均可复现）
-  await require('./seed_resources').seedResources(db);
+  await require('./seed_resources').writeAll(db);
 
   // 10) 合规整改：把历史遗留的 K12 学科/年级字段重命名为中性兴趣标签（幂等，重启只跑一次）
   //     个人主体小程序禁止 K12 学科类校外培训；旧数据若被审核员看到会被驳回。
