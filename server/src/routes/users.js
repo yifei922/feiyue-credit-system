@@ -79,6 +79,8 @@ router.post('/:id/role', requireRole('ADMIN'), async (req, res) => {
   const { role, subjectIds } = req.body || {};
   const validRoles = ['ADMIN', 'TEACHER', 'REP', 'STUDENT'];
   if (!validRoles.includes(role)) return fail(res, 400, '角色非法');
+  // 仅超级管理员可变更角色（含授予 ADMIN），防止普通 ADMIN 横向提权
+  if (req.user.username !== 'superadmin') return fail(res, 403, '仅超级管理员可变更角色');
   if (target.username === 'superadmin') return fail(res, 403, '不能修改超级管理员的角色');
 
   await db.prepare('UPDATE sys_user SET role=? WHERE id=?').run(role, target.id);

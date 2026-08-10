@@ -98,11 +98,12 @@ Page({
 
   async onResetPwd(e) {
     const id = e.currentTarget.dataset.id;
-    const res = await new Promise((r) => wx.showModal({ title: '重置密码', content: '确定将该学生密码重置为 123456？', success: r }));
+    const res = await new Promise((r) => wx.showModal({ title: '重置密码', content: '确定将该学生密码重置为随机临时密码？', success: r }));
     if (!res.confirm) return;
     try {
-      await app.apiPost('/api/students/' + id + '/reset-password', {});
-      wx.showToast({ title: '已重置为 123456', icon: 'success' });
+      const r = await app.apiPost('/api/students/' + id + '/reset-password', {});
+      const tip = r.data && r.data.temp ? ('已重置为临时密码：' + r.data.password) : '已重置密码';
+      wx.showModal({ title: '重置成功', content: tip, showCancel: false });
     } catch (e) { wx.showToast({ title: e.message, icon: 'none' }); }
   },
 

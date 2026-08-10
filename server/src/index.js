@@ -90,16 +90,13 @@ app.use((err, _req, res, _next) => {
 const DIST = path.join(__dirname, '..', '..', 'frontend', 'dist');
 app.use(express.static(DIST));
 
-// 课程资料静态托管（自托管复习资料 HTML，供小程序复制链接后在浏览器打开）
-// url 在库中存为相对路径 /study/<id>.html，小程序端会自动拼接后端域名
-const STUDY_DIR = path.join(__dirname, '..', 'study-content');
-app.use('/study', express.static(STUDY_DIR));
+// 课程资料（兴趣类）由 mp_resources 路由以 /api/mp/resources/file/:filename 提供，
+// 仅服务 study-content 下白名单内的 .json 文件，杜绝 K12/中考类 HTML 被公网托管。
+// （早期 /study 公开静态目录已被移除：曾无鉴权托管 22 个中小学/中考 HTML，属提审违规。）
 
 // 非 /api 请求回退到 index.html（前端使用 hash 路由，路径恒为 /）
 app.use((req, res, next) => {
   if (req.path.startsWith('/api')) return next();
-  // /study 下缺失的资料文件返回 404，而非兜底返回首页（避免复制失效链接却打开首页）
-  if (req.path.startsWith('/study')) return res.status(404).send('资料不存在');
   res.sendFile(path.join(DIST, 'index.html'));
 });
 

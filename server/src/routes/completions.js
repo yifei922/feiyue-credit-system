@@ -38,10 +38,13 @@ router.post('/register', requireRole('ADMIN', 'TEACHER', 'REP', 'STUDENT'), asyn
   const { taskId, studentIds, status } = req.body || {};
   if (!taskId || !status) return fail(res, 400, '缺少任务或状态');
 
-  // 学生只能登记自己
+  // 学生只能登记自己；且只能提交「待确认」状态，不可自行计积分（防自产自销积分）
+  // 最终 DONE_ONTIME/DONE_OVERDUE 由老师或课代表确认后写入。
   let sids = [];
+  let effStatus = status;
   if (req.user.role === 'STUDENT') {
     sids = [req.user.studentId];
+    effStatus = 'SUBMITTED'; // 学生自报统一记为待确认，计 0 分
   } else {
     sids = Array.isArray(studentIds) ? studentIds.map(Number) : (studentIds ? [Number(studentIds)] : []);
   }
@@ -57,7 +60,7 @@ router.post('/register', requireRole('ADMIN', 'TEACHER', 'REP', 'STUDENT'), asyn
 
   let gained = 0;
   for (const sid of sids) {
-    const r = await registerCompletion(task, sid, status, req.user);
+    const r = await registerCompletion(task, sid, effStatus, req.user);
     gained += r.credit;
   }
 

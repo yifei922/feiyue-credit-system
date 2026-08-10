@@ -8,11 +8,17 @@
 // - DELETE /api/mp/admin/resources/:id                    后台删除
 const express = require('express');
 const router = express.Router();
+const fs = require('fs');
+const path = require('path');
 const { db, pool } = require('../db');
 const { ok, fail } = require('../util');
 
 const VIEW_COST_POINTS = Number(process.env.RESOURCE_VIEW_COST) || 5; // 每次查阅/下载扣除积分
 const AD_DAILY_LIMIT = 20;              // 每天最多看广告解锁次数（防刷）
+
+// 资料文件沙箱目录（仅服务此目录内、白名单匹配的 .json 文件）
+const STUDY_DIR = path.join(__dirname, '..', '..', 'study-content');
+const FILE_NAME_RE = /^[A-Za-z0-9_\-]+\.json$/; // 严格白名单，杜绝路径穿越与 .html 类资料
 
 function today() { return new Date().toISOString().slice(0, 10); }
 function isAdmin(u) { return u && (u.role === 'ADMIN' || u.role === 'TEACHER'); }
@@ -25,6 +31,20 @@ async function balanceOf(uid) {
   const r = await db.prepare('SELECT points FROM user_points WHERE user_id=?').get(uid);
   return r ? r.points : 0;
 }
+
+// 资料文件直链（公开但沙箱化）：仅返回 STUDY_DIR 内匹配白名单的 .json，
+// 任何不匹配/越界请求一律 404。用于替换早期 /study 公开静态目录（已删除 K12 资料）。
+router.get('/resources/file/:filename', (req, res) => {
+  const name = req.params.filename || '';
+  if (!FILE_NAME_RE.test(name)) return res.status(404).send('资料不存在');
+  const full = path.join(STUDY_DIR, name);
+  // 二次防御：解析后必须仍在 STUDY_DIR 内
+  if (!full.startsWith(STUDY_DIR + path.sep) && full !== STUDY_DIR) return res.status(404).send('资料不存在');
+  if (!fs.existsSync(full)) return res.status(404).send('资料不存在');
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.send(fs.readFileSync(full, 'utf8'));
+});
+
 
 // ── 学生端 ──
 

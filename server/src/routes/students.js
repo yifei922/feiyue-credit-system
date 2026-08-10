@@ -1,11 +1,21 @@
 const express = require('express');
 const router = express.Router();
+const crypto = require('crypto');
 const { db } = require('../db');
 const { hashPassword } = require('../auth');
 const { ok, fail, fmtDate, paginate, setPageHeaders } = require('../util');
 const authMiddleware = require('../middleware/auth');
 const { requireRole } = require('../middleware/rbac');
 const { recordLog } = require('../services/log');
+
+// 生成随机临时密码（与 users.js 一致），避免弱口令 123456
+function genTempPwd() {
+  const chars = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const bytes = crypto.randomBytes(10);
+  let s = '';
+  for (let i = 0; i < bytes.length; i++) s += chars[bytes[i] % chars.length];
+  return s;
+}
 
 // 列表：管理员/老师/课代表看全班（分页，数组主体 + 响应头元信息）；学生仅看自己
 router.get('/', authMiddleware, async (req, res) => {
@@ -68,7 +78,7 @@ router.post('/import', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (r
 
   const classId = req.user.class_id || 1;
   const insStu = await db.prepare('INSERT INTO student(name, student_no, class_id) VALUES(?,?,?)');
-  const insUser = await db.prepare('INSERT INTO sys_user(username, password, name, role, class_id, student_id) VALUES(?,?,?,?,?,?)');
+  const insUser = await db.prepare('INSERT INTO sys_user(username, password, name, role, class_id, student_id, must_change_pwd) VALUES(?,?,?,?,?,?,?)');
   let imported = 0;
   const importedRows = [];
   for (const s of list) {
@@ -86,7 +96,7 @@ router.post('/import', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (r
     const hasUser = await db.prepare("SELECT id FROM sys_user WHERE role='STUDENT' AND student_id=?").get(studentId);
     if (!hasUser) {
       const username = 'stu' + String(studentId).padStart(2, '0');
-      await insUser.run(username, hashPassword('123456'), s.name, 'STUDENT', classId, studentId);
+      await insUser.run(username, hashPassword(genTempPwd()), s.name, 'STUDENT', classId, studentId, 1);
     }
     if (isNew) imported++;
     importedRows.push({ id: studentId, name: s.name, studentNo: s.studentNo });
@@ -96,17 +106,18 @@ router.post('/import', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (r
   ok(res, { imported, total: list.length, rows: importedRows });
 });
 
-// 重置学生登录密码（管理员/老师/课代表）；不传 password 则重置为 123456
+// 重置学生登录密码（管理员/老师/课代表）；不传 password 则生成随机临时密码
 router.post('/:id/reset-password', authMiddleware, requireRole('ADMIN', 'TEACHER', 'REP'), async (req, res) => {
   const student = await db.prepare('SELECT * FROM student WHERE id=?').get(req.params.id);
   if (!student) return fail(res, 404, '学生不存在');
   const user = await db.prepare("SELECT * FROM sys_user WHERE role='STUDENT' AND student_id=?").get(student.id);
   if (!user) return fail(res, 404, '该学生尚无登录账号');
-  const newPwd = String(req.body?.password || '').trim() || '123456';
-  if (newPwd.length < 4) return fail(res, 400, '密码至少 4 位');
-  await db.prepare('UPDATE sys_user SET password=? WHERE id=?').run(hashPassword(newPwd), user.id);
+  const custom = String(req.body?.password || '').trim();
+  const newPwd = custom || genTempPwd();
+  if (newPwd.length < 6) return fail(res, 400, '密码至少 6 位');
+  await db.prepare('UPDATE sys_user SET password=?, must_change_pwd=1 WHERE id=?').run(hashPassword(newPwd), user.id);
   recordLog(req.user, 'UPDATE', 'sys_user', user.id, { username: user.username }, { action: 'reset-password' });
-  ok(res, { ok: true, username: user.username, password: newPwd });
+  ok(res, { ok: true, username: user.username, password: newPwd, temp: !custom });
 });
 
 // 新增单个学生（管理员/老师）
@@ -116,8 +127,8 @@ router.post('/', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (req, re
   const r = await db.prepare('INSERT INTO student(name, student_no, class_id) VALUES(?,?,?)').run(name, studentNo || '', req.user.class_id || 1);
   const studentId = r.lastInsertRowid;
   const username = 'stu' + String(studentId).padStart(2, '0');
-  await db.prepare('INSERT INTO sys_user(username, password, name, role, class_id, student_id) VALUES(?,?,?,?,?,?)')
-    .run(username, hashPassword('123456'), name, 'STUDENT', req.user.class_id || 1, studentId);
+  await db.prepare('INSERT INTO sys_user(username, password, name, role, class_id, student_id, must_change_pwd) VALUES(?,?,?,?,?,?,?)')
+    .run(username, hashPassword(genTempPwd()), name, 'STUDENT', req.user.class_id || 1, studentId, 1);
   recordLog(req.user, 'INSERT', 'student', studentId, null, { name, studentNo });
   ok(res, { id: studentId, name, studentNo, username });
 });
