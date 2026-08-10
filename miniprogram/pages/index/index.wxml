@@ -1,14 +1,14 @@
 <view class="container">
   <!-- 用户信息卡 -->
   <view class="user-card">
-    <image class="avatar" src="{{user.avatar || '/assets/avatar_default.png'}}"></image>
+    <image class="avatar" src="{{user.avatar || '/assets/avatar_default.png'}}" binderror="onAvatarError"></image>
     <view class="user-info">
       <view class="name">{{user.name}}</view>
-      <view class="role muted">{{user.role === 'STUDENT' ? '同学' : user.role === 'TEACHER' ? '管理员' : '其他'}}</view>
+      <view class="role muted">{{user.role === 'STUDENT' ? '同学' : user.role === 'TEACHER' ? '教师' : user.role === 'ADMIN' ? '管理员' : user.role === 'REP' ? '课代表' : '其他'}}</view>
     </view>
     <view class="credit-block">
       <view class="credit-label">总积分</view>
-      <view class="credit-num">{{user.studentId ? '--' : '--'}}</view>
+      <view class="credit-num">{{points}}</view>
     </view>
   </view>
 
@@ -49,7 +49,4 @@
       </view>
     </view>
   </view>
-
-  <!-- 底部 banner 广告位（待开通广告位后启用） -->
-  <!-- <ad unit-id="adunit-xxxx" ad-type="banner"></ad> -->
 </view>

@@ -87,6 +87,13 @@
       <view class="mi-text"><view class="mi-title">操作日志</view><view class="mi-sub">查看所有操作记录与变更快照</view></view>
       <text class="muted">›</text>
     </view>
+
+    <!-- 11. 举报处理（合规闭环：用户举报的违规动态） -->
+    <view class="menu-item" bindtap="goReports">
+      <view class="ico" style="background:linear-gradient(135deg,#E57373,#C5204F)">🚩</view>
+      <view class="mi-text"><view class="mi-title">举报处理</view><view class="mi-sub">查看用户举报的违规动态并处理</view></view>
+      <text class="muted">›</text>
+    </view>
   </view>
 
   <view class="footer muted">操作会记录日志 · 请妥善使用</view>

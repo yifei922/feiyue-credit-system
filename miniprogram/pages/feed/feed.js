@@ -3,6 +3,12 @@ const app = getApp();
 Page({
   data: { list: [], loading: true, page: 1, hasMore: true },
   onShow() { app.trackPage('pages/feed/feed'); this.load(true); },
+  // 图片加载失败兜底（隐藏该 image，避免破图占位）
+  onImgErr(e) {
+    const { src, currentTarget } = e.detail || {};
+    // 仅在控制台提示，不动列表（小程序端修改 image src 较繁琐）
+    if (src) console.warn('[feed] 图片加载失败:', src);
+  },
   async load(reset = false) {
     if (!app.globalData.token) return;
     if (reset) { this.setData({ page: 1, list: [], hasMore: true }); }
@@ -23,8 +29,36 @@ Page({
   goDetail(e) { wx.navigateTo({ url: '/pages/post-detail/post-detail?id=' + e.currentTarget.dataset.id }); },
   async toggleLike(e) {
     const id = e.currentTarget.dataset.id;
-    try { await app.apiPost('/api/mp/posts/' + id + '/like', {}); this.load(true); }
-    catch (e) { wx.showToast({ title: e.message || '操作失败', icon: 'none' }); }
+    // 立即乐观更新 UI（避免整列表 reload 闪烁）
+    const list = this.data.list.map((it) => {
+      if (it.id === id) {
+        return {
+          ...it,
+          liked: !it.liked,
+          like_count: (it.like_count || 0) + (it.liked ? -1 : 1),
+        };
+      }
+      return it;
+    });
+    this.setData({ list });
+    try { await app.apiPost('/api/mp/posts/' + id + '/like', {}); }
+    catch (e) {
+      // 失败回滚
+      const rollback = this.data.list.map((it) => {
+        if (it.id === id) {
+          return { ...it, liked: !it.liked, like_count: (it.like_count || 0) + (it.liked ? -1 : 1) };
+        }
+        return it;
+      });
+      this.setData({ list: rollback });
+      wx.showToast({ title: e.message || '操作失败', icon: 'none' });
+    }
+  },
+
+  // 预览动态图片（wx.previewImage 全屏查看，双指缩放）
+  previewImage(e) {
+    const { urls, current } = e.currentTarget.dataset;
+    wx.previewImage({ urls, current });
   },
   onReachBottom() { if (this.data.hasMore && !this.data.loading) this.load(); },
   onPullDownRefresh() { this.load(true).finally(() => wx.stopPullDownRefresh()); },

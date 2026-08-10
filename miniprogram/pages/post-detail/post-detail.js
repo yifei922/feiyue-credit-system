@@ -12,13 +12,12 @@ Page({
   },
   async load() {
     try {
-      // 简化：直接拿列表里已有信息 + 评论列表
+      // 直查单条动态 + 评论列表（避免 list+find 的 N² 扫描）
       const [post, comments] = await Promise.all([
-        app.apiGet('/api/mp/feed', { page: 1 }),
+        app.apiGet('/api/mp/posts/' + this.data.id),
         app.apiGet('/api/mp/posts/' + this.data.id + '/comments'),
       ]);
-      const p = (post.data.list || []).find((x) => x.id === this.data.id);
-      this.setData({ post: p, comments: comments.data.list || [] });
+      this.setData({ post: post.data, comments: comments.data.list || [] });
     } catch (e) { wx.showToast({ title: e.message, icon: 'none' }); }
   },
   onTextInput(e) { this.setData({ text: e.detail.value }); },

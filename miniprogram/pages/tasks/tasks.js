@@ -22,7 +22,9 @@ Page({
       const open = [], done = [], overdue = [];
       for (const t of all) {
         const deadline = t.deadline ? new Date(t.deadline.replace(/-/g, '/')).getTime() : null;
-        if (t.status === 'DONE') done.push(t);
+        const my = t.myStatus || null;
+        // 契约：myStatus 取自 completion_record，DONE_ONTIME/DONE_OVERDUE=已完成，UNFINISHED/FAILED=未完成
+        if (my === 'DONE_ONTIME' || my === 'DONE_OVERDUE') done.push(t);
         else if (deadline && deadline < now) overdue.push(t);
         else open.push(t);
       }

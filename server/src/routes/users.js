@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const crypto = require('crypto');
 const { db } = require('../db');
 const { hashPassword } = require('../auth');
 const { ok, fail, paginate, setPageHeaders } = require('../util');
@@ -7,6 +8,18 @@ const { requireRole } = require('../middleware/rbac');
 const { recordLog } = require('../services/log');
 
 const ROLE_LABEL = { ADMIN: '管理员', TEACHER: '老师', REP: '课代表', STUDENT: '学生' };
+
+/**
+ * 生成 10 位随机临时密码（含大小写+数字），前端一次性展示给管理员，
+ * 用户首次登录后由 must_change_pwd 强制改密。
+ */
+function genTempPwd() {
+  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  let s = '';
+  const bytes = crypto.randomBytes(10);
+  for (let i = 0; i < 10; i++) s += chars[bytes[i] % chars.length];
+  return s;
+}
 
 // 账号列表（管理员/老师）：含角色、姓名、学号、负责科目（分页；数组主体 + 响应头元信息）
 router.get('/', requireRole('ADMIN', 'TEACHER'), async (req, res) => {
@@ -37,8 +50,8 @@ router.get('/', requireRole('ADMIN', 'TEACHER'), async (req, res) => {
 });
 
 // 重置/设定密码（管理员/老师/课代表）
-// body: { password?: '自定义密码，不传则重置为 123456' }
-// 课代表仅能重置「学生」账号；不允许任何人重置超级管理员
+// 安全加固：不传 password 时生成 10 位随机临时密码（前端一次性展示，要求首次登录强制改密）。
+// 不再使用 '123456' 默认密码（弱密码风险）。
 router.post('/:id/reset-password', requireRole('ADMIN', 'TEACHER', 'REP'), async (req, res) => {
   const target = await db.prepare('SELECT * FROM sys_user WHERE id=?').get(req.params.id);
   if (!target) return fail(res, 404, '账号不存在');
@@ -48,16 +61,19 @@ router.post('/:id/reset-password', requireRole('ADMIN', 'TEACHER', 'REP'), async
   if (target.username === 'superadmin' && req.user.username !== 'superadmin') {
     return fail(res, 403, '超级管理员密码只能由本人修改');
   }
-  const newPwd = String(req.body?.password || '').trim() || '123456';
-  if (newPwd.length < 4) return fail(res, 400, '密码至少 4 位');
-  await db.prepare('UPDATE sys_user SET password=? WHERE id=?').run(hashPassword(newPwd), target.id);
+  // 仅超级管理员可自定义密码；其他人一律生成随机临时密码
+  const customPwd = String(req.body?.password || '').trim();
+  const newPwd = (customPwd && req.user.username === 'superadmin') ? customPwd : genTempPwd();
+  if (newPwd.length < 8) return fail(res, 400, '密码至少 8 位');
+  await db.prepare('UPDATE sys_user SET password=?, must_change_pwd=1 WHERE id=?').run(hashPassword(newPwd), target.id);
   recordLog(req.user, 'UPDATE', 'sys_user', target.id, { username: target.username }, { action: 'reset-password' });
-  ok(res, { ok: true, username: target.username, password: newPwd });
+  // 注意：返回明文密码仅供调用方一次性展示给被重置用户；不应长期存储。
+  ok(res, { ok: true, username: target.username, password: newPwd, mustChangePwd: true });
 });
 
-// 设置角色 + 课代表科目绑定（管理员/老师）
-// body: { role: 'REP'|'STUDENT'|'TEACHER'|'ADMIN', subjectIds?: number[] }
-router.post('/:id/role', requireRole('ADMIN', 'TEACHER'), async (req, res) => {
+// 设置角色 + 课代表科目绑定（仅 ADMIN）
+// 安全加固：教师拥有大量学生/家长账号时易失控；只允许超级管理员变更角色。
+router.post('/:id/role', requireRole('ADMIN'), async (req, res) => {
   const target = await db.prepare('SELECT * FROM sys_user WHERE id=?').get(req.params.id);
   if (!target) return fail(res, 404, '账号不存在');
   const { role, subjectIds } = req.body || {};

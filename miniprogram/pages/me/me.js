@@ -7,6 +7,8 @@ Page({
     totalEarned: 0,
     credits: [],
     canManage: false,
+    canManageUsers: false,  // 用于 me.wxml 中"学生/科目管理"菜单的可见性（仅 ADMIN）
+    canManageTasks: false,  // 用于 me.wxml 中"任务管理"菜单的可见性（ADMIN/TEACHER/REP）
   },
   onShow() {
     app.trackPage('pages/me/me');
@@ -18,6 +20,8 @@ Page({
     this.setData({
       user: u,
       canManage: u.role === 'ADMIN' || u.role === 'TEACHER' || u.role === 'REP',
+      canManageUsers: u.role === 'ADMIN',          // 仅管理员能管用户/科目
+      canManageTasks: u.role === 'ADMIN' || u.role === 'TEACHER' || u.role === 'REP',
     });
     this.loadPoints();
     this.loadCredits();

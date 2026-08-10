@@ -59,4 +59,5 @@ Page({
   goCredits() { wx.navigateTo({ url: '/pages/credits/credits' }); },
   goAlerts() { wx.navigateTo({ url: '/pages/admin/alerts' }); },
   goOperateLog() { wx.navigateTo({ url: '/pages/admin/operate-log' }); },
+  goReports() { wx.navigateTo({ url: '/pages/admin/reports' }); },
 });

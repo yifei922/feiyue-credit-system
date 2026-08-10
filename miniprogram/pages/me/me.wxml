@@ -74,7 +74,7 @@
         <text class="muted spacer">›</text>
       </view>
 
-      <view class="menu-item" bindtap="goTasks">
+      <view wx:if="{{canManageTasks}}" class="menu-item" bindtap="goTasks">
         <view class="ico" style="background:linear-gradient(135deg,#FFB74D,#FF8A65)">📋</view>
         <text>任务管理</text>
         <text class="muted spacer">›</text>
@@ -92,7 +92,7 @@
         <text class="muted spacer">›</text>
       </view>
 
-      <view class="menu-item" bindtap="goCreditsAdjust">
+      <view wx:if="{{canManageUsers}}" class="menu-item" bindtap="goCreditsAdjust">
         <view class="ico" style="background:linear-gradient(135deg,#FF7EB3,#FF758C)">⚖️</view>
         <text>积分调整</text>
         <text class="muted spacer">›</text>

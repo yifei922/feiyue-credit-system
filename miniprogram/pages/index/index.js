@@ -4,6 +4,7 @@ const app = getApp();
 Page({
   data: {
     user: null,
+    points: 0,
     resources: [],
     loading: true,
   },
@@ -15,9 +16,20 @@ Page({
       return;
     }
     this.setData({ user: app.globalData.user });
+    this.loadPoints();
     this.loadResources();
   },
 
+  // 加载用户积分
+  async loadPoints() {
+    try {
+      const r = await app.apiGet('/api/mp/me/points');
+      this.setData({ points: (r.data && (r.data.points ?? r.data.totalEarned)) || 0 });
+    } catch (e) { /* 静默失败，避免首页空白 */ }
+  },
+
+  onAvatarError() { /* 头像加载失败兜底（CSS 已设默认色） */ },
+  onLogoError() { /* logo 加载失败兜底 */ },
 
   // 学习资料（中性定位，不区分年级学科）
   async loadResources() {

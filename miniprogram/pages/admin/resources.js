@@ -1,9 +1,11 @@
-// pages/admin/resources.js - 资料管理（教师/管理员）
+// pages/admin/resources.js - 资料管理（管理员/教师）
+// 合规说明：个人主体禁止 K12 学科类校外培训，subject 改为通用兴趣标签，grade 改为难度等级。
 const app = getApp();
 
 const { requireRole } = require('../../utils/auth-guard.js');
 const TYPES = ['article', 'doc', 'video', 'link', 'pdf'];
-const SUBJECTS = ['语文','数学','英语','物理','化学','道德与法治','历史','地理','生物'];
+const SUBJECTS = ['阅读', '写作', '思维', '编程', '艺术', '手工', '科普', '语言', '历史人文', '运动健康'];
+const GRADES = ['入门', '进阶', '挑战'];
 
 Page({
   data: {
@@ -11,8 +13,9 @@ Page({
     loading: true,
     showForm: false,
     editingId: null,
-    form: { grade: '初一', subject: '数学', title: '', type: 'article', url: '', description: '', source: '' },
+    form: { grade: '入门', subject: '阅读', title: '', type: 'article', url: '', description: '', source: '' },
     subjects: SUBJECTS,
+    grades: GRADES,
     types: TYPES,
     typeLabel: { article: '图文', doc: '文档', video: '视频', link: '链接', pdf: 'PDF' },
   },
@@ -34,7 +37,7 @@ Page({
   onAdd() {
     this.setData({
       showForm: true, editingId: null,
-      form: { grade: '初一', subject: '数学', title: '', type: 'article', url: '', description: '', source: '' },
+      form: { grade: '入门', subject: '阅读', title: '', type: 'article', url: '', description: '', source: '' },
     });
   },
 
@@ -58,7 +61,7 @@ Page({
   },
   onSubject(e) { this.setData({ 'form.subject': this.data.subjects[e.detail.value] }); },
   onType(e) { this.setData({ 'form.type': this.data.types[e.detail.value] }); },
-  onGrade(e) { this.setData({ 'form.grade': ['初一', '初二', '初三'][e.detail.value] }); },
+  onGrade(e) { this.setData({ 'form.grade': GRADES[e.detail.value] }); },
   noop() {},
 
   closeForm() { this.setData({ showForm: false }); },

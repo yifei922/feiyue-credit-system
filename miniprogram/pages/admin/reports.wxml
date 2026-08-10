@@ -1,0 +1,25 @@
+<view class="container">
+  <view class="top-bar">
+    <text class="title">举报待处理（{{list.length}}）</text>
+  </view>
+
+  <view wx:if="{{loading}}" class="empty">加载中…</view>
+  <view wx:elif="{{list.length===0}}" class="empty">当前没有待处理举报，太棒了～</view>
+
+  <view wx:for="{{list}}" wx:key="id" class="item card">
+    <view class="item-main">
+      <view class="row1">
+        <text class="tag danger">举报 #{{item.id}}</text>
+        <text class="muted">{{item.created_at}}</text>
+      </view>
+      <view class="row2">举报人：{{item.reporter_name}}</view>
+      <view wx:if="{{item.reason}}" class="row2">理由：{{item.reason}}</view>
+      <view class="row3">被举报动态：{{item.post_text || '（已删除）'}}</view>
+    </view>
+    <view class="item-ops">
+      <text class="op view" data-id="{{item.post_id}}" data-text="{{item.post_text}}" bindtap="viewPost">查看</text>
+      <text class="op del" data-id="{{item.post_id}}" data-rid="{{item.id}}" bindtap="deletePost">删除</text>
+      <text class="op ok" data-rid="{{item.id}}" bindtap="resolve">已处理</text>
+    </view>
+  </view>
+</view>

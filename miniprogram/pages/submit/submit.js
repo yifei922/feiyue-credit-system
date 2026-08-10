@@ -75,7 +75,7 @@ Page({
     if (all) {
       // 提交完成登记（复用 Web 端 completion 接口）
       try {
-        await app.apiPost('/api/completion', { taskId: this.data.taskId, attachmentIds: this.data.files.map((f) => f.attachmentId) });
+        await app.apiPost('/api/completion/register', { taskId: this.data.taskId, attachmentIds: this.data.files.map((f) => f.attachmentId) });
         wx.showToast({ title: '提交成功', icon: 'success' });
         this.data._navTimer = setTimeout(() => wx.navigateBack(), 800);
       } catch (e) {

@@ -37,7 +37,8 @@ Page({
   onShow() {
     if (!this._roleChecked && !requireRole(['ADMIN', 'TEACHER'])) return; this._roleChecked = true;
     const u = app.globalData.user || {};
-    this.setData({ canManageUsers: u.role === 'ADMIN' || u.role === 'TEACHER' });
+    // 安全加固：只有 ADMIN 能改角色；TEACHER 仍可查看列表与重置学生密码
+    this.setData({ canManageUsers: u.role === 'ADMIN' });
     this.load(true);
     this.loadSubjects();
   },
@@ -82,17 +83,27 @@ Page({
     this.load(true);
   },
 
-  // ---- 重置密码（原有功能）----
+  // ---- 重置密码（合规加固：使用一次性随机临时密码，强制首次登录后修改）----
   async onReset(e) {
     const id = e.currentTarget.dataset.id;
     const name = e.currentTarget.dataset.name;
     wx.showModal({
-      title: '重置密码', content: '将把「' + name + '」的密码重置为 123456，确定？',
+      title: '重置密码',
+      content: '将把「' + name + '」的密码重置为系统生成的临时密码，用户首次登录后需自行修改。确定？',
       success: async (r) => {
         if (!r.confirm) return;
         try {
-          await app.apiPost('/api/users/' + id + '/reset-password', {});
-          wx.showToast({ title: '已重置为 123456', icon: 'success' });
+          const resp = await app.apiPost('/api/users/' + id + '/reset-password', {});
+          const pwd = (resp.data && resp.data.password) || '';
+          // 一次性展示密码，要求用户复制后离线告知本人
+          wx.showModal({
+            title: '临时密码已生成',
+            content: `账号「${name}」的临时密码：\n\n${pwd}\n\n请立即复制告知本人，首次登录后系统会强制要求修改。`,
+            confirmText: '复制密码',
+            success: (x) => {
+              if (x.confirm) wx.setClipboardData({ data: pwd });
+            },
+          });
         } catch (err) { wx.showToast({ title: err.message || '失败', icon: 'none' }); }
       },
     });

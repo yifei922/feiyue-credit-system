@@ -20,7 +20,7 @@ function shape(row) {
   };
 }
 
-// 列表
+// 列表（含 per-student 提交状态 + 老师/管理员视角）
 router.get('/', async (req, res) => {
   const params = [];
   let sql = `SELECT t.*, s.name AS subjectName FROM task t LEFT JOIN subject s ON t.subject_id=s.id WHERE 1=1`;
@@ -36,7 +36,19 @@ router.get('/', async (req, res) => {
   }
   sql += ' ORDER BY t.id';
   const rows = await db.prepare(sql).all(...params);
-  ok(res, rows.map(shape));
+
+  // 给学生补充 myStatus 字段（来自 completion_record）
+  let completionMap = {};
+  if (req.user.role === 'STUDENT') {
+    const ids = rows.map((r) => r.id);
+    if (ids.length) {
+      const completions = await db.prepare(
+        `SELECT task_id, status FROM completion_record WHERE student_id=? AND task_id IN (${ids.map(() => '?').join(',')})`
+      ).all(req.user.id, ...ids);
+      completionMap = Object.fromEntries(completions.map((c) => [c.task_id, c.status]));
+    }
+  }
+  ok(res, rows.map((r) => ({ ...shape(r), myStatus: completionMap[r.id] || null })));
 });
 
 // 新增

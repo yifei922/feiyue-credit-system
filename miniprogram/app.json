@@ -20,6 +20,7 @@
     "pages/admin/credits-adjust",
     "pages/admin/alerts",
     "pages/admin/operate-log",
+    "pages/admin/reports",
     "pages/me/change-pwd"
   ],
   "window": {
@@ -42,6 +43,17 @@
       { "pagePath": "pages/feed/feed",    "text": "成长圈", "iconPath": "assets/tab/feed.png",  "selectedIconPath": "assets/tab/feed_a.png" },
       { "pagePath": "pages/me/me",        "text": "我的",   "iconPath": "assets/tab/me.png",    "selectedIconPath": "assets/tab/me_a.png" }
     ]
+  },
+  "requiredPrivateInfos": [
+    "chooseMedia",
+    "chooseImage",
+    "setClipboardData",
+    "getClipboardData"
+  ],
+  "permission": {
+    "scope.userLocation": {
+      "desc": "你的位置信息用于在地图上展示学习记录"
+    }
   },
   "style": "v2",
   "sitemapLocation": "sitemap.json",

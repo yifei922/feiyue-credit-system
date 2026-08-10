@@ -126,12 +126,23 @@ Page({
   },
 
   // 查看完成情况
+  // 完成情况弹层：内存 LRU 缓存（30 秒内同任务不重读）
   async onViewCompletions(e) {
     const t = e.currentTarget.dataset.task;
-    this.setData({ showCompletions: true, currentTask: t, completions: [] });
+    const cache = this._completionsCache || (this._completionsCache = new Map());
+    const now = Date.now();
+    const hit = cache.get(t.id);
+    this.setData({ showCompletions: true, currentTask: t });
+    if (hit && now - hit.t < 30000) {
+      this.setData({ completions: hit.data });
+      return;
+    }
+    this.setData({ completions: [] });
     try {
       const r = await app.apiGet('/api/completions', { task_id: t.id });
-      this.setData({ completions: r.data || [] });
+      const data = r.data || [];
+      cache.set(t.id, { t: now, data });
+      this.setData({ completions: data });
     } catch (_) {}
   },
 
@@ -150,6 +161,8 @@ Page({
         status: 'FINISHED',
       });
       wx.showToast({ title: '已登记', icon: 'success' });
+      // 失效缓存，强制重读
+      if (this._completionsCache) this._completionsCache.delete(this.data.currentTask.id);
       this.onViewCompletions({ currentTarget: { dataset: { task: this.data.currentTask } } });
     } catch (e) { wx.showToast({ title: e.message, icon: 'none' }); }
   },

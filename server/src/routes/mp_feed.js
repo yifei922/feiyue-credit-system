@@ -7,9 +7,31 @@
 // - POST   /api/mp/posts/:id/comments   发表评论
 const express = require('express');
 const router = express.Router();
+const https = require('https');
+const { URL } = require('url');
 const { db } = require('../db');
 const { ok, fail } = require('../util');
-const { msgSecCheck } = require('../lib/wx');
+const { msgSecCheck, imgSecCheck } = require('../lib/wx');
+
+/**
+ * 下载远程图片到 Buffer（5 秒超时，最多 10MB）
+ */
+function fetchImage(url) {
+  return new Promise((resolve, reject) => {
+    try {
+      const u = new URL(url);
+      const req = https.get(u, { timeout: 5000 }, (res) => {
+        if (res.statusCode !== 200) return reject(new Error('HTTP ' + res.statusCode));
+        const chunks = [];
+        let total = 0;
+        res.on('data', (c) => { total += c.length; if (total > 10 * 1024 * 1024) { req.destroy(); reject(new Error('图片过大')); } else chunks.push(c); });
+        res.on('end', () => resolve({ buf: Buffer.concat(chunks), filename: u.pathname.split('/').pop() || 'img.jpg' }));
+      });
+      req.on('timeout', () => req.destroy(new Error('下载超时')));
+      req.on('error', reject);
+    } catch (e) { reject(e); }
+  });
+}
 
 async function attachStats(posts, viewerId) {
   if (!posts.length) return posts;
@@ -41,6 +63,17 @@ router.get('/feed', async (req, res) => {
   ok(res, { list, hasMore: list.length === lim });
 });
 
+// 直查单条动态（避免前端用 list+find 的 N² 扫描）
+router.get('/posts/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  const p = await db.prepare(`SELECT p.*, u.name AS user_name, u.avatar AS user_avatar, u.role AS user_role
+                          FROM post p JOIN sys_user u ON p.user_id = u.id
+                          WHERE p.id=?`).get(id);
+  if (!p) return fail(res, 404, '动态不存在');
+  const arr = await attachStats([p], req.user.id);
+  ok(res, arr[0]);
+});
+
 router.post('/posts', async (req, res) => {
   const { text, images, video_url, resource_id } = req.body || {};
   if (!text && !(images && images.length) && !video_url) return fail(res, 400, '内容不能为空');
@@ -53,6 +86,19 @@ router.post('/posts', async (req, res) => {
   } catch (e) {
     console.error('[feed] msgSecCheck 异常:', e.message);
     return fail(res, 500, '内容安全检测失败，请稍后重试');
+  }
+  // 内容安全：每张图片走 imgSecCheck（下载远程 URL → 调微信接口）
+  if (images && images.length) {
+    for (const url of images) {
+      try {
+        const { buf, filename } = await fetchImage(url);
+        const safe = await imgSecCheck(buf, filename);
+        if (!safe) return fail(res, 403, '图片包含违规信息，发布失败');
+      } catch (e) {
+        console.error('[feed] imgSecCheck 异常:', url, e.message);
+        return fail(res, 500, '图片内容检测失败，请稍后重试');
+      }
+    }
   }
   const info = await db.prepare(`INSERT INTO post(user_id, text, images, video_url, resource_id)
                           VALUES(?,?,?,?,?)`)

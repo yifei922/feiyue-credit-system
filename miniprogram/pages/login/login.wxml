@@ -1,7 +1,7 @@
 <view class="login-page">
   <view class="login-card">
     <view class="brand">
-      <image src="/assets/logo.jpg" class="logo-img" mode="aspectFit"></image>
+      <image src="/assets/logo.jpg" class="logo-img" mode="aspectFit" binderror="onLogoError"></image>
       <view>
         <view class="title">点滴进步</view>
         <view class="subtitle">记录每天的小进步</view>
@@ -20,18 +20,14 @@
     <view class="form-block">
       <view class="input-row">
         <text class="input-label">用户名</text>
-        <input class="input" placeholder="如 student01" value="{{username}}" bindinput="onUserInput" />
+        <input class="input" placeholder="请输入用户名" value="{{username}}" bindinput="onUserInput" />
       </view>
       <view class="input-row">
         <text class="input-label">密码</text>
-        <input class="input" password="{{!showPwd}}" placeholder="初始密码 123456" value="{{password}}" bindinput="onPwdInput" />
+        <input class="input" password="{{!showPwd}}" placeholder="请输入密码" value="{{password}}" bindinput="onPwdInput" />
         <view class="eye" bindtap="togglePwd">{{showPwd ? '🙈' : '👁'}}</view>
       </view>
       <button class="btn-ghost" bindtap="onPwdLogin" loading="{{loading}}">登 录</button>
-    </view>
-
-    <view class="bottom-hint">
-      <text class="muted">测试账号：student01　·　密码 123456</text>
     </view>
   </view>
 </view>

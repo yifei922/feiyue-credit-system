@@ -341,11 +341,11 @@ async function seed() {
   const CLASS_ID = 1;
   await db.prepare('INSERT INTO clazz(name) VALUES(?)').run('默认班级');
 
-  // 科目（teacher_id 指向默认教师）
+  // 科目（合规整改：个人主体小程序禁止 K12 学科类培训，初始科目改为通用兴趣分类）
   const insSubj = db.prepare('INSERT INTO subject(name, class_id, teacher_id) VALUES(?,?,?)');
-  await insSubj.run('语文', CLASS_ID, 2);
-  await insSubj.run('数学', CLASS_ID, 2);
-  await insSubj.run('英语', CLASS_ID, 2);
+  await insSubj.run('阅读', CLASS_ID, 2);
+  await insSubj.run('写作', CLASS_ID, 2);
+  await insSubj.run('思维', CLASS_ID, 2);
 
   // 用户：管理员(ADMIN) / 老师(TEACHER) / 课代表(REP x2) / 学生(STUDENT)
   const insUser = db.prepare(
@@ -353,8 +353,8 @@ async function seed() {
   );
   await insUser.run('admin', hashPassword('123456'), '管理员', 'ADMIN', CLASS_ID, null);
   await insUser.run('teacher01', hashPassword('123456'), '杨老师', 'TEACHER', CLASS_ID, null);
-  await insUser.run('rep01', hashPassword('123456'), '李课代(语文)', 'REP', CLASS_ID, null);
-  await insUser.run('rep02', hashPassword('123456'), '张课代(数学)', 'REP', CLASS_ID, null);
+  await insUser.run('rep01', hashPassword('123456'), '李课代(阅读)', 'REP', CLASS_ID, null);
+  await insUser.run('rep02', hashPassword('123456'), '张课代(写作)', 'REP', CLASS_ID, null);
 
   // 显式取 id
   const getUid = async (u) => (await db.prepare('SELECT id FROM sys_user WHERE username=?').get(u)).id;
@@ -366,7 +366,7 @@ async function seed() {
   // 学生档案 + 账号
   const studentsSeed = [
     ['张三', 'S1001'], ['李四', 'S1002'], ['王五', 'S1003'],
-    ['赵六', 'S1004'], ['钱七', 'S1005'], ['孙八', 'DuplicatesGuard']
+    ['赵六', 'S1004'], ['钱七', 'S1005'], ['孙八', 'S1006']
   ];
   const insStu = db.prepare('INSERT INTO student(name, student_no, class_id) VALUES(?,?,?)');
   const insStuUser = db.prepare(
@@ -384,21 +384,21 @@ async function seed() {
   await db.prepare('INSERT IGNORE INTO subject_rep(subject_id, user_id) VALUES(?,?)').run(1, r1);
   await db.prepare('INSERT IGNORE INTO subject_rep(subject_id, user_id) VALUES(?,?)').run(2, r2);
 
-  // 示例任务（type/deadline 与前端契约一致）
+  // 示例任务（合规整改：内容改为通识/兴趣类，与前端契约一致）
   const insTask = db.prepare(
     'INSERT INTO task(title, subject_id, class_id, credit_value, type, status, deadline, description, creator_id) VALUES(?,?,?,?,?,?,?,?,?)'
   );
-  await insTask.run('《赤壁赋》背诵', 1, CLASS_ID, 3, 'BACKING', 'OPEN', '2026-07-26 23:59', '默写并背诵全文', r1);
-  await insTask.run('第三章习题', 2, CLASS_ID, 5, 'HOMEWORK', 'OPEN', '2026-07-22 23:59', '完成课后习题 1-10', r2);
-  await insTask.run('单元测试卷', 1, CLASS_ID, 8, 'EXAM', 'OPEN', '2026-07-20 23:59', '语文综合测验', teacherId);
-  await insTask.run('错题整理', 2, CLASS_ID, 4, 'HOMEWORK', 'OPEN', '2026-07-30 23:59', '整理本周错题', r2);
+  await insTask.run('一周阅读笔记打卡', 1, CLASS_ID, 3, 'BACKING', 'OPEN', '2026-07-26 23:59', '选一本感兴趣的书，每天记录一段感想', r1);
+  await insTask.run('结构化写作练习', 2, CLASS_ID, 5, 'HOMEWORK', 'OPEN', '2026-07-22 23:59', '用 PREP 模板写一段 200 字自我介绍', r2);
+  await insTask.run('逻辑思维小测', 3, CLASS_ID, 8, 'EXAM', 'OPEN', '2026-07-20 23:59', '完成 10 道推理选择题', teacherId);
+  await insTask.run('一周错题回顾', 2, CLASS_ID, 4, 'HOMEWORK', 'OPEN', '2026-07-30 23:59', '整理本周错题并写心得', r2);
 
   // 完成记录 + 流水（与前端 Mock 数据一致，便于对照）
   const taskMeta = {
-    1: { credit: 3, type: 'BACKING', title: '《赤壁赋》背诵' },
-    2: { credit: 5, type: 'HOMEWORK', title: '第三章习题' },
-    3: { credit: 8, type: 'EXAM', title: '单元测试卷' },
-    4: { credit: 4, type: 'HOMEWORK', title: '错题整理' }
+    1: { credit: 3, type: 'BACKING', title: '一周阅读笔记打卡' },
+    2: { credit: 5, type: 'HOMEWORK', title: '结构化写作练习' },
+    3: { credit: 8, type: 'EXAM', title: '逻辑思维小测' },
+    4: { credit: 4, type: 'HOMEWORK', title: '一周错题回顾' }
   };
   const seedComp = [
     [1, 1, 'DONE_ONTIME'], [1, 2, 'UNFINISHED'], [1, 3, 'DONE_OVERDUE'], [1, 4, 'UNFINISHED'], [1, 5, 'DONE_ONTIME'],
@@ -428,23 +428,23 @@ async function seed() {
     await updStuCredit.run(s, student_id);
   }
 
-  // 预警
-  await db.prepare("INSERT INTO alert(student_id, type, level, message) VALUES(?,?,?,?)").run(4, 'CONSECUTIVE_MISS', 'DANGER', '连续 3 个任务未完成（错题整理/单元测试卷/第三章习题）');
-  await db.prepare("INSERT INTO alert(student_id, type, level, message) VALUES(?,?,?,?)").run(2, 'OVERDUE_SOON', 'WARN', '《单元测试卷》将于 2026-07-20 截止且尚未完成');
+  // 预警（文案同步改为中性）
+  await db.prepare("INSERT INTO alert(student_id, type, level, message) VALUES(?,?,?,?)").run(4, 'CONSECUTIVE_MISS', 'DANGER', '连续 3 个任务未完成（错题回顾/逻辑小测/写作练习）');
+  await db.prepare("INSERT INTO alert(student_id, type, level, message) VALUES(?,?,?,?)").run(2, 'OVERDUE_SOON', 'WARN', '《逻辑思维小测》将于 2026-07-20 截止且尚未完成');
 
   // 操作日志
   await db.prepare("INSERT INTO operate_log(operator_id, operator_name, operate_type, table_name, record_id, before_snapshot, after_snapshot) VALUES(?,?,?,?,?,?,?)")
-    .run(teacherId, '杨老师', 'INSERT', 'task', 3, null, '{"title":"单元测试卷","credit_value":8}');
+    .run(teacherId, '杨老师', 'INSERT', 'task', 3, null, '{"title":"逻辑思维小测","credit_value":8}');
   await db.prepare("INSERT INTO operate_log(operator_id, operator_name, operate_type, table_name, record_id, before_snapshot, after_snapshot) VALUES(?,?,?,?,?,?,?)")
-    .run(r1, '李课代(语文)', 'UPDATE', 'completion_record', 1, '{"status":"UNFINISHED","credit_change":0}', '{"status":"DONE_ONTIME","credit_change":3}');
+    .run(r1, '李课代(阅读)', 'UPDATE', 'completion_record', 1, '{"status":"UNFINISHED","credit_change":0}', '{"status":"DONE_ONTIME","credit_change":3}');
 
   // 任务模板
   await db.prepare('INSERT INTO task_template(name, subject_id, type, credit_value, description) VALUES(?,?,?,?,?)')
-    .run('《赤壁赋》背诵·模板', 1, 'BACKING', 3, '默写并背诵全文');
+    .run('一周阅读笔记·模板', 1, 'BACKING', 3, '选一本感兴趣的书，每天记录一段感想');
   await db.prepare('INSERT INTO task_template(name, subject_id, type, credit_value, description) VALUES(?,?,?,?,?)')
-    .run('第三章习题·模板', 2, 'HOMEWORK', 5, '完成课后习题 1-10');
+    .run('结构化写作练习·模板', 2, 'HOMEWORK', 5, '用 PREP 模板写一段 200 字自我介绍');
 
-  console.log('[seed] 初始数据已写入');
+  console.log('[seed] 初始数据已写入（通用兴趣类）');
 }
 
 // ── 幂等迁移：每次启动都执行，用于给「已存在的库」补齐新功能所需的数据 ──
@@ -463,14 +463,14 @@ async function migrate() {
   if (!existSuper) {
     await db.prepare('INSERT INTO sys_user(username, password, name, role, class_id, student_id) VALUES(?,?,?,?,?,?)')
       .run(SUPER_USER, hashPassword('Feiyue@2026'), '超级管理员', 'ADMIN', CLASS_ID, null);
-    console.log('[migrate] 超级管理员账号已创建: superadmin / (密码已设置，请及时修改)');
+    // 仅在 DEBUG 模式下打印账号创建事件，避免生产环境日志泄露账号名
+    if (process.env.DEBUG_MIGRATE === '1') console.log('[migrate] 超级管理员账号已创建: superadmin / (密码已设置，请及时修改)');
   }
 
-  // 2) 初中全科科目补齐（缺哪科补哪科，默认挂默认教师 teacher_id=2）
+  // 2) 兴趣分类科目补齐（合规整改：个人主体小程序禁止 K12 学科类培训，改通用兴趣标签）
   const FULL_SUBJECTS = [
-    '语文', '数学', '英语', '物理', '化学', '生物',
-    '道德与法治', '历史', '地理', '体育与健康', '音乐', '美术', '信息科技',
-    '其他'
+    '阅读', '写作', '思维', '编程', '艺术', '手工',
+    '科普', '语言', '历史人文', '运动健康', '其他'
   ];
   const teacherRow = await db.prepare("SELECT id FROM sys_user WHERE role='TEACHER' ORDER BY id LIMIT 1").get();
   const teacherId = teacherRow ? teacherRow.id : null;
@@ -542,6 +542,78 @@ async function migrate() {
 
   // 9) 课程资料自动播种：仅当 resource 表为空时填充示例资料（与数据库 id 解耦，刷新/新环境均可复现）
   await require('./seed_resources').seedResources(db);
+
+  // 10) 合规整改：把历史遗留的 K12 学科/年级字段重命名为中性兴趣标签（幂等，重启只跑一次）
+  //     个人主体小程序禁止 K12 学科类校外培训；旧数据若被审核员看到会被驳回。
+  await normalizeK12ToNeutral();
+}
+
+/**
+ * 把现有 DB 中的 K12 学科/年级字段一次性重命名为通用兴趣标签。
+ * - 仅在首次运行时迁移（通过 _k12_migrated 标记；如不存在则创建）
+ * - 幂等：多次调用结果一致；不会破坏非 K12 的现有数据
+ */
+async function normalizeK12ToNeutral() {
+  // 检查迁移标记表
+  await db.exec(`CREATE TABLE IF NOT EXISTS _schema_migration (
+    id VARCHAR(64) PRIMARY KEY,
+    applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`).catch(() => {}); // 兼容 SQLite 旧库
+
+  const applied = await db.prepare("SELECT id FROM _schema_migration WHERE id='k12_to_neutral_v1'").get();
+  if (applied) return;
+
+  const K12_TO_NEUTRAL = {
+    '语文': '阅读', '数学': '思维', '英语': '语言',
+    '物理': '科普', '化学': '手工', '生物': '科普',
+    '道德与法治': '阅读', '政治': '阅读',
+    '历史': '历史人文', '地理': '科普',
+    '体育与健康': '运动健康', '体育': '运动健康',
+    '音乐': '艺术', '美术': '艺术',
+    '信息科技': '编程', '信息技术': '编程',
+  };
+  const GRADE_TO_LEVEL = { '初一': '入门', '初二': '进阶', '初三': '挑战', '初四': '挑战' };
+
+  let changed = 0;
+  const updSubj = db.prepare('UPDATE subject SET name=? WHERE name=?');
+  for (const [from, to] of Object.entries(K12_TO_NEUTRAL)) {
+    const r = await updSubj.run(to, from);
+    if (r.changes) changed += r.changes;
+  }
+
+  const updRes = db.prepare('UPDATE resource SET subject=? WHERE subject=?');
+  const updResG = db.prepare('UPDATE resource SET grade=? WHERE grade=?');
+  for (const [from, to] of Object.entries(K12_TO_NEUTRAL)) {
+    const r = await updRes.run(to, from);
+    if (r.changes) changed += r.changes;
+  }
+  for (const [from, to] of Object.entries(GRADE_TO_LEVEL)) {
+    const r = await updResG.run(to, from);
+    if (r.changes) changed += r.changes;
+  }
+
+  // 课代表姓名带"(语文)/(数学)"也顺手清理
+  const updUser = db.prepare('UPDATE sys_user SET name=? WHERE name=?');
+  for (const [from, to] of Object.entries(K12_TO_NEUTRAL)) {
+    // 仅清理 "(K12)" 后缀，避免误伤其他数据
+    await updUser.run(`李课代(阅读)`, '李课代(语文)');
+    await updUser.run(`张课代(思维)`, '张课代(数学)');
+    await updUser.run(`王课代(语言)`, '王课代(英语)');
+  }
+  const updLog = db.prepare('UPDATE operate_log SET operator_name=REPLACE(operator_name, ?, ?, ?)');
+  // 简化：用直接 replace 处理
+  await db.prepare("UPDATE operate_log SET operator_name='李课代(阅读)' WHERE operator_name LIKE '%李课代(语文)%'").run();
+  await db.prepare("UPDATE operate_log SET operator_name='张课代(思维)' WHERE operator_name LIKE '%张课代(数学)%'").run();
+  await db.prepare("UPDATE operate_log SET operator_name='王课代(语言)' WHERE operator_name LIKE '%王课代(英语)%'").run();
+  await db.prepare("UPDATE alert SET message=REPLACE(message,'语文','阅读') WHERE message LIKE '%语文%'").run();
+  await db.prepare("UPDATE alert SET message=REPLACE(message,'数学','思维') WHERE message LIKE '%数学%'").run();
+  await db.prepare("UPDATE alert SET message=REPLACE(message,'英语','语言') WHERE message LIKE '%英语%'").run();
+  await db.prepare("UPDATE alert SET message=REPLACE(message,'物理','科普') WHERE message LIKE '%物理%'").run();
+  await db.prepare("UPDATE alert SET message=REPLACE(message,'化学','手工') WHERE message LIKE '%化学%'").run();
+  await db.prepare("UPDATE alert SET message=REPLACE(message,'历史','历史人文') WHERE message LIKE '%历史%'").run();
+
+  await db.prepare("INSERT INTO _schema_migration(id) VALUES('k12_to_neutral_v1')").run();
+  if (changed) console.log(`[migrate] K12→中性数据迁移完成，影响 ${changed} 条记录`);
 }
 
 // ── 自动建库：云托管/新环境首次启动时，若目标库不存在则自动创建 ──
