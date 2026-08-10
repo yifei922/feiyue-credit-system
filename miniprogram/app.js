@@ -1,6 +1,6 @@
 // app.js - 全局入口与状态
 const { getToken, setToken, clearAuth } = require('./utils/auth.js');
-const { API_BASE, USE_CLOUD_RUN, CLOUD_RUN_ENV, CLOUD_RUN_SERVICE } = require('./config/env.js');
+const { API_BASE, USE_CLOUD_RUN, CLOUD_RUN_ENV, CLOUD_RUN_SERVICE, CLOUD_RUN_PUBLIC_HOST } = require('./config/env.js');
 
 App({
   globalData: {
@@ -124,23 +124,28 @@ App({
         resolve({ ...res.data, headers: upperHeaders });
       };
       if (USE_CLOUD_RUN) {
-        // 云托管必须通过 X-WX-SERVICE 指定服务名，否则网关无法把请求路由到容器
-        wx.callContainer({
-          config: { env: CLOUD_RUN_ENV },
-          path: url,
-          method: (method || 'GET').toUpperCase(),
-          header: { ...headers, 'X-WX-SERVICE': CLOUD_RUN_SERVICE },
-          data: data || {},
-          timeout: 30000,
-          success: (res) => {
-            // callContainer 返回 data 常为字符串，按需解析为 JSON
-            let d = res.data;
-            if (typeof d === 'string') { try { d = JSON.parse(d); } catch (_) {} }
-            res.data = d;
-            onResp(res);
-          },
-          fail: (e) => { done(false, friendlyMsg(e.errMsg)); reject(new Error(friendlyMsg(e.errMsg))); },
-        });
+        if (typeof wx.callContainer === 'function') {
+          // 云托管必须通过 X-WX-SERVICE 指定服务名，否则网关无法把请求路由到容器
+          wx.callContainer({
+            config: { env: CLOUD_RUN_ENV },
+            path: url,
+            method: (method || 'GET').toUpperCase(),
+            header: { ...headers, 'X-WX-SERVICE': CLOUD_RUN_SERVICE },
+            data: data || {},
+            timeout: 30000,
+            success: (res) => {
+              // callContainer 返回 data 常为字符串，按需解析为 JSON
+              let d = res.data;
+              if (typeof d === 'string') { try { d = JSON.parse(d); } catch (_) {} }
+              res.data = d;
+              onResp(res);
+            },
+            fail: (e) => { done(false, friendlyMsg(e.errMsg)); reject(new Error(friendlyMsg(e.errMsg))); },
+          });
+        } else {
+          // 兜底：callContainer 不可用时（基础库过旧等）走 wx.request + 云托管公网域名
+          wx.request({ url: 'https://' + CLOUD_RUN_PUBLIC_HOST + url, method, data, header: headers, success: onResp, timeout: 30000, fail: (e) => { done(false, friendlyMsg(e.errMsg)); reject(new Error(friendlyMsg(e.errMsg))); } });
+        }
       } else {
         wx.request({ url, method, data, header: headers, success: onResp, timeout: 30000, fail: (e) => { done(false, friendlyMsg(e.errMsg)); reject(new Error(friendlyMsg(e.errMsg))); } });
       }
