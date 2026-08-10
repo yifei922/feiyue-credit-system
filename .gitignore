@@ -65,3 +65,11 @@ NUL
 
 # 云托管环境变量文件（含 WX_APP_SECRET 等敏感凭证，已明文，严禁入库）
 docs/cloudrun-env.json
+
+# AI 生成的图标候选（根 assets/ 未被 miniprogram 引用，非运行资源）
+assets/mp-icons/
+assets/mp-icons-v2/
+assets/mp-icons-final/
+
+# 提审指引生成脚本（一次性辅助工具，非部署产物）
+generate_miniapp_review_guide.py

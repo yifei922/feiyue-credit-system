@@ -42,10 +42,22 @@
   "simulatorPluginLibVersion": {},
   "packOptions": {
     "ignore": [
-      { "type": "folder", "value": "preview" },
-      { "type": "folder", "value": "minitest" },
-      { "type": "file", "value": "README.md" },
-      { "type": "file", "value": "make_icons.py" }
+      {
+        "value": "preview",
+        "type": "folder"
+      },
+      {
+        "value": "minitest",
+        "type": "folder"
+      },
+      {
+        "value": "README.md",
+        "type": "file"
+      },
+      {
+        "value": "make_icons.py",
+        "type": "file"
+      }
     ],
     "include": []
   },
