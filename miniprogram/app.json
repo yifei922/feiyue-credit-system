@@ -46,15 +46,9 @@
   },
   "requiredPrivateInfos": [
     "chooseMedia",
-    "chooseImage",
     "setClipboardData",
     "getClipboardData"
   ],
-  "permission": {
-    "scope.userLocation": {
-      "desc": "你的位置信息用于在地图上展示学习记录"
-    }
-  },
   "style": "v2",
   "sitemapLocation": "sitemap.json",
   "__usePrivacyCheck__": true
