@@ -8,7 +8,7 @@
 ### 准备
 - 微信开发者工具（https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html）
 - 项目根目录：`miniprogram/`
-- AppID：`wx0fe78d74fdc47c1b`（已写入 `project.config.json`，仅作开发标识）
+- AppID：`wx64664e7fa8d4f747`（已写入 `project.config.json`，仅作开发标识）
 
 ### 步骤
 1. 用「微信开发者工具」打开本目录

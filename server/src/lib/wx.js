@@ -7,7 +7,7 @@
 const https = require('https');
 const crypto = require('crypto');
 
-const APP_ID  = process.env.WX_APP_ID || 'wx0fe78d74fdc47c1b';
+const APP_ID  = process.env.WX_APP_ID || 'wx64664e7fa8d4f747';
 const APP_SECRET = process.env.WX_APP_SECRET;
 
 const SECRET_MISSING = !APP_SECRET || APP_SECRET.includes('请替换');

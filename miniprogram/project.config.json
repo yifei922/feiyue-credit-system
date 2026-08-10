@@ -2,7 +2,7 @@
   "description": "点滴进步 - 个人学习记录工具",
   "miniprogramRoot": "./",
   "projectname": "feiyue-credit-mp",
-  "appid": "wx0fe78d74fdc47c1b",
+  "appid": "wx64664e7fa8d4f747",
   "setting": {
     "urlCheck": false,
     "es6": true,
@@ -30,7 +30,7 @@
     "disableSWC": true
   },
   "compileType": "miniprogram",
-  "libVersion": "3.4.0",
+  "libVersion": "3.17.1",
   "condition": {},
   "cloudfunctionRoot": "",
   "cloudtemplate": "",
