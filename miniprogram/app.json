@@ -44,11 +44,7 @@
       { "pagePath": "pages/me/me",        "text": "我的",   "iconPath": "assets/tab/me.png",    "selectedIconPath": "assets/tab/me_a.png" }
     ]
   },
-  "requiredPrivateInfos": [
-    "chooseMedia",
-    "setClipboardData",
-    "getClipboardData"
-  ],
+  "requiredPrivateInfos": [],
   "style": "v2",
   "sitemapLocation": "sitemap.json",
   "__usePrivacyCheck__": true
