@@ -177,7 +177,7 @@ router.post('/admin/resources/batch', async (req, res) => {
     const insert = db.prepare(`INSERT INTO resource(grade, subject, title, type, url, description, source, tags, sort_order, created_by)
                                VALUES(?,?,?,?,?,?,?,?,?,?)`, conn);
     for (let i = 0; i < list.length; i++) {
-      const r = items[i];
+      const r = list[i];
       if (!r.grade || !r.subject || !r.title || !r.type || !r.url) {
         skipped++; errors.push(`#${i+1}: 缺少必填字段`); continue;
       }
