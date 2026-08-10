@@ -58,3 +58,6 @@ miniprogram/make_icons.py
 
 # 微信开发者工具私有配置（含本机路径，不入库）
 miniprogram/project.private.config.json
+
+# 云托管环境变量文件（含 WX_APP_SECRET 等敏感凭证，已明文，严禁入库）
+docs/cloudrun-env.json
