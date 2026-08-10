@@ -28,4 +28,16 @@ Page({
   },
   onReachBottom() { if (this.data.hasMore && !this.data.loading) this.load(); },
   onPullDownRefresh() { this.load(true).finally(() => wx.stopPullDownRefresh()); },
+  // 举报动态（内容安全闭环）
+  async reportPost(e) {
+    const id = e.currentTarget.dataset.id;
+    const r = await new Promise((resolve) => wx.showModal({
+      title: '举报动态', content: '确认举报该动态含违规内容？', success: (x) => resolve(x),
+    }));
+    if (!r.confirm) return;
+    try {
+      await app.apiPost('/api/mp/posts/' + id + '/report', { reason: '用户举报' });
+      wx.showToast({ title: '举报已提交', icon: 'success' });
+    } catch (err) { wx.showToast({ title: err.message || '举报失败', icon: 'none' }); }
+  },
 });

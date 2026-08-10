@@ -35,15 +35,9 @@
       <view class="muted">当前积分：<text class="pts">{{pointsBalance}}</text>　·　每次查阅/下载扣 <text class="pts">{{pointsCost}}</text> 积分</view>
     </view>
 
-    <view wx:if="{{res.url && res.requiresAd}}" class="ad-block card">
-      <view class="ad-title">🎬 观看广告即可免费查看</view>
-      <view class="muted">打开资料前需先看一段广告（看完才能查看，且不重复扣费）。</view>
-      <button class="btn-primary" loading="{{viewing}}" bindtap="onView">▶ 看广告并查看资料</button>
-    </view>
-
     <view wx:elif="{{res.url}}" class="open-block card">
       <button class="btn-primary" loading="{{viewing}}" bindtap="onView" wx:if="{{canView}}">📖 查看 / 下载资料</button>
-      <view wx:else class="muted warn">⚠ 积分不足（需 {{pointsCost}}，当前 {{pointsBalance}}）。去看广告或完成任务赚积分后再来。</view>
+      <view wx:else class="muted warn">⚠ 积分不足（需 {{pointsCost}}，当前 {{pointsBalance}}）。请完成任务赚积分后再来。</view>
     </view>
 
     <!-- 无内容也无链接的兜底 -->

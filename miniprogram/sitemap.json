@@ -1,7 +1,57 @@
 {
   "desc": "关于本文件的更多信息，请参考文档 https://developers.weixin.qq.com/miniprogram/dev/reference/configuration/sitemap.html",
-  "rules": [{
-    "action": "allow",
-    "page": "*"
-  }]
+  "rules": [
+    {
+      "action": "allow",
+      "page": "pages/index/index"
+    },
+    {
+      "action": "allow",
+      "page": "pages/study/study"
+    },
+    {
+      "action": "allow",
+      "page": "pages/tasks/tasks"
+    },
+    {
+      "action": "allow",
+      "page": "pages/feed/feed"
+    },
+    {
+      "action": "allow",
+      "page": "pages/me/me"
+    },
+    {
+      "action": "allow",
+      "page": "pages/login/login"
+    },
+    {
+      "action": "allow",
+      "page": "pages/submit/submit"
+    },
+    {
+      "action": "allow",
+      "page": "pages/resource-detail/resource-detail"
+    },
+    {
+      "action": "allow",
+      "page": "pages/post-detail/post-detail"
+    },
+    {
+      "action": "allow",
+      "page": "pages/credits/credits"
+    },
+    {
+      "action": "allow",
+      "page": "pages/profile/profile"
+    },
+    {
+      "action": "allow",
+      "page": "pages/me/change-pwd"
+    },
+    {
+      "action": "disallow",
+      "page": "pages/admin/*"
+    }
+  ]
 }

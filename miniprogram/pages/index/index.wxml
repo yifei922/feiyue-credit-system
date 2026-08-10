@@ -32,22 +32,15 @@
     </view>
   </view>
 
-  <!-- 年级切换 -->
-  <view class="grade-bar">
-    <block wx:for="{{['初一','初二','初三']}}" wx:key="*this">
-      <view class="grade-tab {{grade === item ? 'active' : ''}}" data-g="{{item}}" bindtap="onGradeChange">{{item}}</view>
-    </block>
-  </view>
-
-  <!-- 课程资料推荐 -->
-  <view class="section-title">🎯 {{grade}} 推荐资料</view>
+  <!-- 学习资料推荐（中性定位） -->
+  <view class="section-title">🎯 学习资料推荐</view>
   <view wx:if="{{loading}}" class="muted center">加载中…</view>
   <view wx:elif="{{resources.length === 0}}" class="muted center">暂无资料</view>
   <view wx:else class="res-grid">
     <view wx:for="{{resources}}" wx:key="id" class="res-card" data-id="{{item.id}}" bindtap="goDetail">
       <view class="res-cover" style="background: linear-gradient(135deg, #7C5CFF, #4D9BFF);">
-        <text class="sub-tag">{{item.subject}}</text>
-        <text class="cover-text">{{item.subject}}</text>
+        <text class="sub-tag">{{item.type === 'article' ? '图文' : item.type === 'video' ? '视频' : '文档'}}</text>
+        <text class="cover-text">{{item.type === 'article' ? '图文' : item.type === 'video' ? '视频' : '文档'}}</text>
       </view>
       <view class="res-title">{{item.title}}</view>
       <view class="res-meta">

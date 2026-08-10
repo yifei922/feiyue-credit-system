@@ -18,7 +18,9 @@ App({
     const u = wx.getStorageSync('user');
     if (t) this.globalData.token = t;
     if (u) this.globalData.user = u;
-    this.globalData.systemInfo = wx.getSystemInfoSync();
+    this.globalData.systemInfo = (wx.getWindowInfo && wx.getWindowInfo()) || {};
+    // 隐私授权：首次启动触发微信隐私弹窗（__usePrivacyCheck__ 已开启）
+    require('./utils/privacy.js').ensurePrivacyAuthorize();
   },
 
   // 一键登录：先 wx.login() 拿 code，再 POST /api/mp/auth/wx-login
@@ -89,7 +91,7 @@ App({
       if (/401|未登录|登录过期/.test(msg)) return '登录已过期，请重新登录';
       if (/403|无权限|禁止/.test(msg)) return '没有操作权限';
       if (/404|not\s*found/i.test(msg)) return '接口不存在';
-      if (/402|积分不足/.test(msg)) return '积分不足，去看广告或完成任务赚积分';
+      if (/402|积分不足/.test(msg)) return '积分不足，请完成任务赚积分';
       if (/429|频繁|频率/.test(msg)) return '操作过于频繁，请稍后再试';
       if (/400|参数/.test(msg)) return '请求参数有误，请检查后重试';
       return msg.length > 20 ? '请求失败，请稍后重试' : msg;
@@ -171,7 +173,7 @@ App({
   // 业务错误友好提示（4xx 结构化引导）：返回提示文案，供页面 toast 使用
   friendlyBiz(r) {
     if (!r) return '请求失败，请稍后重试';
-    if (r.code === 402) return '积分不足，去看广告或完成任务赚积分';
+    if (r.code === 402) return '积分不足，请完成任务赚积分';
     if (r.code === 429) return '操作过于频繁，请稍后再试';
     if (r.code === 403) return '没有操作权限';
     if (r.code === 400) return r.message && r.message.length <= 20 ? r.message : '请求参数有误，请检查后重试';

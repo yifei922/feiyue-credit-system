@@ -23,6 +23,7 @@ const mpResourcesRouter = require('./routes/mp_resources');
 const mpPointsRouter = require('./routes/mp_points');
 const mpProfileRouter = require('./routes/mp_profile');
 const mpAdminRouter = require('./routes/mp_admin');
+const mpContentRouter = require('./routes/mp_content');
 const { init: initDb } = require('./db');
 
 const app = express();
@@ -68,6 +69,7 @@ api.use('/mp', mpResourcesRouter);
 api.use('/mp', mpPointsRouter);
 api.use('/mp', mpProfileRouter);
 api.use('/mp', mpAdminRouter);
+api.use('/mp', mpContentRouter);
 app.use('/api', api);
 
 // ── /api 路径未匹配 → 返回 JSON 404（而非 HTML）──

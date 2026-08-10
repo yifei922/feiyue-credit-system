@@ -20,8 +20,7 @@
     "pages/admin/credits-adjust",
     "pages/admin/alerts",
     "pages/admin/operate-log",
-    "pages/me/change-pwd",
-    "pages/debug/telemetry"
+    "pages/me/change-pwd"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -45,5 +44,6 @@
     ]
   },
   "style": "v2",
-  "sitemapLocation": "sitemap.json"
+  "sitemapLocation": "sitemap.json",
+  "__usePrivacyCheck__": true
 }

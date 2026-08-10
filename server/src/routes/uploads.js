@@ -8,6 +8,7 @@ const path = require('path');
 const { db } = require('../db');
 const { ok, fail } = require('../util');
 const { processUpload } = require('../lib/compressor');
+const { imgSecCheck } = require('../lib/wx');
 
 const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(__dirname, '..', 'data', 'uploads');
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
@@ -89,6 +90,21 @@ router.post('/', uploadSingle, async (req, res) => {
 
     const storedName = crypto.randomBytes(12).toString('hex') + ext;
     fs.writeFileSync(path.join(UPLOAD_DIR, storedName), buf);
+
+    // 内容安全：图片类上传违规检测（命中风险则删除文件并拒绝）
+    if (/^image\//.test(outMime)) {
+      try {
+        const safe = await imgSecCheck(buf, storedName);
+        if (!safe) {
+          try { fs.unlinkSync(path.join(UPLOAD_DIR, storedName)); } catch (_) {}
+          if (jobId) jobEmit(jobId, { type: 'error', message: '图片包含违规内容，上传被拒绝' });
+          return fail(res, 403, '图片包含违规内容，上传被拒绝');
+        }
+      } catch (e) {
+        console.error('[upload] imgSecCheck 异常:', e.message);
+        // 检测服务异常时软通过，不阻断正常上传
+      }
+    }
 
     const info = await db.prepare(`INSERT INTO attachment
       (completion_record_id, task_id, student_id, uploader_id, original_name, stored_name, mime, size_original, size_compressed, width, height, storage_enc)

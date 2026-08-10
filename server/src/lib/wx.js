@@ -61,4 +61,102 @@ function code2Session(code) {
   });
 }
 
-module.exports = { code2Session, APP_ID, MOCK_MODE };
+module.exports = { code2Session, APP_ID, MOCK_MODE, getAccessToken, msgSecCheck, imgSecCheck };
+
+// ── 内容安全：access_token 缓存 ──
+let _tokenCache = { token: null, exp: 0 };
+function getAccessToken() {
+  return new Promise((resolve, reject) => {
+    const now = Date.now();
+    if (_tokenCache.token && _tokenCache.exp > now + 5 * 60 * 1000) return resolve(_tokenCache.token);
+    if (!APP_SECRET) return reject(new Error('WX_APP_SECRET 未配置，无法获取 access_token'));
+    const url = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${APP_ID}&secret=${encodeURIComponent(APP_SECRET)}`;
+    const req = https.get(url, (res) => {
+      const chunks = [];
+      res.on('data', (c) => chunks.push(c));
+      res.on('end', () => {
+        try {
+          const body = JSON.parse(Buffer.concat(chunks).toString());
+          if (body.access_token) {
+            _tokenCache = { token: body.access_token, exp: now + (body.expires_in || 7200) * 1000 };
+            resolve(body.access_token);
+          } else reject(new Error(body.errmsg || '获取 access_token 失败'));
+        } catch (e) { reject(new Error('access_token 返回非 JSON')); }
+      });
+    });
+    req.setTimeout(5000, () => req.destroy(new Error('getAccessToken timeout')));
+    req.on('error', reject);
+  });
+}
+
+/**
+ * 文本违规检测（msgSecCheck）。命中风险返回 false；通过返回 true；接口异常抛出。
+ * 文档: https://developers.weixin.qq.com/miniprogram/dev/api-backend/openapi/sec-check/sec-check-service.msgSecCheck.html
+ */
+function msgSecCheck(openid, content) {
+  return getAccessToken().then((token) => new Promise((resolve, reject) => {
+    if (!content || !content.trim()) return resolve(true); // 空内容直接放行
+    const payload = JSON.stringify({ openid: openid || '', scene: 2, version: 2, content });
+    const req = https.request({
+      hostname: 'api.weixin.qq.com',
+      path: `/wxa/msg_sec_check?access_token=${token}`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      timeout: 5000,
+    }, (res) => {
+      const chunks = [];
+      res.on('data', (c) => chunks.push(c));
+      res.on('end', () => {
+        try {
+          const body = JSON.parse(Buffer.concat(chunks).toString());
+          if (body.errcode === 0) return resolve(true);
+          if (body.errcode === 87014) return resolve(false); // 命中风险内容
+          reject(new Error(body.errmsg || 'msgSecCheck 失败'));
+        } catch (e) { reject(e); }
+      });
+    });
+    req.on('timeout', () => req.destroy(new Error('msgSecCheck timeout')));
+    req.on('error', reject);
+    req.write(payload);
+    req.end();
+  }));
+}
+
+/**
+ * 图片违规检测（imgSecCheck）。命中风险返回 false；通过返回 true；接口异常抛出。
+ * @param {Buffer} buf 图片二进制
+ * @param {string} filename 形如 'a.png'
+ */
+function imgSecCheck(buf, filename) {
+  return getAccessToken().then((token) => new Promise((resolve, reject) => {
+    if (!buf || !buf.length) return resolve(true);
+    const boundary = '----WXSEC' + Date.now();
+    const head = Buffer.from(
+      `--${boundary}\r\nContent-Disposition: form-data; name="media"; filename="${filename || 'file.png'}"\r\nContent-Type: image/png\r\n\r\n`
+    );
+    const tail = Buffer.from(`\r\n--${boundary}--\r\n`);
+    const body = Buffer.concat([head, buf, tail]);
+    const req = https.request({
+      hostname: 'api.weixin.qq.com',
+      path: `/wxa/img_sec_check?access_token=${token}`,
+      method: 'POST',
+      headers: { 'Content-Type': `multipart/form-data; boundary=${boundary}`, 'Content-Length': body.length },
+      timeout: 8000,
+    }, (res) => {
+      const chunks = [];
+      res.on('data', (c) => chunks.push(c));
+      res.on('end', () => {
+        try {
+          const b = JSON.parse(Buffer.concat(chunks).toString());
+          if (b.errcode === 0) return resolve(true);
+          if (b.errcode === 87014) return resolve(false);
+          reject(new Error(b.errmsg || 'imgSecCheck 失败'));
+        } catch (e) { reject(e); }
+      });
+    });
+    req.on('timeout', () => req.destroy(new Error('imgSecCheck timeout')));
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  }));
+}

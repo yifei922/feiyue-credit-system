@@ -26,6 +26,10 @@
         <text class="ico">💬</text>
         <text class="muted">{{item.comment_count || 0}}</text>
       </view>
+      <view class="action" data-id="{{item.id}}" catchtap="reportPost">
+        <text class="ico">⚐</text>
+        <text class="muted">举报</text>
+      </view>
     </view>
   </view>
 

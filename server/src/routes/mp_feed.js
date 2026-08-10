@@ -9,6 +9,7 @@ const express = require('express');
 const router = express.Router();
 const { db } = require('../db');
 const { ok, fail } = require('../util');
+const { msgSecCheck } = require('../lib/wx');
 
 async function attachStats(posts, viewerId) {
   if (!posts.length) return posts;
@@ -45,6 +46,14 @@ router.post('/posts', async (req, res) => {
   if (!text && !(images && images.length) && !video_url) return fail(res, 400, '内容不能为空');
   if (text && text.length > 1000) return fail(res, 400, '文字过长（≤1000字）');
   if (images && images.length > 9) return fail(res, 400, '最多 9 张图');
+  // 内容安全：发布前文本违规检测
+  try {
+    const safe = await msgSecCheck(req.user.openid, text || '');
+    if (!safe) return fail(res, 403, '内容包含违规信息，发布失败');
+  } catch (e) {
+    console.error('[feed] msgSecCheck 异常:', e.message);
+    return fail(res, 500, '内容安全检测失败，请稍后重试');
+  }
   const info = await db.prepare(`INSERT INTO post(user_id, text, images, video_url, resource_id)
                           VALUES(?,?,?,?,?)`)
     .run(req.user.id, text || null, JSON.stringify(images || []), video_url || null, resource_id || null);
@@ -89,6 +98,14 @@ router.post('/posts/:id/comments', async (req, res) => {
   const { text } = req.body || {};
   if (!text || !text.trim()) return fail(res, 400, '评论不能为空');
   if (text.length > 500) return fail(res, 400, '评论过长（≤500字）');
+  // 内容安全：评论前文本违规检测
+  try {
+    const safe = await msgSecCheck(req.user.openid, text);
+    if (!safe) return fail(res, 403, '评论包含违规信息，发送失败');
+  } catch (e) {
+    console.error('[feed] comment msgSecCheck 异常:', e.message);
+    return fail(res, 500, '内容安全检测失败，请稍后重试');
+  }
   const info = await db.prepare('INSERT INTO post_comment(post_id, user_id, text) VALUES(?,?,?)').run(id, req.user.id, text.trim());
   ok(res, { id: info.lastInsertRowid });
 });

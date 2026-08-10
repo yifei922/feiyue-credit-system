@@ -4,7 +4,7 @@
   "projectname": "feiyue-credit-mp",
   "appid": "wx64664e7fa8d4f747",
   "setting": {
-    "urlCheck": false,
+    "urlCheck": true,
     "es6": true,
     "enhance": true,
     "postcss": true,
@@ -41,7 +41,12 @@
   },
   "simulatorPluginLibVersion": {},
   "packOptions": {
-    "ignore": [],
+    "ignore": [
+      { "type": "folder", "value": "preview" },
+      { "type": "folder", "value": "minitest" },
+      { "type": "file", "value": "README.md" },
+      { "type": "file", "value": "make_icons.py" }
+    ],
     "include": []
   },
   "editorSetting": {},
