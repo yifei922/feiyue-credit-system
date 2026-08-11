@@ -9,8 +9,8 @@
   <view wx:for="{{list}}" wx:key="id" class="item card">
     <view class="item-main">
       <view class="name">{{item.name}} <text class="role">{{item.roleLabel}}</text></view>
-      <view class="meta">账号：{{item.username}}　学号：{{item.studentId || '—'}}</view>
-      <view wx:if="{{item.subjectNames.length}}" class="meta">负责科目：{{item.subjectNames}}</view>
+      <view class="meta">账号：{{item.username}}　编号：{{item.studentId || '—'}}</view>
+      <view wx:if="{{item.subjectNames.length}}" class="meta">负责兴趣分类：{{item.subjectNames}}</view>
     </view>
     <view class="actions">
       <view class="action-btn reset" data-id="{{item.id}}" data-name="{{item.name}}" bindtap="onReset">重置密码</view>
@@ -32,9 +32,9 @@
           </view>
         </view>
       </view>
-      <!-- 课代表需选择负责科目 -->
+      <!-- 小组长需选择负责兴趣分类 -->
       <view wx:if="{{editForm.role==='REP'}}" class="form-group">
-        <text class="form-label">负责科目（可多选）</text>
+        <text class="form-label">负责兴趣分类（可多选）</text>
         <view class="subject-tags">
           <view wx:for="{{allSubjects}}" wx:key="id"
                 class="tag {{editForm.subjectIds.indexOf(item.id)>=0?'selected':''}}"
@@ -42,7 +42,7 @@
             {{item.name}}
           </view>
         </view>
-        <view wx:if="{{!editForm.subjectIds.length}}" class="warn-hint">请至少选择一个负责科目</view>
+        <view wx:if="{{!editForm.subjectIds.length}}" class="warn-hint">请至少选择一个负责兴趣分类</view>
       </view>
       <view class="btn-row">
         <button class="btn-cancel" bindtap="onCloseRoleModal">取消</button>

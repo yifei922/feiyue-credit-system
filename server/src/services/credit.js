@@ -18,14 +18,14 @@ const STATUS_LABEL = {
   FAILED: '未通过'
 };
 const FLOW_TYPE_LABEL = {
-  HOMEWORK_DONE: '作业完成',
-  BACKING_DONE: '背书完成',
-  EXAM_DONE: '测验完成',
+  HOMEWORK_DONE: '打卡完成',
+  BACKING_DONE: '练习完成',
+  EXAM_DONE: '挑战完成',
   OVERDUE_DEDUCT: '逾期扣分',
   REMEDY: '补修',
   MANUAL: '手动调整'
 };
-const TYPE_LABEL = { HOMEWORK: '作业', BACKING: '背书', EXAM: '测验' };
+const TYPE_LABEL = { HOMEWORK: '打卡任务', BACKING: '练习', EXAM: '挑战' };
 const ALERT_TYPE_LABEL = {
   CONSECUTIVE_MISS: '连续未完成',
   OVERDUE_SOON: '临近截止未完成',

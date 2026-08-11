@@ -1,4 +1,4 @@
-// pages/profile/profile.js - 个人资料编辑（头像/姓名/学号）
+// pages/profile/profile.js - 个人资料编辑（头像/姓名/编号）
 const app = getApp();
 Page({
   data: {

@@ -44,7 +44,7 @@
     <view wx:elif="{{!res.content && !res.url}}" class="empty-card card">
       <view class="empty-icon">📭</view>
       <view class="empty-text">该资料正在整理中，敬请期待</view>
-      <view class="muted empty-sub">老师会在管理后台尽快补充完整内容</view>
+      <view class="muted empty-sub">主理人会在管理后台尽快补充完整内容</view>
     </view>
   </block>
 </view>

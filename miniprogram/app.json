@@ -38,8 +38,8 @@
     "borderStyle": "white",
     "list": [
       { "pagePath": "pages/index/index",  "text": "首页",   "iconPath": "assets/tab/home.png",  "selectedIconPath": "assets/tab/home_a.png" },
-      { "pagePath": "pages/study/study",  "text": "学习",   "iconPath": "assets/tab/study.png", "selectedIconPath": "assets/tab/study_a.png" },
-      { "pagePath": "pages/tasks/tasks",  "text": "作业",   "iconPath": "assets/tab/tasks.png", "selectedIconPath": "assets/tab/tasks_a.png" },
+      { "pagePath": "pages/study/study",  "text": "资料",   "iconPath": "assets/tab/study.png", "selectedIconPath": "assets/tab/study_a.png" },
+      { "pagePath": "pages/tasks/tasks",  "text": "打卡任务",   "iconPath": "assets/tab/tasks.png", "selectedIconPath": "assets/tab/tasks_a.png" },
       { "pagePath": "pages/feed/feed",    "text": "成长圈", "iconPath": "assets/tab/feed.png",  "selectedIconPath": "assets/tab/feed_a.png" },
       { "pagePath": "pages/me/me",        "text": "我的",   "iconPath": "assets/tab/me.png",    "selectedIconPath": "assets/tab/me_a.png" }
     ]

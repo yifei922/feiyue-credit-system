@@ -17,7 +17,7 @@ function genTempPwd() {
   return s;
 }
 
-// 列表：管理员/老师/课代表看全班（分页，数组主体 + 响应头元信息）；学生仅看自己
+// 列表：管理员/主理人/小组长看全班（分页，数组主体 + 响应头元信息）；成员仅看自己
 router.get('/', authMiddleware, async (req, res) => {
   const { page, pageSize, offset } = paginate(req.query);
   let total, rows;
@@ -38,7 +38,7 @@ router.get('/', authMiddleware, async (req, res) => {
   ok(res, list);
 });
 
-// 名单导出（管理员/老师/课代表）：CSV（带 BOM 兼容 Excel）或 JSON，含总积分
+// 名单导出（管理员/主理人/小组长）：CSV（带 BOM 兼容 Excel）或 JSON，含总积分
 router.get('/export', authMiddleware, requireRole('ADMIN', 'TEACHER', 'REP'), async (req, res) => {
   const format = String(req.query.format || 'csv').toLowerCase();
   const rows = await db.prepare(
@@ -58,13 +58,13 @@ router.get('/export', authMiddleware, requireRole('ADMIN', 'TEACHER', 'REP'), as
   res.send('\uFEFF' + lines.join('\r\n'));
 });
 
-// 名单导入（管理员/老师）：支持 JSON 数组或 CSV 文本
+// 名单导入（管理员/主理人）：支持 JSON 数组或 CSV 文本
 router.post('/import', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (req, res) => {
   const body = req.body || {};
   let list = [];
   if (body.csv) {
     const lines = String(body.csv).split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-    const start = /^(name|姓名|学生|学号|studentno|student_no)/i.test(lines[0] || '') ? 1 : 0;
+    const start = /^(name|姓名|成员|编号|studentno|student_no)/i.test(lines[0] || '') ? 1 : 0;
     list = lines.slice(start).map(line => {
       const [name, studentNo] = line.split(/[,\t]/).map(x => x.trim());
       return { name, studentNo };
@@ -74,7 +74,7 @@ router.post('/import', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (r
   }
   list = list.filter(s => s.name);
 
-  if (list.length === 0) return fail(res, 400, '没有可导入的学生（请检查数据格式）');
+  if (list.length === 0) return fail(res, 400, '没有可导入的成员（请检查数据格式）');
 
   const classId = req.user.class_id || 1;
   const insStu = await db.prepare('INSERT INTO student(name, student_no, class_id) VALUES(?,?,?)');
@@ -82,7 +82,7 @@ router.post('/import', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (r
   let imported = 0;
   const importedRows = [];
   for (const s of list) {
-    // 按学号去重
+    // 按编号去重
     const exist = await db.prepare('SELECT id FROM student WHERE student_no=?').get(s.studentNo);
     let studentId, isNew = false;
     if (exist) {
@@ -106,12 +106,12 @@ router.post('/import', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (r
   ok(res, { imported, total: list.length, rows: importedRows });
 });
 
-// 重置学生登录密码（管理员/老师/课代表）；不传 password 则生成随机临时密码
+// 重置成员登录密码（管理员/主理人/小组长）；不传 password 则生成随机临时密码
 router.post('/:id/reset-password', authMiddleware, requireRole('ADMIN', 'TEACHER', 'REP'), async (req, res) => {
   const student = await db.prepare('SELECT * FROM student WHERE id=?').get(req.params.id);
-  if (!student) return fail(res, 404, '学生不存在');
+  if (!student) return fail(res, 404, '成员不存在');
   const user = await db.prepare("SELECT * FROM sys_user WHERE role='STUDENT' AND student_id=?").get(student.id);
-  if (!user) return fail(res, 404, '该学生尚无登录账号');
+  if (!user) return fail(res, 404, '该成员尚无登录账号');
   const custom = String(req.body?.password || '').trim();
   const newPwd = custom || genTempPwd();
   if (newPwd.length < 6) return fail(res, 400, '密码至少 6 位');
@@ -120,10 +120,10 @@ router.post('/:id/reset-password', authMiddleware, requireRole('ADMIN', 'TEACHER
   ok(res, { ok: true, username: user.username, password: newPwd, temp: !custom });
 });
 
-// 新增单个学生（管理员/老师）
+// 新增单个成员（管理员/主理人）
 router.post('/', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (req, res) => {
   const { name, studentNo } = req.body || {};
-  if (!name) return fail(res, 400, '请填写学生姓名');
+  if (!name) return fail(res, 400, '请填写成员姓名');
   const r = await db.prepare('INSERT INTO student(name, student_no, class_id) VALUES(?,?,?)').run(name, studentNo || '', req.user.class_id || 1);
   const studentId = r.lastInsertRowid;
   const username = 'stu' + String(studentId).padStart(2, '0');
@@ -137,7 +137,7 @@ router.post('/', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (req, re
 router.put('/:id', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (req, res) => {
   const { name, studentNo } = req.body || {};
   const before = await db.prepare('SELECT * FROM student WHERE id=?').get(req.params.id);
-  if (!before) return fail(res, 404, '学生不存在');
+  if (!before) return fail(res, 404, '成员不存在');
   await db.prepare('UPDATE student SET name=?, student_no=? WHERE id=?').run(name ?? before.name, studentNo ?? before.student_no, req.params.id);
   await db.prepare('UPDATE sys_user SET name=? WHERE role=? AND student_id=?').run(name ?? before.name, 'STUDENT', req.params.id);
   recordLog(req.user, 'UPDATE', 'student', req.params.id, before, { name, studentNo });
@@ -147,7 +147,7 @@ router.put('/:id', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (req, 
 // 删除
 router.delete('/:id', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (req, res) => {
   const before = await db.prepare('SELECT * FROM student WHERE id=?').get(req.params.id);
-  if (!before) return fail(res, 404, '学生不存在');
+  if (!before) return fail(res, 404, '成员不存在');
   await db.prepare('DELETE FROM sys_user WHERE role=? AND student_id=?').run('STUDENT', req.params.id);
   await db.prepare('DELETE FROM student WHERE id=?').run(req.params.id);
   recordLog(req.user, 'DELETE', 'student', req.params.id, before, null);

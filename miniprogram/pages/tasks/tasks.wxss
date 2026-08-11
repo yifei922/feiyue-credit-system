@@ -1,4 +1,4 @@
-/* tasks.wxss - 青春版作业 */
+/* tasks.wxss - 青春版打卡任务 */
 .tab-bar {
   display: flex; background: #fff; border-radius: 24px; padding: 4px; margin-bottom: 12px;
   box-shadow: 0 6px 18px rgba(90,80,200,0.08);

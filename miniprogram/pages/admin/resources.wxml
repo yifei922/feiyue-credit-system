@@ -15,7 +15,7 @@
         <text class="tag subject">{{item.subject}}</text>
         <text class="tag type">{{typeLabel[item.type]}}</text>
       </view>
-    <!-- 个人主体合规：年级/学科已改为兴趣分类与难度等级；禁止传播 K12 学科类校外培训内容 -->
+    <!-- 个人主体合规：难度/学科已改为兴趣分类与难度等级；禁止传播 K12 学科类校外培训内容 -->
     </view>
     <view class="item-ops">
       <text class="op edit" data-id="{{item.id}}" bindtap="onEdit">编辑</text>

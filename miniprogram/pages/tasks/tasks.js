@@ -1,4 +1,4 @@
-// pages/tasks/tasks.js - Tab3 作业（任务列表）
+// pages/tasks/tasks.js - Tab3 打卡任务（任务列表）
 const app = getApp();
 Page({
   data: {

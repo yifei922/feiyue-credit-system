@@ -37,17 +37,17 @@ router.get('/', async (req, res) => {
   }))));
 });
 
-// 手动增减积分（管理员/老师/课代表）
+// 手动增减积分（管理员/主理人/小组长）
 // body: { studentId, amount(可正可负), reason }
 router.post('/adjust', requireRole('ADMIN', 'TEACHER', 'REP'), async (req, res) => {
   const studentId = Number(req.body?.studentId);
   const amount = Number(req.body?.amount);
   const reason = String(req.body?.reason || '').trim() || '手动调整';
-  if (!studentId) return fail(res, 400, '请指定学生');
+  if (!studentId) return fail(res, 400, '请指定成员');
   if (!Number.isFinite(amount) || amount === 0) return fail(res, 400, '调整分值必须为非 0 数字');
 
   const student = await db.prepare('SELECT * FROM student WHERE id=?').get(studentId);
-  if (!student) return fail(res, 404, '学生不存在');
+  if (!student) return fail(res, 404, '成员不存在');
 
   await db.prepare('INSERT INTO credit_flow(student_id, task_id, change_amount, flow_type, reason) VALUES(?,?,?,?,?)')
     .run(studentId, null, amount, 'MANUAL', reason);

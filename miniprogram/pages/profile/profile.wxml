@@ -11,8 +11,8 @@
     </view>
     <view class="divider"></view>
     <view class="field">
-      <text class="label">学号</text>
-      <input class="input" placeholder="请输入学号（选填）" type="number" value="{{studentId}}" bindinput="onStudentId" />
+      <text class="label">编号</text>
+      <input class="input" placeholder="请输入编号（选填）" type="number" value="{{studentId}}" bindinput="onStudentId" />
     </view>
   </view>
 

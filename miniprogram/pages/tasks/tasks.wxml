@@ -9,7 +9,7 @@
 
   <!-- 待完成 -->
   <block wx:if="{{tab==='open'}}">
-    <view wx:if="{{open.length===0}}" class="muted center">🎉 暂无待完成作业</view>
+    <view wx:if="{{open.length===0}}" class="muted center">🎉 暂无待完成打卡任务</view>
     <view wx:for="{{open}}" wx:key="id" class="card task-card" data-id="{{item.id}}" bindtap="goSubmit">
       <view class="task-title">{{item.title}}</view>
       <view class="task-meta">
@@ -18,7 +18,7 @@
         <text wx:if="{{item.deadline}}" class="muted">⏰ 截止：{{item.deadline}}</text>
       </view>
       <view class="task-action">
-        <text class="muted">点此提交作业 →</text>
+        <text class="muted">点此打卡 →</text>
       </view>
     </view>
   </block>
@@ -37,7 +37,7 @@
 
   <!-- 逾期 -->
   <block wx:if="{{tab==='overdue'}}">
-    <view wx:if="{{overdue.length===0}}" class="muted center">👍 没有逾期作业</view>
+    <view wx:if="{{overdue.length===0}}" class="muted center">👍 没有逾期打卡任务</view>
     <view wx:for="{{overdue}}" wx:key="id" class="card task-card overdue" data-id="{{item.id}}" bindtap="goSubmit">
       <view class="task-title">{{item.title}}</view>
       <view class="task-meta">

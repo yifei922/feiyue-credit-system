@@ -21,8 +21,8 @@
 | Tab | 页面 | 功能 |
 |---|---|---|
 | 首页 | `pages/index/index` | 用户卡 + 快捷入口 + 推荐资料 |
-| 学习 | `pages/study/study` | 年级+科目筛选 + 课程资料列表 |
-| 作业 | `pages/tasks/tasks` | 待完成/已完成/逾期三 Tab + 提交跳转 |
+| 学习 | `pages/study/study` | 难度+兴趣分类筛选 + 兴趣资料列表 |
+| 打卡任务 | `pages/tasks/tasks` | 待完成/已完成/逾期三 Tab + 提交跳转 |
 | 成长圈 | `pages/feed/feed` | 信息流 + 发布 + 点赞 + 评论 |
 | 我的 | `pages/me/me` | 积分明细入口 + 积分 + 退出登录 |
 
@@ -36,7 +36,7 @@
 |---|---|---|
 | `/api/mp/auth/wx-login` | POST | 微信一键登录（公开） |
 | `/api/auth/login` | POST | 账号密码登录（公开） |
-| `/api/mp/resources?grade=&subject=&page=` | GET | 课程资料列表 |
+| `/api/mp/resources?grade=&subject=&page=` | GET | 兴趣资料列表 |
 | `/api/mp/resources/:id` | GET | 资料详情（含解锁状态） |
 | `/api/mp/resources/:id/unlock` | POST | 看广告解锁 |
 | `/api/mp/admin/resources` | GET/POST/PUT/DELETE | 资料管理（管理员） |
@@ -48,7 +48,7 @@
 | `/api/mp/points/ad-reward` | POST | 看广告奖励积分 |
 | `/api/tasks` | GET | 任务列表（复用 Web） |
 | `/api/uploads` | POST | 上传附件（复用 Web，含 30MB 限制） |
-| `/api/completion` | POST | 提交作业（复用 Web） |
+| `/api/completion` | POST | 打卡（复用 Web） |
 
 ## 四、广告接入
 
@@ -69,14 +69,14 @@
 
 ## 六、目前已实现 vs 待办
 
-✅ **已实现**：登录（含微信一键登录入口）、4 Tab + 二级页骨架、课程资料展示（含免费配额提示）、成长圈发布/点赞/评论、积分明细入口、提交作业（30MB 前端拦截）、积分显示
+✅ **已实现**：登录（含微信一键登录入口）、4 Tab + 二级页骨架、兴趣资料展示（含免费配额提示）、成长圈发布/点赞/评论、积分明细入口、打卡（30MB 前端拦截）、积分显示
 
 ⏳ **待办（需用户决策后启用）**：
-- 课程资料批量录入（Web 端后台管理页）
+- 兴趣资料批量录入（Web 端后台管理页）
 - 广告位开通与 adUnitId 接入
 - 资料来源爬虫（需先确认安全白名单）
 - 微信开放平台 unionid 跨小程序打通（如未来多小程序共享账号）
 
 ## 七、图标占位
 
-`assets/tab/*.png` 5 对 tab 图标（首页/学习/作业/成长圈/我的）已由 `make_icons.py` 生成真实 PNG（81×81 像素，未选中灰色 `#8893ad`、选中极光紫 `#7C5CFF`），无需再手动补图。如需更换风格，修改 `make_icons.py` 中的 `GRAY`/`RED` 常量后重新运行即可。
+`assets/tab/*.png` 5 对 tab 图标（首页/学习/打卡任务/成长圈/我的）已由 `make_icons.py` 生成真实 PNG（81×81 像素，未选中灰色 `#8893ad`、选中极光紫 `#7C5CFF`），无需再手动补图。如需更换风格，修改 `make_icons.py` 中的 `GRAY`/`RED` 常量后重新运行即可。

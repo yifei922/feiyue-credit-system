@@ -1,4 +1,4 @@
-// pages/admin/students.js - 学生管理（教师/管理员）
+// pages/admin/students.js - 成员管理（主理人/管理员）
 const app = getApp();
 
 const { requireRole } = require('../../utils/auth-guard.js');
@@ -98,7 +98,7 @@ Page({
 
   async onResetPwd(e) {
     const id = e.currentTarget.dataset.id;
-    const res = await new Promise((r) => wx.showModal({ title: '重置密码', content: '确定将该学生密码重置为随机临时密码？', success: r }));
+    const res = await new Promise((r) => wx.showModal({ title: '重置密码', content: '确定将该成员密码重置为随机临时密码？', success: r }));
     if (!res.confirm) return;
     try {
       const r = await app.apiPost('/api/students/' + id + '/reset-password', {});

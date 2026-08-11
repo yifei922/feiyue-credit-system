@@ -1,4 +1,4 @@
-// pages/admin/tasks.js - 任务/作业管理（教师/管理员/课代表）
+// pages/admin/tasks.js - 任务/打卡任务管理（主理人/管理员/小组长）
 const app = getApp();
 
 const { requireRole } = require('../../utils/auth-guard.js');

@@ -21,7 +21,7 @@
 .btn-cancel { flex: 1; background: #f0f0f0; color: #666; border: none; border-radius: 12rpx; padding: 22rpx 0; font-size: 30rpx; }
 .form-title { font-size: 32rpx; font-weight: 600; margin-bottom: 24rpx; }
 
-/* 课代表弹窗 */
+/* 小组长弹窗 */
 .modal-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.45); z-index: 300; display: flex; align-items: flex-end; }
 .modal-card { width: 100%; background: #fff; border-radius: 24rpx 24rpx 0 0; padding: 32rpx; max-height: 70vh; overflow-y: auto; }
 .modal-title { font-size: 32rpx; font-weight: 600; margin-bottom: 24rpx; }

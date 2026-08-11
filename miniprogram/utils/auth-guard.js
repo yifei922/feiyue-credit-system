@@ -1,5 +1,5 @@
 // 角色路由守卫：所有 admin/* 页面 onLoad 第一行调用 requireRole(allowed)
-// 学生角色命中任何受限页面 → 弹 toast + reLaunch 到个人中心
+// 成员角色命中任何受限页面 → 弹 toast + reLaunch 到个人中心
 const app = getApp();
 
 function requireRole(allowedRoles) {

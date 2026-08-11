@@ -1,4 +1,4 @@
-// pages/study/study.js - Tab2 学习（学习资料库）
+// pages/study/study.js - Tab2 资料（兴趣资料库）
 const app = getApp();
 Page({
   data: {

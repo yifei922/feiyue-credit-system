@@ -31,7 +31,7 @@ Page({
   onAvatarError() { /* 头像加载失败兜底（CSS 已设默认色） */ },
   onLogoError() { /* logo 加载失败兜底 */ },
 
-  // 学习资料（中性定位，不区分年级学科）
+  // 学习资料（中性定位，不区分难度学科）
   async loadResources() {
     this.setData({ loading: true });
     try {

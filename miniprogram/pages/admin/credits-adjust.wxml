@@ -11,9 +11,9 @@
       </view>
     </view>
 
-    <!-- 选择学生 -->
+    <!-- 选择成员 -->
     <view class="form-group">
-      <text class="form-label">选择学生 {{form.studentName?'· '+form.studentName:''}}</text>
+      <text class="form-label">选择成员 {{form.studentName?'· '+form.studentName:''}}</text>
       <scroll-view scroll-x style="white-space:nowrap;">
         <view class="student-chip" wx:for="{{students}}" wx:key="id"
               style="{{form.studentId==item.id?'background:#7C5CFF;color:#fff;':''}}"
@@ -23,9 +23,9 @@
       </scroll-view>
     </view>
 
-    <!-- 选择科目（可选） -->
+    <!-- 选择兴趣分类（可选） -->
     <view class="form-group">
-      <text class="form-label">关联科目（可选）</text>
+      <text class="form-label">关联兴趣分类（可选）</text>
       <scroll-view scroll-x style="white-space:nowrap;">
         <view class="student-chip" wx:for="{{subjects}}" wx:key="id"
               style="{{form.subjectId==item.id?'background:#7C5CFF;color:#fff;':''}}"
@@ -47,7 +47,7 @@
     <view class="form-group">
       <text class="form-label">原因 *</text>
       <textarea class="form-textarea" value="{{form.reason}}" bindinput="onInputChange" data-field="reason"
-                placeholder="如：课堂表现优秀、作业完成质量高、迟到扣分等"></textarea>
+                placeholder="如：课堂表现优秀、打卡完成质量高、迟到扣分等"></textarea>
     </view>
 
     <button class="btn-primary" loading="{{loading}}" bindtap="onSubmit">
@@ -56,7 +56,7 @@
 
     <view class="tip">
       ⚠ 积分调整会记录操作日志，请确保调整理由充分合理。
-      扣分操作请谨慎使用，建议先与学生沟通确认。
+      扣分操作请谨慎使用，建议先与成员沟通确认。
     </view>
   </view>
 </view>

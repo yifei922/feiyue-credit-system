@@ -1,4 +1,4 @@
-// pages/admin/resources.js - 资料管理（管理员/教师）
+// pages/admin/resources.js - 资料管理（管理员/主理人）
 // 合规说明：个人主体禁止 K12 学科类校外培训，subject 改为通用兴趣标签，grade 改为难度等级。
 const app = getApp();
 

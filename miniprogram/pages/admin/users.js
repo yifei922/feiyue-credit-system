@@ -1,4 +1,4 @@
-// pages/admin/users.js - 用户管理（教师/管理员）
+// pages/admin/users.js - 用户管理（主理人/管理员）
 // 对标网页端 SystemSettings → 账号管理 Tab
 const app = getApp();
 
@@ -15,15 +15,15 @@ Page({
     canManageUsers: false,
     ROLE_TABS: [
       { label: '全部', value: '' },
-      { label: '学生', value: 'STUDENT' },
-      { label: '课代表', value: 'REP' },
-      { label: '教师', value: 'TEACHER' },
+      { label: '成员', value: 'STUDENT' },
+      { label: '小组长', value: 'REP' },
+      { label: '主理人', value: 'TEACHER' },
       { label: '管理员', value: 'ADMIN' },
     ],
     ROLE_OPTIONS: [
-      { label: '学生', value: 'STUDENT' },
-      { label: '课代表', value: 'REP' },
-      { label: '教师', value: 'TEACHER' },
+      { label: '成员', value: 'STUDENT' },
+      { label: '小组长', value: 'REP' },
+      { label: '主理人', value: 'TEACHER' },
       { label: '管理员', value: 'ADMIN' },
     ],
     // 角色编辑弹窗
@@ -37,7 +37,7 @@ Page({
   onShow() {
     if (!this._roleChecked && !requireRole(['ADMIN', 'TEACHER'])) return; this._roleChecked = true;
     const u = app.globalData.user || {};
-    // 安全加固：只有 ADMIN 能改角色；TEACHER 仍可查看列表与重置学生密码
+    // 安全加固：只有 ADMIN 能改角色；TEACHER 仍可查看列表与重置成员密码
     this.setData({ canManageUsers: u.role === 'ADMIN' });
     this.load(true);
     this.loadSubjects();
@@ -125,7 +125,7 @@ Page({
 
   onPickRole(e) {
     const role = e.currentTarget.dataset.value;
-    // 切换角色时，若非 REP 则清空科目选择
+    // 切换角色时，若非 REP 则清空兴趣分类选择
     const subjectIds = role === 'REP' ? this.data.editForm.subjectIds : [];
     this.setData({ 'editForm.role': role, 'editForm.subjectIds': subjectIds });
   },
@@ -141,7 +141,7 @@ Page({
   async onSaveRole() {
     const f = this.data.editForm;
     if (!f.role) return wx.showToast({ title: '请选择角色', icon: 'none' });
-    if (f.role === 'REP' && !f.subjectIds.length) return wx.showToast({ title: '课代表需选择负责科目', icon: 'none' });
+    if (f.role === 'REP' && !f.subjectIds.length) return wx.showToast({ title: '小组长需选择负责兴趣分类', icon: 'none' });
 
     this.setData({ savingRole: true });
     try {

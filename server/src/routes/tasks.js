@@ -20,7 +20,7 @@ function shape(row) {
   };
 }
 
-// 列表（含 per-student 提交状态 + 老师/管理员视角）
+// 列表（含 per-student 提交状态 + 主理人/管理员视角）
 router.get('/', async (req, res) => {
   const params = [];
   let sql = `SELECT t.*, s.name AS subjectName FROM task t LEFT JOIN subject s ON t.subject_id=s.id WHERE 1=1`;
@@ -37,7 +37,7 @@ router.get('/', async (req, res) => {
   sql += ' ORDER BY t.id';
   const rows = await db.prepare(sql).all(...params);
 
-  // 给学生补充 myStatus 字段（来自 completion_record）
+  // 给成员补充 myStatus 字段（来自 completion_record）
   let completionMap = {};
   if (req.user.role === 'STUDENT') {
     const ids = rows.map((r) => r.id);
@@ -54,9 +54,9 @@ router.get('/', async (req, res) => {
 // 新增
 router.post('/', requireRole('ADMIN', 'TEACHER', 'REP'), async (req, res) => {
   const { title, subjectId, creditValue, type, deadline, description } = req.body || {};
-  if (!title || !subjectId) return fail(res, 400, '请填写任务标题与科目');
+  if (!title || !subjectId) return fail(res, 400, '请填写任务标题与兴趣分类');
   if (req.user.role === 'REP' && !(await canManageSubject(req.user, subjectId))) {
-    return fail(res, 403, '你只能安排自己负责的科目');
+    return fail(res, 403, '你只能安排自己负责的兴趣分类');
   }
   const r = await db.prepare('INSERT INTO task(title, subject_id, class_id, credit_value, type, status, deadline, description, creator_id) VALUES(?,?,?,?,?,?,?,?,?)')
     .run(title, subjectId, req.user.class_id || 1, creditValue || 0, type || 'HOMEWORK', 'OPEN', deadline || null, description || '', req.user.id);
@@ -68,9 +68,9 @@ router.post('/', requireRole('ADMIN', 'TEACHER', 'REP'), async (req, res) => {
 // 存为模板
 router.post('/template', requireRole('ADMIN', 'TEACHER', 'REP'), async (req, res) => {
   const { title, subjectId, type, creditValue, description } = req.body || {};
-  if (!title || !subjectId) return fail(res, 400, '请填写模板标题与科目');
+  if (!title || !subjectId) return fail(res, 400, '请填写模板标题与兴趣分类');
   if (req.user.role === 'REP' && !(await canManageSubject(req.user, subjectId))) {
-    return fail(res, 403, '你只能为负责的科目建模板');
+    return fail(res, 403, '你只能为负责的兴趣分类建模板');
   }
   const r = await db.prepare('INSERT INTO task_template(name, subject_id, type, credit_value, description) VALUES(?,?,?,?,?)')
     .run(title + '·模板', subjectId, type || 'HOMEWORK', creditValue || 0, description || '');
@@ -88,7 +88,7 @@ router.post('/from-template/:id', requireRole('ADMIN', 'TEACHER', 'REP'), async 
   const tpl = await db.prepare('SELECT * FROM task_template WHERE id=?').get(req.params.id);
   if (!tpl) return fail(res, 404, '模板不存在');
   if (req.user.role === 'REP' && !(await canManageSubject(req.user, tpl.subject_id))) {
-    return fail(res, 403, '你只能安排自己负责的科目');
+    return fail(res, 403, '你只能安排自己负责的兴趣分类');
   }
   const r = await db.prepare('INSERT INTO task(title, subject_id, class_id, credit_value, type, status, deadline, description, creator_id) VALUES(?,?,?,?,?,?,?,?,?)')
     .run(tpl.name, tpl.subject_id, req.user.class_id || 1, tpl.credit_value, tpl.type, 'OPEN', null, tpl.description, req.user.id);
@@ -102,7 +102,7 @@ router.put('/:id', requireRole('ADMIN', 'TEACHER', 'REP'), async (req, res) => {
   const before = await db.prepare('SELECT * FROM task WHERE id=?').get(req.params.id);
   if (!before) return fail(res, 404, '任务不存在');
   if (req.user.role === 'REP' && !(await canManageSubject(req.user, before.subject_id))) {
-    return fail(res, 403, '你只能修改自己负责的科目任务');
+    return fail(res, 403, '你只能修改自己负责的兴趣分类任务');
   }
   const { title, subjectId, creditValue, type, deadline, description, status } = req.body || {};
   await db.prepare('UPDATE task SET title=?, subject_id=?, credit_value=?, type=?, deadline=?, description=?, status=? WHERE id=?')
@@ -120,7 +120,7 @@ router.delete('/:id', requireRole('ADMIN', 'TEACHER', 'REP'), async (req, res) =
   const before = await db.prepare('SELECT * FROM task WHERE id=?').get(req.params.id);
   if (!before) return fail(res, 404, '任务不存在');
   if (req.user.role === 'REP' && !(await canManageSubject(req.user, before.subject_id))) {
-    return fail(res, 403, '你只能删除自己负责的科目任务');
+    return fail(res, 403, '你只能删除自己负责的兴趣分类任务');
   }
   await db.prepare('DELETE FROM credit_flow WHERE task_id=?').run(req.params.id);
   await db.prepare('DELETE FROM completion_record WHERE task_id=?').run(req.params.id);

@@ -19,7 +19,7 @@ router.get('/overview', async (req, res) => {
   const tasks = await scopeTasks(req.user);
   const taskIds = await Promise.all(tasks.map(async t => t.id));
 
-  // 各科目完成率
+  // 各兴趣分类完成率
   let subjects;
   if (req.user.role === 'REP') {
     const ids = await getManagedSubjectIds(req.user);
@@ -62,8 +62,8 @@ router.get('/overview', async (req, res) => {
   ok(res, { subjectCompletionRate, statusDistribution, summary });
 });
 
-// 完成情况小计总览：整体完成/未完成人数、各任务完成小计、未完成学生清单
-// REP 仅统计自己负责的科目范围
+// 完成情况小计总览：整体完成/未完成人数、各任务完成小计、未完成成员清单
+// REP 仅统计自己负责的兴趣分类范围
 router.get('/completion-summary', async (req, res) => {
   const managed = req.user.role === 'REP' ? await getManagedSubjectIds(req.user) : null;
   if (managed && managed.length === 0) {
@@ -84,7 +84,7 @@ router.get('/completion-summary', async (req, res) => {
     return { taskId: t.id, title: t.title, subjectName: t.subjectName, done, unfinished, total: recs.length };
   }));
 
-  // 未完成学生聚合（含待完成任务标题）
+  // 未完成成员聚合（含待完成任务标题）
   let unfSql = `SELECT cr.student_id, s.name AS studentName, s.student_no AS studentNo, t.title
                 FROM completion_record cr
                 JOIN task t ON cr.task_id=t.id
@@ -123,7 +123,7 @@ router.get('/credit-trend', async (req, res) => {
   ok(res, series);
 });
 
-// 下钻：某科目各任务完成情况
+// 下钻：某兴趣分类各任务完成情况
 router.get('/drill/subject', async (req, res) => {
   const subjectId = Number(req.query.subjectId);
   if (!subjectId) return ok(res, []);
@@ -139,7 +139,7 @@ router.get('/drill/subject', async (req, res) => {
   ok(res, rows);
 });
 
-// 下钻：某状态涉及的任务/学生
+// 下钻：某状态涉及的任务/成员
 router.get('/drill/status', async (req, res) => {
   const status = req.query.status;
   if (!status) return ok(res, []);

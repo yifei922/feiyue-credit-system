@@ -8,7 +8,7 @@ const { recordLog } = require('../services/log');
 
 // 写入单条完成记录 + 流水 + 增量回写总积分（被 /register 与 /import 复用，保证幂等）
 // 并发安全：不再「全量 SUM 后整体覆盖」，而是用单条原子 SQL 按本次差值 +/- 回写，
-// 避免多位老师/课代表同时登记同一批学生时出现的 read-modify-write 丢失更新竞态。
+// 避免多位主理人/小组长同时登记同一批成员时出现的 read-modify-write 丢失更新竞态。
 async function registerCompletion(task, sid, status, operator) {
   const { credit, flowType } = calcCredit(task.credit_value, task.type, status);
   const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
@@ -38,24 +38,24 @@ router.post('/register', requireRole('ADMIN', 'TEACHER', 'REP', 'STUDENT'), asyn
   const { taskId, studentIds, status } = req.body || {};
   if (!taskId || !status) return fail(res, 400, '缺少任务或状态');
 
-  // 学生只能登记自己；且只能提交「待确认」状态，不可自行计积分（防自产自销积分）
-  // 最终 DONE_ONTIME/DONE_OVERDUE 由老师或课代表确认后写入。
+  // 成员只能登记自己；且只能提交「待确认」状态，不可自行计积分（防自产自销积分）
+  // 最终 DONE_ONTIME/DONE_OVERDUE 由主理人或小组长确认后写入。
   let sids = [];
   let effStatus = status;
   if (req.user.role === 'STUDENT') {
     sids = [req.user.studentId];
-    effStatus = 'SUBMITTED'; // 学生自报统一记为待确认，计 0 分
+    effStatus = 'SUBMITTED'; // 成员自报统一记为待确认，计 0 分
   } else {
     sids = Array.isArray(studentIds) ? studentIds.map(Number) : (studentIds ? [Number(studentIds)] : []);
   }
-  if (sids.length === 0) return fail(res, 400, '请选择学生');
+  if (sids.length === 0) return fail(res, 400, '请选择成员');
 
   const task = await db.prepare('SELECT * FROM task WHERE id=?').get(taskId);
   if (!task) return fail(res, 404, '任务不存在');
 
-  // 课代表只能登记自己负责的科目
+  // 小组长只能登记自己负责的兴趣分类
   if (req.user.role === 'REP' && !(await canManageSubject(req.user, task.subject_id))) {
-    return fail(res, 403, '你只能登记自己负责的科目');
+    return fail(res, 403, '你只能登记自己负责的兴趣分类');
   }
 
   let gained = 0;
@@ -68,8 +68,8 @@ router.post('/register', requireRole('ADMIN', 'TEACHER', 'REP', 'STUDENT'), asyn
   ok(res, { affected: sids.length, gained });
 });
 
-// 成绩导入（管理员/老师/课代表）：CSV 或 JSON 数组
-// CSV 表头支持：student_no / student_name / task_id / task_title / status（也可无表头，按列序 学号,任务ID,状态）
+// 打卡记录导入（管理员/主理人/小组长）：CSV 或 JSON 数组
+// CSV 表头支持：student_no / student_name / task_id / task_title / status（也可无表头，按列序 编号,任务ID,状态）
 router.post('/import', requireRole('ADMIN', 'TEACHER', 'REP'), async (req, res) => {
   const body = req.body || {};
   let rows = [];
@@ -105,17 +105,17 @@ router.post('/import', requireRole('ADMIN', 'TEACHER', 'REP'), async (req, res) 
     }));
   }
   rows = rows.filter(r => (r.studentNo || r.studentName) && (r.taskId || r.taskTitle) && r.status);
-  if (rows.length === 0) return fail(res, 400, '没有可导入的成绩记录（请检查数据格式）');
+  if (rows.length === 0) return fail(res, 400, '没有可导入的打卡记录记录（请检查数据格式）');
 
   const validStatus = ['DONE_ONTIME', 'DONE_OVERDUE', 'UNFINISHED', 'FAILED'];
   let imported = 0, skipped = 0;
   const errors = [];
   for (const r of rows) {
-    // 解析学生
+    // 解析成员
     let student = null;
     if (r.studentNo) student = await db.prepare('SELECT * FROM student WHERE student_no=?').get(r.studentNo);
     if (!student && r.studentName) student = await db.prepare('SELECT * FROM student WHERE name=?').get(r.studentName);
-    if (!student) { skipped++; errors.push(`学生未找到: ${r.studentNo || r.studentName}`); continue; }
+    if (!student) { skipped++; errors.push(`成员未找到: ${r.studentNo || r.studentName}`); continue; }
     // 解析任务
     let task = null;
     if (r.taskId && /^\d+$/.test(String(r.taskId))) task = await db.prepare('SELECT * FROM task WHERE id=?').get(Number(r.taskId));
@@ -124,9 +124,9 @@ router.post('/import', requireRole('ADMIN', 'TEACHER', 'REP'), async (req, res) 
     // 状态校验
     const status = String(r.status).toUpperCase();
     if (!validStatus.includes(status)) { skipped++; errors.push(`状态非法: ${r.status}`); continue; }
-    // 课代表科目隔离
+    // 小组长兴趣分类隔离
     if (req.user.role === 'REP' && !(await canManageSubject(req.user, task.subject_id))) {
-      skipped++; errors.push(`无权限科目: ${task.title}`); continue;
+      skipped++; errors.push(`无权限兴趣分类: ${task.title}`); continue;
     }
     await registerCompletion(task, student.id, status, req.user);
     imported++;
@@ -135,7 +135,7 @@ router.post('/import', requireRole('ADMIN', 'TEACHER', 'REP'), async (req, res) 
   ok(res, { imported, skipped, errors: errors.slice(0, 20), total: rows.length });
 });
 
-// 成绩明细导出（角色隔离：学生仅本人，课代表仅负责科目）
+// 打卡记录明细导出（角色隔离：成员仅本人，小组长仅负责兴趣分类）
 router.get('/export', async (req, res) => {
   const format = String(req.query.format || 'csv').toLowerCase();
   const params = [];
@@ -154,7 +154,7 @@ router.get('/export', async (req, res) => {
     sql += ` AND t.subject_id IN (${ids.map(() => '?').join(',')})`;
     params.push(...ids);
   }
-  // 教师/课代表可按学生导出某位同学的成绩单；学生角色已在上面强制为本人，忽略此参数
+  // 主理人/小组长可按成员导出某位成员的打卡记录；成员角色已在上面强制为本人，忽略此参数
   if (req.user.role !== 'STUDENT' && req.query.studentId) {
     sql += ' AND cr.student_id=?'; params.push(Number(req.query.studentId));
   }

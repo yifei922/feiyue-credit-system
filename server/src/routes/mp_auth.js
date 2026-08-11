@@ -23,7 +23,7 @@ function userPayload(u) {
  *   1) code 换 openid
  *   2) 查 sys_user.openid 是否存在
  *   3) 存在：返回 JWT（已绑定）
- *   4) 不存在：自动建账号（默认角色 STUDENT，username=openid 前 12 位；后续用户在个人中心"绑定学号"）
+ *   4) 不存在：自动建账号（默认角色 STUDENT，username=openid 前 12 位；后续用户在个人中心"绑定编号"）
  */
 router.post('/wx-login', async (req, res) => {
   try {
@@ -58,7 +58,7 @@ router.post('/wx-login', async (req, res) => {
       return res.json({ code: 0, message: 'success', data: { token, user: userPayload(u), bound: true } });
     }
 
-    // 2) 未绑定 → 自动建账号（临时用户名 = wx_<openid前10>），等用户去个人中心绑定学号
+    // 2) 未绑定 → 自动建账号（临时用户名 = wx_<openid前10>），等用户去个人中心绑定编号
     const INIT_POINTS = Number(process.env.INIT_POINTS) || 100; // 前期每人体赠积分
     const tmpUsername = 'wx_' + openid.slice(0, 10);
     const dup = await db.prepare('SELECT id FROM sys_user WHERE username=?').get(tmpUsername);
@@ -80,7 +80,7 @@ router.post('/wx-login', async (req, res) => {
     const token = signToken(userPayload(u));
     return res.json({
       code: 0, message: 'success',
-      data: { token, user: userPayload(u), bound: false, hint: '首次登录，请在个人中心绑定学号以关联班级数据' }
+      data: { token, user: userPayload(u), bound: false, hint: '首次登录，请在个人中心绑定编号以关联圈子数据' }
     });
   } catch (e) {
     console.error('[mp/wx-login]', e);

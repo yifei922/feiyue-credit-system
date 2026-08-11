@@ -29,5 +29,5 @@
     </view>
   </view>
 
-  <button wx:if="{{files.length}}" class="btn-primary submit-btn" bindtap="uploadAll" loading="{{submitting}}" disabled="{{submitting}}">📤 提交作业（{{files.length}} 个附件）</button>
+  <button wx:if="{{files.length}}" class="btn-primary submit-btn" bindtap="uploadAll" loading="{{submitting}}" disabled="{{submitting}}">📤 打卡（{{files.length}} 个附件）</button>
 </view>

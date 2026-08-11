@@ -1,5 +1,5 @@
-// pages/admin/subjects.js - 科目管理 + 课代表任命
-// 对标网页端 SystemSettings → 课代表任命 Tab
+// pages/admin/subjects.js - 兴趣分类管理 + 小组长任命
+// 对标网页端 SystemSettings → 小组长任命 Tab
 const app = getApp();
 
 const { requireRole } = require('../../utils/auth-guard.js');
@@ -11,7 +11,7 @@ Page({
     form: { name: '' },
     loading: false,
     error: '',
-    // 课代表弹窗
+    // 小组长弹窗
     showRepModal: false,
     repTarget: null,
     repCandidates: [],
@@ -56,7 +56,7 @@ Page({
   onInputChange(e) { this.setData({ ['form.' + e.currentTarget.dataset.field]: e.detail.value }); },
 
   async onSave() {
-    if (!this.data.form.name.trim()) return wx.showToast({ title: '请输入科目名称', icon: 'none' });
+    if (!this.data.form.name.trim()) return wx.showToast({ title: '请输入兴趣分类名称', icon: 'none' });
     this.setData({ loading: true });
     try {
       if (this.data.editingId) {
@@ -85,10 +85,10 @@ Page({
     } catch (e) { wx.showToast({ title: e.message, icon: 'none' }); }
   },
 
-  // ---- 课代表任命（新增）----
+  // ---- 小组长任命（新增）----
   onShowRepModal(e) {
     const s = e.currentTarget.dataset.s;
-    // 找到当前已选的课代表（从 rep_names 反推不太可靠，直接让用户重选）
+    // 找到当前已选的小组长（从 rep_names 反推不太可靠，直接让用户重选）
     this.setData({
       showRepModal: true,
       repTarget: s,
@@ -101,16 +101,16 @@ Page({
   onPickRep(e) { this.setData({ selectedRepId: e.currentTarget.dataset.id }); },
 
   async onSaveRep() {
-    if (!this.data.selectedRepId) return wx.showToast({ title: '请选择课代表', icon: 'none' });
+    if (!this.data.selectedRepId) return wx.showToast({ title: '请选择小组长', icon: 'none' });
     this.setData({ savingRep: true });
     try {
       // 后端接口：POST /api/subjects/:id/reps  { userIds:[...] }（subject_rep 关联表，可多可单）
       await app.apiPost('/api/subjects/' + this.data.repTarget.id + '/reps', {
         userIds: [this.data.selectedRepId],
       });
-      wx.showToast({ title: '已设置课代表', icon: 'success' });
+      wx.showToast({ title: '已设置小组长', icon: 'success' });
       this.setData({ showRepModal: false });
-      this.loadSubjects(); // 刷新以显示新课代表
+      this.loadSubjects(); // 刷新以显示新小组长
     } catch (e) {
       console.warn('setReps failed:', e.message);
       wx.showToast({ title: e.message || '设置失败', icon: 'none' });
@@ -119,7 +119,7 @@ Page({
     }
   },
 
-  // 列表里直接显示当前课代表姓名
+  // 列表里直接显示当前小组长姓名
   repNamesOf(s) {
     return (s.repNames && s.repNames.length) ? s.repNames.join('、') : '未设置';
   },

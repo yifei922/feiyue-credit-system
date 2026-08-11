@@ -241,7 +241,7 @@ CREATE TABLE IF NOT EXISTS operate_log (
   KEY idx_operatelog_operator (operator_id)
 );
 
--- ── 微信小程序专用表（社交 + 课程资料 + 积分 + 广告）──
+-- ── 微信小程序专用表（社交 + 兴趣资料 + 积分 + 广告）──
 CREATE TABLE IF NOT EXISTS post (
   id INT PRIMARY KEY AUTO_INCREMENT,
   user_id INT NOT NULL,
@@ -339,22 +339,22 @@ async function seed() {
   if (cntRow.c > 0) return;
 
   const CLASS_ID = 1;
-  await db.prepare('INSERT INTO clazz(name) VALUES(?)').run('默认班级');
+  await db.prepare('INSERT INTO clazz(name) VALUES(?)').run('默认圈子');
 
-  // 科目（合规整改：个人主体小程序禁止 K12 学科类培训，初始科目改为通用兴趣分类）
+  // 兴趣分类（合规整改：个人主体小程序禁止 K12 学科类培训，初始兴趣分类改为通用兴趣分类）
   const insSubj = db.prepare('INSERT INTO subject(name, class_id, teacher_id) VALUES(?,?,?)');
   await insSubj.run('阅读', CLASS_ID, 2);
   await insSubj.run('写作', CLASS_ID, 2);
   await insSubj.run('思维', CLASS_ID, 2);
 
-  // 用户：管理员(ADMIN) / 老师(TEACHER) / 课代表(REP x2) / 学生(STUDENT)
+  // 用户：管理员(ADMIN) / 主理人(TEACHER) / 小组长(REP x2) / 成员(STUDENT)
   const insUser = db.prepare(
     'INSERT INTO sys_user(username, password, name, role, class_id, student_id) VALUES(?,?,?,?,?,?)'
   );
   await insUser.run('admin', hashPassword('123456'), '管理员', 'ADMIN', CLASS_ID, null);
-  await insUser.run('teacher01', hashPassword('123456'), '杨老师', 'TEACHER', CLASS_ID, null);
-  await insUser.run('rep01', hashPassword('123456'), '李课代(阅读)', 'REP', CLASS_ID, null);
-  await insUser.run('rep02', hashPassword('123456'), '张课代(写作)', 'REP', CLASS_ID, null);
+  await insUser.run('teacher01', hashPassword('123456'), '主理人', 'TEACHER', CLASS_ID, null);
+  await insUser.run('rep01', hashPassword('123456'), '李小组长(阅读)', 'REP', CLASS_ID, null);
+  await insUser.run('rep02', hashPassword('123456'), '张小组长(写作)', 'REP', CLASS_ID, null);
 
   // 显式取 id
   const getUid = async (u) => (await db.prepare('SELECT id FROM sys_user WHERE username=?').get(u)).id;
@@ -363,7 +363,7 @@ async function seed() {
   const r1 = await getUid('rep01');
   const r2 = await getUid('rep02');
 
-  // 学生档案 + 账号
+  // 成员档案 + 账号
   const studentsSeed = [
     ['张三', 'S1001'], ['李四', 'S1002'], ['王五', 'S1003'],
     ['赵六', 'S1004'], ['钱七', 'S1005'], ['孙八', 'S1006']
@@ -380,7 +380,7 @@ async function seed() {
     await insStuUser.run(username, hashPassword('123456'), name, 'STUDENT', CLASS_ID, studentId);
   }
 
-  // 课代表科目关联
+  // 小组长兴趣分类关联
   await db.prepare('INSERT IGNORE INTO subject_rep(subject_id, user_id) VALUES(?,?)').run(1, r1);
   await db.prepare('INSERT IGNORE INTO subject_rep(subject_id, user_id) VALUES(?,?)').run(2, r2);
 
@@ -390,14 +390,14 @@ async function seed() {
   );
   await insTask.run('一周阅读笔记打卡', 1, CLASS_ID, 3, 'BACKING', 'OPEN', '2026-07-26 23:59', '选一本感兴趣的书，每天记录一段感想', r1);
   await insTask.run('结构化写作练习', 2, CLASS_ID, 5, 'HOMEWORK', 'OPEN', '2026-07-22 23:59', '用 PREP 模板写一段 200 字自我介绍', r2);
-  await insTask.run('逻辑思维小测', 3, CLASS_ID, 8, 'EXAM', 'OPEN', '2026-07-20 23:59', '完成 10 道推理选择题', teacherId);
+  await insTask.run('逻辑思维打卡', 3, CLASS_ID, 8, 'EXAM', 'OPEN', '2026-07-20 23:59', '完成 10 道推理选择题', teacherId);
   await insTask.run('一周错题回顾', 2, CLASS_ID, 4, 'HOMEWORK', 'OPEN', '2026-07-30 23:59', '整理本周错题并写心得', r2);
 
   // 完成记录 + 流水（与前端 Mock 数据一致，便于对照）
   const taskMeta = {
     1: { credit: 3, type: 'BACKING', title: '一周阅读笔记打卡' },
     2: { credit: 5, type: 'HOMEWORK', title: '结构化写作练习' },
-    3: { credit: 8, type: 'EXAM', title: '逻辑思维小测' },
+    3: { credit: 8, type: 'EXAM', title: '逻辑思维打卡' },
     4: { credit: 4, type: 'HOMEWORK', title: '一周错题回顾' }
   };
   const seedComp = [
@@ -421,7 +421,7 @@ async function seed() {
       await insFlow.run(studentId, taskId, credit, flowType, meta.title);
     }
   }
-  // 重算各学生总积分（MySQL 不允许在 UPDATE 子查询中引用同一张表，改为按学生汇总后逐条更新）
+  // 重算各成员总积分（MySQL 不允许在 UPDATE 子查询中引用同一张表，改为按成员汇总后逐条更新）
   const sums = await db.prepare('SELECT student_id, COALESCE(SUM(change_amount),0) AS s FROM credit_flow GROUP BY student_id').all();
   const updStuCredit = db.prepare('UPDATE student SET total_credits=? WHERE id=?');
   for (const { student_id, s } of sums) {
@@ -429,14 +429,14 @@ async function seed() {
   }
 
   // 预警（文案同步改为中性）
-  await db.prepare("INSERT INTO alert(student_id, type, level, message) VALUES(?,?,?,?)").run(4, 'CONSECUTIVE_MISS', 'DANGER', '连续 3 个任务未完成（错题回顾/逻辑小测/写作练习）');
-  await db.prepare("INSERT INTO alert(student_id, type, level, message) VALUES(?,?,?,?)").run(2, 'OVERDUE_SOON', 'WARN', '《逻辑思维小测》将于 2026-07-20 截止且尚未完成');
+  await db.prepare("INSERT INTO alert(student_id, type, level, message) VALUES(?,?,?,?)").run(4, 'CONSECUTIVE_MISS', 'DANGER', '连续 3 个任务未完成（错题回顾/逻辑打卡/写作练习）');
+  await db.prepare("INSERT INTO alert(student_id, type, level, message) VALUES(?,?,?,?)").run(2, 'OVERDUE_SOON', 'WARN', '《逻辑思维打卡》将于 2026-07-20 截止且尚未完成');
 
   // 操作日志
   await db.prepare("INSERT INTO operate_log(operator_id, operator_name, operate_type, table_name, record_id, before_snapshot, after_snapshot) VALUES(?,?,?,?,?,?,?)")
-    .run(teacherId, '杨老师', 'INSERT', 'task', 3, null, '{"title":"逻辑思维小测","credit_value":8}');
+    .run(teacherId, '主理人', 'INSERT', 'task', 3, null, '{"title":"逻辑思维打卡","credit_value":8}');
   await db.prepare("INSERT INTO operate_log(operator_id, operator_name, operate_type, table_name, record_id, before_snapshot, after_snapshot) VALUES(?,?,?,?,?,?,?)")
-    .run(r1, '李课代(阅读)', 'UPDATE', 'completion_record', 1, '{"status":"UNFINISHED","credit_change":0}', '{"status":"DONE_ONTIME","credit_change":3}');
+    .run(r1, '李小组长(阅读)', 'UPDATE', 'completion_record', 1, '{"status":"UNFINISHED","credit_change":0}', '{"status":"DONE_ONTIME","credit_change":3}');
 
   // 任务模板
   await db.prepare('INSERT INTO task_template(name, subject_id, type, credit_value, description) VALUES(?,?,?,?,?)')
@@ -451,10 +451,10 @@ async function seed() {
 async function migrate() {
   const CLASS_ID = 1;
 
-  // 确保存在班级（极端情况下空库场景）
+  // 确保存在圈子（极端情况下空库场景）
   const hasClass = await db.prepare('SELECT id FROM clazz WHERE id=?').get(CLASS_ID);
   if (!hasClass) {
-    await db.prepare('INSERT INTO clazz(id, name) VALUES(?,?)').run(CLASS_ID, '默认班级');
+    await db.prepare('INSERT INTO clazz(id, name) VALUES(?,?)').run(CLASS_ID, '默认圈子');
   }
 
   // 1) 超级管理员（单独给管理者本人的最高权限账号）
@@ -467,7 +467,7 @@ async function migrate() {
     if (process.env.DEBUG_MIGRATE === '1') console.log('[migrate] 超级管理员账号已创建: superadmin / (密码已设置，请及时修改)');
   }
 
-  // 2) 兴趣分类科目补齐（合规整改：个人主体小程序禁止 K12 学科类培训，改通用兴趣标签）
+  // 2) 兴趣分类兴趣分类补齐（合规整改：个人主体小程序禁止 K12 学科类培训，改通用兴趣标签）
   const FULL_SUBJECTS = [
     '阅读', '写作', '思维', '编程', '艺术', '手工',
     '科普', '语言', '历史人文', '运动健康', '其他'
@@ -480,7 +480,7 @@ async function migrate() {
     if (!exist) await insSubj.run(name, CLASS_ID, teacherId);
   }
 
-  // 3) 学生账号用户名规范化：stu01 -> student01（修复 student01 登录失败问题）
+  // 3) 成员账号用户名规范化：stu01 -> student01（修复 student01 登录失败问题）
   const stuUsers = await db.prepare("SELECT id, username FROM sys_user WHERE role='STUDENT' AND username LIKE 'stu_%' AND username NOT LIKE 'student%'").all();
   const updStu = db.prepare('UPDATE sys_user SET username=? WHERE id=?');
   const chkStu = db.prepare('SELECT id FROM sys_user WHERE username=?');
@@ -489,9 +489,9 @@ async function migrate() {
     if (!(await chkStu.get(newName))) await updStu.run(newName, u.id);
   }
 
-  // 4) 测试教师 王老师 -> 杨老师（仅改种子默认教师账号与日志）
-  await db.prepare("UPDATE sys_user SET name='杨老师' WHERE username='teacher01' AND name='王老师'").run();
-  await db.prepare("UPDATE operate_log SET operator_name='杨老师' WHERE operator_name='王老师'").run();
+  // 4) 历史种子账号名称脱敏：曾用教学类称谓的账号统一更名为主理人（幂等，重启只跑一次）
+  await db.prepare("UPDATE sys_user SET name='主理人' WHERE name LIKE '%老师'").run();
+  await db.prepare("UPDATE operate_log SET operator_name='主理人' WHERE operator_name LIKE '%老师'").run();
 
   // 5) 附件存储编码列（raw/gzip）：用于视频/PDF/文档的无损存储压缩，下载时按此透明解压
   const [attCols] = await pool.query(
@@ -540,16 +540,16 @@ async function migrate() {
     await db.prepare("ALTER TABLE resource ADD COLUMN content TEXT").run();
   }
 
-  // 9) 课程资料自动播种：仅当 resource 表为空时填充示例资料（与数据库 id 解耦，刷新/新环境均可复现）
+  // 9) 兴趣资料自动播种：仅当 resource 表为空时填充示例资料（与数据库 id 解耦，刷新/新环境均可复现）
   await require('./seed_resources').writeAll(db);
 
-  // 10) 合规整改：把历史遗留的 K12 学科/年级字段重命名为中性兴趣标签（幂等，重启只跑一次）
+  // 10) 合规整改：把历史遗留的 K12 学科/难度字段重命名为中性兴趣标签（幂等，重启只跑一次）
   //     个人主体小程序禁止 K12 学科类校外培训；旧数据若被审核员看到会被驳回。
   await normalizeK12ToNeutral();
 }
 
 /**
- * 把现有 DB 中的 K12 学科/年级字段一次性重命名为通用兴趣标签。
+ * 把现有 DB 中的 K12 学科/难度字段一次性重命名为通用兴趣标签。
  * - 仅在首次运行时迁移（通过 _k12_migrated 标记；如不存在则创建）
  * - 幂等：多次调用结果一致；不会破坏非 K12 的现有数据
  */
@@ -592,19 +592,19 @@ async function normalizeK12ToNeutral() {
     if (r.changes) changed += r.changes;
   }
 
-  // 课代表姓名带"(语文)/(数学)"也顺手清理
+  // 小组长姓名带"(语文)/(数学)"也顺手清理
   const updUser = db.prepare('UPDATE sys_user SET name=? WHERE name=?');
   for (const [from, to] of Object.entries(K12_TO_NEUTRAL)) {
     // 仅清理 "(K12)" 后缀，避免误伤其他数据
-    await updUser.run(`李课代(阅读)`, '李课代(语文)');
-    await updUser.run(`张课代(思维)`, '张课代(数学)');
-    await updUser.run(`王课代(语言)`, '王课代(英语)');
+    await updUser.run(`李小组长(阅读)`, '李小组长(语文)');
+    await updUser.run(`张小组长(思维)`, '张小组长(数学)');
+    await updUser.run(`王小组长(语言)`, '王小组长(英语)');
   }
   const updLog = db.prepare('UPDATE operate_log SET operator_name=REPLACE(operator_name, ?, ?, ?)');
   // 简化：用直接 replace 处理
-  await db.prepare("UPDATE operate_log SET operator_name='李课代(阅读)' WHERE operator_name LIKE '%李课代(语文)%'").run();
-  await db.prepare("UPDATE operate_log SET operator_name='张课代(思维)' WHERE operator_name LIKE '%张课代(数学)%'").run();
-  await db.prepare("UPDATE operate_log SET operator_name='王课代(语言)' WHERE operator_name LIKE '%王课代(英语)%'").run();
+  await db.prepare("UPDATE operate_log SET operator_name='李小组长(阅读)' WHERE operator_name LIKE '%李小组长(语文)%'").run();
+  await db.prepare("UPDATE operate_log SET operator_name='张小组长(思维)' WHERE operator_name LIKE '%张小组长(数学)%'").run();
+  await db.prepare("UPDATE operate_log SET operator_name='王小组长(语言)' WHERE operator_name LIKE '%王小组长(英语)%'").run();
   await db.prepare("UPDATE alert SET message=REPLACE(message,'语文','阅读') WHERE message LIKE '%语文%'").run();
   await db.prepare("UPDATE alert SET message=REPLACE(message,'数学','思维') WHERE message LIKE '%数学%'").run();
   await db.prepare("UPDATE alert SET message=REPLACE(message,'英语','语言') WHERE message LIKE '%英语%'").run();

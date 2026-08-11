@@ -1,4 +1,4 @@
-// pages/admin/credits-adjust.js - 手动积分调整（教师/管理员/课代表）
+// pages/admin/credits-adjust.js - 手动积分调整（主理人/管理员/小组长）
 const app = getApp();
 
 const { requireRole } = require('../../utils/auth-guard.js');
@@ -45,7 +45,7 @@ Page({
 
   async onSubmit() {
     const f = this.data.form;
-    if (!f.studentId) return wx.showToast({ title: '请选择学生', icon: 'none' });
+    if (!f.studentId) return wx.showToast({ title: '请选择成员', icon: 'none' });
     if (!f.amount || isNaN(Number(f.amount)) || Number(f.amount) <= 0) return wx.showToast({ title: '请输入有效分数', icon: 'none' });
     if (!f.reason.trim()) return wx.showToast({ title: '请填写原因', icon: 'none' });
 

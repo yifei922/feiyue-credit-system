@@ -16,7 +16,7 @@ const dashboardRouter = require('./routes/dashboard');
 const operateLogRouter = require('./routes/operateLog');
 const usersRouter = require('./routes/users');
 const authMiddleware = require('./middleware/auth');
-// 小程序专用路由（社交 + 课程资料 + 积分 + 微信登录）
+// 小程序专用路由（社交 + 兴趣资料 + 积分 + 微信登录）
 const mpAuthRouter = require('./routes/mp_auth');
 const mpFeedRouter = require('./routes/mp_feed');
 const mpResourcesRouter = require('./routes/mp_resources');
@@ -63,7 +63,7 @@ api.use('/recommend', recommendRouter);
 api.use('/dashboard', dashboardRouter);
 api.use('/operate-logs', operateLogRouter);
 api.use('/users', usersRouter);
-// 小程序需要登录的接口（社交 + 课程资料 + 积分）
+// 小程序需要登录的接口（社交 + 兴趣资料 + 积分）
 api.use('/mp', mpFeedRouter);
 api.use('/mp', mpResourcesRouter);
 api.use('/mp', mpPointsRouter);
@@ -90,7 +90,7 @@ app.use((err, _req, res, _next) => {
 const DIST = path.join(__dirname, '..', '..', 'frontend', 'dist');
 app.use(express.static(DIST));
 
-// 课程资料（兴趣类）由 mp_resources 路由以 /api/mp/resources/file/:filename 提供，
+// 兴趣资料（兴趣类）由 mp_resources 路由以 /api/mp/resources/file/:filename 提供，
 // 仅服务 study-content 下白名单内的 .json 文件，杜绝 K12/中考类 HTML 被公网托管。
 // （早期 /study 公开静态目录已被移除：曾无鉴权托管 22 个中小学/中考 HTML，属提审违规。）
 

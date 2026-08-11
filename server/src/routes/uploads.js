@@ -72,7 +72,7 @@ router.get('/progress/:jobId', async (req, res) => {
   req.on('close', () => { clearInterval(ping); jobEnd(jobId); });
 });
 
-// 上传（任意登录用户均可；学生提交作业时 student_id 取自登录身份）
+// 上传（任意登录用户均可；成员打卡时 student_id 取自登录身份）
 router.post('/', uploadSingle, async (req, res) => {
   const jobId = req.body.jobId || req.headers['x-upload-job-id'] || null;
   try {
@@ -156,7 +156,7 @@ router.get('/stats/usage', async (req, res) => {
   });
 });
 
-// 查看/下载（鉴权；学生仅能访问自己的附件）
+// 查看/下载（鉴权；成员仅能访问自己的附件）
 router.get('/:storedName', async (req, res) => {
   const name = req.params.storedName;
   if (/[\/\\]/.test(name) || name.includes('..')) return fail(res, 400, '非法文件名');

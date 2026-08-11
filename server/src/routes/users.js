@@ -7,7 +7,7 @@ const { ok, fail, paginate, setPageHeaders } = require('../util');
 const { requireRole } = require('../middleware/rbac');
 const { recordLog } = require('../services/log');
 
-const ROLE_LABEL = { ADMIN: '管理员', TEACHER: '老师', REP: '课代表', STUDENT: '学生' };
+const ROLE_LABEL = { ADMIN: '管理员', TEACHER: '主理人', REP: '小组长', STUDENT: '成员' };
 
 /**
  * 生成 10 位随机临时密码（含大小写+数字），前端一次性展示给管理员，
@@ -21,7 +21,7 @@ function genTempPwd() {
   return s;
 }
 
-// 账号列表（管理员/老师）：含角色、姓名、学号、负责科目（分页；数组主体 + 响应头元信息）
+// 账号列表（管理员/主理人）：含角色、姓名、编号、负责兴趣分类（分页；数组主体 + 响应头元信息）
 router.get('/', requireRole('ADMIN', 'TEACHER'), async (req, res) => {
   const { page, pageSize, offset } = paginate(req.query);
   const role = req.query.role;
@@ -49,14 +49,14 @@ router.get('/', requireRole('ADMIN', 'TEACHER'), async (req, res) => {
   ok(res, list);
 });
 
-// 重置/设定密码（管理员/老师/课代表）
+// 重置/设定密码（管理员/主理人/小组长）
 // 安全加固：不传 password 时生成 10 位随机临时密码（前端一次性展示，要求首次登录强制改密）。
 // 不再使用 '123456' 默认密码（弱密码风险）。
 router.post('/:id/reset-password', requireRole('ADMIN', 'TEACHER', 'REP'), async (req, res) => {
   const target = await db.prepare('SELECT * FROM sys_user WHERE id=?').get(req.params.id);
   if (!target) return fail(res, 404, '账号不存在');
   if (req.user.role === 'REP' && target.role !== 'STUDENT') {
-    return fail(res, 403, '课代表只能重置学生的密码');
+    return fail(res, 403, '小组长只能重置成员的密码');
   }
   if (target.username === 'superadmin' && req.user.username !== 'superadmin') {
     return fail(res, 403, '超级管理员密码只能由本人修改');
@@ -71,8 +71,8 @@ router.post('/:id/reset-password', requireRole('ADMIN', 'TEACHER', 'REP'), async
   ok(res, { ok: true, username: target.username, password: newPwd, mustChangePwd: true });
 });
 
-// 设置角色 + 课代表科目绑定（仅 ADMIN）
-// 安全加固：教师拥有大量学生/家长账号时易失控；只允许超级管理员变更角色。
+// 设置角色 + 小组长兴趣分类绑定（仅 ADMIN）
+// 安全加固：主理人拥有大量成员/家长账号时易失控；只允许超级管理员变更角色。
 router.post('/:id/role', requireRole('ADMIN'), async (req, res) => {
   const target = await db.prepare('SELECT * FROM sys_user WHERE id=?').get(req.params.id);
   if (!target) return fail(res, 404, '账号不存在');
@@ -84,7 +84,7 @@ router.post('/:id/role', requireRole('ADMIN'), async (req, res) => {
   if (target.username === 'superadmin') return fail(res, 403, '不能修改超级管理员的角色');
 
   await db.prepare('UPDATE sys_user SET role=? WHERE id=?').run(role, target.id);
-  // 维护课代表科目映射
+  // 维护小组长兴趣分类映射
   await db.prepare('DELETE FROM subject_rep WHERE user_id=?').run(target.id);
   if (role === 'REP' && Array.isArray(subjectIds)) {
     const ins = await db.prepare('INSERT IGNORE INTO subject_rep(subject_id, user_id) VALUES(?,?)');

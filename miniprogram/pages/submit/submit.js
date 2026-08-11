@@ -1,4 +1,4 @@
-// pages/submit/submit.js - 提交作业（学生端核心）
+// pages/submit/submit.js - 打卡（成员端核心）
 const app = getApp();
 const MAX = 30 * 1024 * 1024; // 与服务端一致
 

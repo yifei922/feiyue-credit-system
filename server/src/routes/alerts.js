@@ -69,13 +69,13 @@ router.post('/scan', requireRole('ADMIN', 'TEACHER', 'REP'), async (req, res) =>
   ok(res, { ok: true, count });
 });
 
-// 一键提醒所有「未完成」学生（管理员/老师/课代表，REP 限本科目范围）
-// 为每位有未完成任务的学生生成一条 REMIND 提醒，学生端可在「我的提醒」看到
+// 一键提醒所有「未完成」成员（管理员/主理人/小组长，REP 限本兴趣分类范围）
+// 为每位有未完成任务的成员生成一条 REMIND 提醒，成员端可在「我的提醒」看到
 router.post('/remind-unfinished', requireRole('ADMIN', 'TEACHER', 'REP'), async (req, res) => {
   const managed = req.user.role === 'REP' ? await getManagedSubjectIds(req.user) : null;
   if (managed && managed.length === 0) return ok(res, { ok: true, count: 0 });
 
-  // 查未完成记录（带任务标题、科目），按学生聚合
+  // 查未完成记录（带任务标题、兴趣分类），按成员聚合
   let sql = `SELECT cr.student_id, t.title, t.subject_id
              FROM completion_record cr JOIN task t ON cr.task_id=t.id
              WHERE cr.status='UNFINISHED'`;
@@ -105,13 +105,13 @@ router.post('/remind-unfinished', requireRole('ADMIN', 'TEACHER', 'REP'), async 
   ok(res, { ok: true, count });
 });
 
-// 给单个学生发送自定义提醒（管理员/老师/课代表）
+// 给单个成员发送自定义提醒（管理员/主理人/小组长）
 router.post('/notify', requireRole('ADMIN', 'TEACHER', 'REP'), async (req, res) => {
   const studentId = Number(req.body?.studentId);
   const message = String(req.body?.message || '').trim();
-  if (!studentId || !message) return fail(res, 400, '请指定学生和提醒内容');
+  if (!studentId || !message) return fail(res, 400, '请指定成员和提醒内容');
   const stu = await db.prepare('SELECT id FROM student WHERE id=?').get(studentId);
-  if (!stu) return fail(res, 404, '学生不存在');
+  if (!stu) return fail(res, 404, '成员不存在');
   await db.prepare('INSERT INTO alert(student_id,type,level,message) VALUES(?,?,?,?)')
     .run(studentId, 'REMIND', 'INFO', message);
   recordLog(req.user, 'REMIND', 'alert', studentId, null, { message });

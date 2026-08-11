@@ -43,7 +43,7 @@
     </view>
 
     <view class="form-group">
-      <text class="form-label">所属科目</text>
+      <text class="form-label">所属兴趣分类</text>
       <view class="subject-tags">
         <view wx:for="{{subjects}}" wx:key="id"
               class="tag {{form.subjectId==item.id?'selected':''}}"
@@ -77,7 +77,7 @@
     <block wx:if="{{completions.length}}">
       <view class="card completion-list">
         <view class="comp-item" wx:for="{{completions}}" wx:key="id">
-          <view>{{item.student_name || '学生'+(index+1)}}</view>
+          <view>{{item.student_name || '成员'+(index+1)}}</view>
           <view>
             <text class="status-{{item.status==='FINISHED'?'open':'closed'}}">{{item.status==='FINISHED'?'已完成':'未完成'}}</text>
             <text wx:if="{{item.status!=='FINISHED'}}" class="action-btn primary" style="margin-left:12rpx;" bindtap="onQuickComplete" data-sid="{{item.student_id}}">登记完成</text>

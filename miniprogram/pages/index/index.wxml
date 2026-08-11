@@ -4,7 +4,7 @@
     <image class="avatar" src="{{user.avatar || '/assets/avatar_default.png'}}" binderror="onAvatarError"></image>
     <view class="user-info">
       <view class="name">{{user.name}}</view>
-      <view class="role muted">{{user.role === 'STUDENT' ? '同学' : user.role === 'TEACHER' ? '教师' : user.role === 'ADMIN' ? '管理员' : user.role === 'REP' ? '课代表' : '其他'}}</view>
+      <view class="role muted">{{user.role === 'STUDENT' ? '成员' : user.role === 'TEACHER' ? '主理人' : user.role === 'ADMIN' ? '管理员' : user.role === 'REP' ? '小组长' : '其他'}}</view>
     </view>
     <view class="credit-block">
       <view class="credit-label">总积分</view>
@@ -16,7 +16,7 @@
   <view class="quick-row">
     <view class="quick-item" bindtap="onTabTasks">
       <view class="quick-ico" style="background:linear-gradient(135deg,#FFB23E,#FF7E6B)">📝</view>
-      <view class="quick-text">今日作业</view>
+      <view class="quick-text">今日打卡</view>
     </view>
     <view class="quick-item" bindtap="onTabStudy">
       <view class="quick-ico" style="background:linear-gradient(135deg,#7C5CFF,#4D9BFF)">📚</view>

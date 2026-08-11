@@ -4,7 +4,7 @@ const { db } = require('../db');
 const { ok, fmtDate, paginate } = require('../util');
 const { requireRole } = require('../middleware/rbac');
 
-// 操作日志查询（管理员/老师/课代表可看）：支持时间范围筛选 + 分页
+// 操作日志查询（管理员/主理人/小组长可看）：支持时间范围筛选 + 分页
 router.get('/', requireRole('ADMIN', 'TEACHER', 'REP'), async (req, res) => {
   const { page, pageSize, offset } = paginate(req.query);
   const params = [];

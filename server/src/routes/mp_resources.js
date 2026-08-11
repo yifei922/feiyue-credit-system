@@ -1,5 +1,5 @@
-// 课程资料路由（小程序 + Web 后台共用）
-// - GET    /api/mp/resources?grade=&subject=&page=         学生浏览
+// 兴趣资料路由（小程序 + Web 后台共用）
+// - GET    /api/mp/resources?grade=&subject=&page=         成员浏览
 // - GET    /api/mp/resources/:id                          详情（含解锁状态）
 // - POST   /api/mp/resources/:id/unlock                   看广告解锁（前端调 wx.ad 后回调）
 // - GET    /api/mp/admin/resources                        后台列出（ADMIN/TEACHER）
@@ -46,9 +46,9 @@ router.get('/resources/file/:filename', (req, res) => {
 });
 
 
-// ── 学生端 ──
+// ── 成员端 ──
 
-// 列表：按年级+科目筛选
+// 列表：按难度+兴趣分类筛选
 router.get('/resources', async (req, res) => {
   const { grade, subject, page = 1 } = req.query;
   const lim = 20, off = (Math.max(1, +page) - 1) * lim;
@@ -184,7 +184,7 @@ router.delete('/admin/resources/:id', async (req, res) => {
   ok(res, { ok: true });
 });
 
-// 批量导入（教师/管理员一次性录入多条；支持 JSON 数组）
+// 批量导入（主理人/管理员一次性录入多条；支持 JSON 数组）
 router.post('/admin/resources/batch', async (req, res) => {
   if (!isAdmin(req.user)) return fail(res, 403, '无权操作');
   const list = Array.isArray(req.body?.list) ? req.body.list : [];

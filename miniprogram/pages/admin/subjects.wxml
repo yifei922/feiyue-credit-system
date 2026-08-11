@@ -5,24 +5,24 @@
         <view class="sub-info">
           <view class="sub-name">{{item.name}}</view>
           <view class="sub-meta">
-            课代表：<text class="rep-name {{item.repNames && item.repNames.length ? '' : 'no-rep'}}">{{item.repNames && item.repNames.length ? item.repNames.join('、') : '未指定'}}</text>
+            小组长：<text class="rep-name {{item.repNames && item.repNames.length ? '' : 'no-rep'}}">{{item.repNames && item.repNames.length ? item.repNames.join('、') : '未指定'}}</text>
           </view>
         </view>
         <view class="sub-actions">
-          <view class="action-btn rep" data-s="{{item}}" bindtap="onShowRepModal">设课代表</view>
+          <view class="action-btn rep" data-s="{{item}}" bindtap="onShowRepModal">设小组长</view>
           <view class="action-btn" bindtap="onEdit" data-s="{{item}}">编辑</view>
           <view class="action-btn danger" bindtap="onDelete" data-id="{{item.id}}">删除</view>
         </view>
       </view>
     </view>
   </block>
-  <view wx:else class="empty">暂无科目数据</view>
+  <view wx:else class="empty">暂无兴趣分类数据</view>
 
   <!-- 新建/编辑表单 -->
   <view wx:if="{{showForm}}" style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;background:#f4f5fb;overflow-y:auto;padding:32rpx;">
-    <view class="form-title">{{editingId?'编辑科目':'添加科目'}}</view>
+    <view class="form-title">{{editingId?'编辑兴趣分类':'添加兴趣分类'}}</view>
     <view class="form-group">
-      <text class="form-label">科目名称 *</text>
+      <text class="form-label">兴趣分类名称 *</text>
       <input class="form-input" value="{{form.name}}" bindinput="onInputChange" data-field="name" placeholder="如：语文、数学" />
     </view>
     <view class="btn-row">
@@ -31,12 +31,12 @@
     </view>
   </view>
 
-  <!-- 设置课代表弹窗 -->
+  <!-- 设置小组长弹窗 -->
   <view wx:if="{{showRepModal}}" class="modal-mask" bindtap="onCloseRepModal">
     <view class="modal-card" catchtap="">
-      <view class="modal-title">设置「{{repTarget.name}}」课代表</view>
+      <view class="modal-title">设置「{{repTarget.name}}」小组长</view>
       <view class="form-group">
-        <text class="form-label">选择课代表（从 REP 角色账号中选）</text>
+        <text class="form-label">选择小组长（从 REP 角色账号中选）</text>
         <view wx:if="{{repCandidates.length}}" class="rep-list">
           <view wx:for="{{repCandidates}}" wx:key="id"
                 class="rep-candidate {{selectedRepId===item.id?'selected':''}}"
@@ -44,7 +44,7 @@
             {{item.name}}（{{item.username}}）
           </view>
         </view>
-        <view wx:else class="empty-hint">暂无课代表角色账号，请先在「账号管理」中将学生角色改为课代表</view>
+        <view wx:else class="empty-hint">暂无小组长角色账号，请先在「账号管理」中将成员角色改为小组长</view>
       </view>
       <view class="btn-row">
         <button class="btn-cancel" bindtap="onCloseRepModal">取消</button>

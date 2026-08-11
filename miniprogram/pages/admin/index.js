@@ -17,7 +17,7 @@ Page({
     const role = u.role;
     this.setData({
       role,
-      roleLabel: role === 'ADMIN' ? '管理员' : role === 'TEACHER' ? '教师' : role === 'REP' ? '课代表' : '',
+      roleLabel: role === 'ADMIN' ? '管理员' : role === 'TEACHER' ? '主理人' : role === 'REP' ? '小组长' : '',
       canManageUsers: role === 'ADMIN' || role === 'TEACHER',
       canManage: role === 'ADMIN' || role === 'TEACHER' || role === 'REP',
     });
@@ -26,14 +26,14 @@ Page({
 
   async loadStats() {
     try {
-      // 对标网页端 Dashboard 统计：在读学生数、任务数、平均积分
+      // 对标网页端 Dashboard 统计：圈内成员数、任务数、平均积分
       const [statsR, tasksR] = await Promise.all([
         app.apiGet('/api/mp/admin/stats').catch(() => ({})),
         app.apiGet('/api/tasks').catch(() => ({ data: [] })),
       ]);
       const stats = statsR?.data || {};
       const tasks = tasksR?.data || [];
-      // 尝试从 students 接口拿学生数作为 fallback
+      // 尝试从 students 接口拿成员数作为 fallback
       let studentCount = stats.students || stats.users || 0;
       if (!studentCount) {
         const sR = await app.apiGet('/api/students').catch(() => ({ data: [] }));

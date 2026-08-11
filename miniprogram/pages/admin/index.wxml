@@ -6,7 +6,7 @@
 
   <!-- 统计概览（对标网页端 Dashboard 顶部卡片） -->
   <view class="stats card">
-    <view class="stat"><view class="num">{{stats.students || 0}}</view><view class="lbl">在读学生</view></view>
+    <view class="stat"><view class="num">{{stats.students || 0}}</view><view class="lbl">圈内成员</view></view>
     <view class="stat"><view class="num">{{stats.tasks || 0}}</view><view class="lbl">本学期任务</view></view>
     <view class="stat"><view class="num">{{stats.avgCredits || 0}}</view><view class="lbl">平均积分</view></view>
     <view class="stat"><view class="num">{{stats.todayActive || 0}}</view><view class="lbl">今日活跃</view></view>
@@ -15,38 +15,38 @@
   <!-- 核心管理功能（对标网页端 MainLayout 菜单顺序） -->
   <view class="section-title">教学管理</view>
   <view class="menu card">
-    <!-- 1. 任务/作业管理（对标 /tasks） -->
+    <!-- 1. 任务/打卡任务管理（对标 /tasks） -->
     <view class="menu-item" bindtap="goTasks">
       <view class="ico" style="background:linear-gradient(135deg,#7C5CFF,#4D9BFF)">📋</view>
-      <view class="mi-text"><view class="mi-title">任务管理</view><view class="mi-sub">发布作业、查看完成情况、登记积分</view></view>
+      <view class="mi-text"><view class="mi-title">任务管理</view><view class="mi-sub">发布打卡任务、查看完成情况、登记积分</view></view>
       <text class="muted">›</text>
     </view>
 
     <!-- 2. 完成登记（对标 /completion，合并到任务管理的完成情况弹窗） -->
     <view class="menu-item" bindtap="goTasks">
       <view class="ico" style="background:linear-gradient(135deg,#2DD4A7,#00BFA5)">✅</view>
-      <view class="mi-text"><view class="mi-title">完成登记</view><view class="mi-sub">批量登记学生作业完成状态</view></view>
+      <view class="mi-text"><view class="mi-title">完成登记</view><view class="mi-sub">批量登记成员打卡完成状态</view></view>
       <text class="muted">›</text>
     </view>
 
-    <!-- 3. 学生管理（对标 /manage） -->
+    <!-- 3. 成员管理（对标 /manage） -->
     <view wx:if="{{canManageUsers}}" class="menu-item" bindtap="goStudents">
       <view class="ico" style="background:linear-gradient(135deg,#2DD4A7,#4D9BFF)">👥</view>
-      <view class="mi-text"><view class="mi-title">学生管理</view><view class="mi-sub">添加/编辑学生、重置密码、积分调整</view></view>
+      <view class="mi-text"><view class="mi-title">成员管理</view><view class="mi-sub">添加/编辑成员、重置密码、积分调整</view></view>
       <text class="muted">›</text>
     </view>
 
-    <!-- 4. 科目管理（对标 SystemSettings → 课代表任命） -->
+    <!-- 4. 兴趣分类管理（对标 SystemSettings → 小组长任命） -->
     <view wx:if="{{canManageUsers}}" class="menu-item" bindtap="goSubjects">
       <view class="ico" style="background:linear-gradient(135deg,#FFB74D,#FF8A65)">📚</view>
-      <view class="mi-text"><view class="mi-title">科目与课代表</view><view class="mi-sub">管理科目、指定课代表负责科目</view></view>
+      <view class="mi-text"><view class="mi-title">兴趣分类与小组长</view><view class="mi-sub">管理兴趣分类、指定小组长负责兴趣分类</view></view>
       <text class="muted">›</text>
     </view>
 
     <!-- 5. 资料管理（对标 /resources） -->
     <view class="menu-item" bindtap="goResources">
       <view class="ico" style="background:linear-gradient(135deg,#7C5CFF,#9C27B0)">📖</view>
-      <view class="mi-text"><view class="mi-title">资料管理</view><view class="mi-sub">新增/编辑/删除课程资料</view></view>
+      <view class="mi-text"><view class="mi-title">资料管理</view><view class="mi-sub">新增/编辑/删除兴趣资料</view></view>
       <text class="muted">›</text>
     </view>
   </view>

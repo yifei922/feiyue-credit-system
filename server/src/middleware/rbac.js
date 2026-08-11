@@ -1,11 +1,11 @@
-// RBAC：三角色(管理员/课代表/学生) + 范围隔离
-// ADMIN 老师：全部数据、全部操作
-// REP  课代表：仅可管理其负责的科目(由 subject_rep 关联决定)下的任务与数据
-// STUDENT 学生：仅可查看本人数据
+// RBAC：三角色(管理员/小组长/成员) + 范围隔离
+// ADMIN 主理人：全部数据、全部操作
+// REP  小组长：仅可管理其负责的兴趣分类(由 subject_rep 关联决定)下的任务与数据
+// STUDENT 成员：仅可查看本人数据
 const { db } = require('../db');
 const { fail } = require('../util');
 
-const ROLE_LABEL = { ADMIN: '管理员', TEACHER: '老师', REP: '课代表', STUDENT: '学生' };
+const ROLE_LABEL = { ADMIN: '管理员', TEACHER: '主理人', REP: '小组长', STUDENT: '成员' };
 
 // 角色检查中间件工厂
 function requireRole(...roles) {
@@ -18,7 +18,7 @@ function requireRole(...roles) {
   };
 }
 
-// 获取某用户可管理的科目 id 列表（ADMIN=全部，REP=关联科目，STUDENT=空）
+// 获取某用户可管理的兴趣分类 id 列表（ADMIN=全部，REP=关联兴趣分类，STUDENT=空）
 async function getManagedSubjectIds(user) {
   if (user.role === 'ADMIN') {
     return await (await db.prepare('SELECT id FROM subject').all()).map(r => r.id);
@@ -29,7 +29,7 @@ async function getManagedSubjectIds(user) {
   return [];
 }
 
-// 校验用户是否可管理指定科目（用于任务创建/修改的越权拦截）
+// 校验用户是否可管理指定兴趣分类（用于任务创建/修改的越权拦截）
 async function canManageSubject(user, subjectId) {
   if (user.role === 'ADMIN') return true;
   if (user.role === 'REP') {

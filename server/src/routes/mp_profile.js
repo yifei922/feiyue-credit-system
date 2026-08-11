@@ -1,6 +1,6 @@
 // 小程序个人资料维护（当前登录用户自助修改）
 // - POST /api/mp/profile  { name?, studentId?, avatar? }
-//   更新姓名 / 学号 / 头像，便于后台管理识别；字段缺失则不更新
+//   更新姓名 / 编号 / 头像，便于后台管理识别；字段缺失则不更新
 const express = require('express');
 const router = express.Router();
 const { db } = require('../db');

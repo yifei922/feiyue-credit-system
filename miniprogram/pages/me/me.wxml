@@ -4,8 +4,8 @@
     <image class="avatar" src="{{user.avatar || '/assets/avatar_default.png'}}" bindtap="goProfile"></image>
     <view class="me-info">
       <view class="name">{{user.name}}</view>
-      <view class="role muted">{{user.role === 'STUDENT' ? '学生' : user.role === 'TEACHER' ? '教师' : user.role === 'REP' ? '课代表' : user.role === 'ADMIN' ? '管理员' : '其他'}}</view>
-      <view wx:if="{{user.studentId}}" class="muted sid">学号：{{user.studentId}}</view>
+      <view class="role muted">{{user.role === 'STUDENT' ? '成员' : user.role === 'TEACHER' ? '主理人' : user.role === 'REP' ? '小组长' : user.role === 'ADMIN' ? '管理员' : '其他'}}</view>
+      <view wx:if="{{user.studentId}}" class="muted sid">编号：{{user.studentId}}</view>
     </view>
     <view class="edit-badge" bindtap="goProfile">编辑 ›</view>
   </view>
@@ -26,7 +26,7 @@
     </view>
   </view>
 
-  <!-- ===== 学生端功能 ===== -->
+  <!-- ===== 成员端功能 ===== -->
   <block wx:if="{{user.role === 'STUDENT'}}">
     <view class="menu card">
       <view class="menu-section-title">学习工具</view>
@@ -39,7 +39,7 @@
 
       <view class="menu-item" bindtap="goSubmit">
         <view class="ico" style="background:linear-gradient(135deg,#4CAF50,#8BC34A)">📝</view>
-        <text>提交作业</text>
+        <text>打卡</text>
         <text class="muted spacer">›</text>
       </view>
 
@@ -63,14 +63,14 @@
     </view>
   </block>
 
-  <!-- ===== 教师/管理员/课代 管理功能 ===== -->
+  <!-- ===== 主理人/管理员/小组长 管理功能 ===== -->
   <block wx:if="{{canManage}}">
     <view class="menu card">
       <view class="menu-section-title">管理工具</view>
 
       <view class="menu-item" bindtap="goAdmin">
         <view class="ico" style="background:linear-gradient(135deg,#7C5CFF,#4D9BFF)">🛠️</view>
-        <view class="mi-wrap"><text class="mi-main">管理工作台</text><text class="mi-sub">任务·学生·科目·资料·积分</text></view>
+        <view class="mi-wrap"><text class="mi-main">管理中心</text><text class="mi-sub">任务·成员·兴趣分类·资料·积分</text></view>
         <text class="muted spacer">›</text>
       </view>
 
@@ -82,13 +82,13 @@
 
       <view wx:if="{{canManageUsers}}" class="menu-item" bindtap="goStudents">
         <view class="ico" style="background:linear-gradient(135deg,#2DD4A7,#4D9BFF)">👥</view>
-        <text>学生管理</text>
+        <text>成员管理</text>
         <text class="muted spacer">›</text>
       </view>
 
       <view wx:if="{{canManageUsers}}" class="menu-item" bindtap="goSubjects">
         <view class="ico" style="background:linear-gradient(135deg,#BA68C8,#9C27B0)">📖</view>
-        <text>科目管理</text>
+        <text>兴趣分类管理</text>
         <text class="muted spacer">›</text>
       </view>
 
