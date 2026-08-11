@@ -15,6 +15,8 @@ const recommendRouter = require('./routes/recommend');
 const dashboardRouter = require('./routes/dashboard');
 const operateLogRouter = require('./routes/operateLog');
 const usersRouter = require('./routes/users');
+const badgeRouter = require('./routes/badge');
+const aiAssistantRouter = require('./routes/aiAssistant');
 const authMiddleware = require('./middleware/auth');
 // 小程序专用路由（社交 + 兴趣资料 + 积分 + 微信登录）
 const mpAuthRouter = require('./routes/mp_auth');
@@ -27,9 +29,37 @@ const mpContentRouter = require('./routes/mp_content');
 const { init: initDb } = require('./db');
 
 const app = express();
+
+// ── 安全基线（免费）：helmet 设置安全响应头（CSP/X-Frame-Options/HSTS 等）──
+// 未安装 helmet 时跳过，避免硬依赖阻断启动；安装后自动生效。
+let helmet;
+try { helmet = require('helmet'); } catch (_) { /* 未安装时跳过 */ }
+if (helmet) {
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        // Element Plus / Vite dev 需要 unsafe-inline + unsafe-eval
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "blob:", "https:"],
+        connectSrc: ["'self'", "https:", "ws:", "wss:"],
+        fontSrc: ["'self'", "data:"],
+        objectSrc: ["'none'"],
+        frameAncestors: ["'self'"],
+      },
+    },
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  }));
+}
+
 app.use(express.json());
 // 入参命名归一（契约防御层）：snake_case 别名 → camelCase 兜底
 app.use(normalizeBody);
+
+// ── CORS 白名单（免费，自实现）──
+app.use(require('./middleware/cors'));
 
 // ── 健康检查（供 Render + 保活服务使用，无需鉴权，最快响应）──
 app.get('/api/health', (_req, res) => {
@@ -49,8 +79,12 @@ app.use('/api/auth', authRouter);
 // 小程序微信登录：公开端点（拿 code 换 openid 不能要求登录），单独挂载绕过 authMiddleware
 app.use('/api/mp/auth', mpAuthRouter);
 
-// 其余 API 统一鉴权
+// 其余 API 统一鉴权 + 全局限流（免费：120 次/分钟/IP，保护免费层）
+let apiLimiter;
+try { ({ apiLimiter } = require('./middleware/limiter')); } catch (_) { /* limiter 未安装时跳过 */ }
+
 const api = express.Router();
+if (apiLimiter) api.use(apiLimiter);
 api.use(authMiddleware);
 api.use('/students', studentsRouter);
 api.use('/subjects', subjectsRouter);
@@ -63,6 +97,8 @@ api.use('/recommend', recommendRouter);
 api.use('/dashboard', dashboardRouter);
 api.use('/operate-logs', operateLogRouter);
 api.use('/users', usersRouter);
+api.use('/badge', badgeRouter);
+api.use('/ai', aiAssistantRouter);
 // 小程序需要登录的接口（社交 + 兴趣资料 + 积分）
 api.use('/mp', mpFeedRouter);
 api.use('/mp', mpResourcesRouter);

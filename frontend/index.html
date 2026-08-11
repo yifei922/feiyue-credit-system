@@ -4,11 +4,26 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#c8102e" />
+    <meta name="description" content="个人成长打卡与积分记录" />
     <link rel="icon" href="/logo.jpg" />
-    <title>洛一高附中八（十）班 · 学分管理系统</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="成长记录" />
+    <title>成长记录</title>
   </head>
   <body>
+    <!-- WCAG：键盘用户可跳过导航直达主内容 -->
+    <a href="#app" class="skip-link">跳到主要内容</a>
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
+    <script>
+      // 注册 Service Worker（PWA 离线能力）
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch((e) => console.warn('[sw] register failed:', e));
+        });
+      }
+    </script>
   </body>
 </html>

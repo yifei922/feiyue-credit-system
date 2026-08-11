@@ -4,8 +4,7 @@
 // STUDENT 成员：仅可查看本人数据
 const { db } = require('../db');
 const { fail } = require('../util');
-
-const ROLE_LABEL = { ADMIN: '管理员', TEACHER: '主理人', REP: '小组长', STUDENT: '成员' };
+const { ROLE_LABEL } = require('../constants');
 
 // 角色检查中间件工厂
 function requireRole(...roles) {

@@ -22,6 +22,17 @@
           <el-breadcrumb-item>{{ currentTitle }}</el-breadcrumb-item>
         </el-breadcrumb>
         <div class="user">
+          <el-tooltip content="搜索 / 命令（Ctrl+K）" placement="bottom">
+            <el-icon class="header-icon cmd-k-trigger" @click="openPalette"><Search /></el-icon>
+          </el-tooltip>
+          <el-tooltip content="AI 助手（试验性）" placement="bottom">
+            <el-icon class="header-icon ai-trigger" @click="openAi"><MagicStick /></el-icon>
+          </el-tooltip>
+          <el-tooltip :content="isDark ? '切换为浅色模式' : '切换为深色模式'" placement="bottom">
+            <el-icon class="header-icon theme-toggle" @click="toggleTheme">
+              <component :is="isDark ? Sunny : Moon" />
+            </el-icon>
+          </el-tooltip>
           <el-dropdown @command="onCommand">
             <span class="user-trigger">
               <el-avatar :size="30" class="avatar">{{ userInitial }}</el-avatar>
@@ -55,7 +66,7 @@ import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { ElMessage } from 'element-plus'
-import { DataLine, ArrowDown, Files, EditPen, User, UserFilled, Bell, Setting, Menu } from '@element-plus/icons-vue'
+import { DataLine, ArrowDown, Files, EditPen, User, UserFilled, Bell, Setting, Menu, Search, Sunny, Moon, MagicStick } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -102,6 +113,23 @@ function onCommand(cmd) {
     router.push('/login')
   }
 }
+
+// ── 深色模式（V2）：持久化到 localStorage ──
+const isDark = ref(false)
+function applyTheme(dark) {
+  isDark.value = dark
+  document.documentElement.dataset.theme = dark ? 'dark' : ''
+  try { localStorage.setItem('theme', dark ? 'dark' : 'light') } catch (_) {}
+}
+function toggleTheme() { applyTheme(!isDark.value) }
+function openPalette() { window.dispatchEvent(new CustomEvent('app:open-palette')) }
+function openAi() { window.dispatchEvent(new CustomEvent('app:open-ai')) }
+
+onMounted(() => {
+  try {
+    if (localStorage.getItem('theme') === 'dark') applyTheme(true)
+  } catch (_) {}
+})
 </script>
 
 <style scoped>
@@ -235,5 +263,23 @@ function onCommand(cmd) {
   inset: 0;
   background: rgba(0, 0, 0, 0.35);
   z-index: 2000;
+}
+
+/* 顶部图标按钮（主题切换 / 命令面板） */
+.header-icon {
+  font-size: 18px;
+  cursor: pointer;
+  padding: 6px;
+  margin-right: 8px;
+  border-radius: var(--radius-sm);
+  color: var(--text-soft);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.header-icon:hover {
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+@media (max-width: 768px) {
+  .header-icon { margin-right: 4px; padding: 4px; font-size: 16px; }
 }
 </style>

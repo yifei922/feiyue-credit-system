@@ -1,33 +1,27 @@
 const express = require('express');
 const router = express.Router();
-const crypto = require('crypto');
 const { db } = require('../db');
 const { hashPassword } = require('../auth');
+const { genTempPwd } = require('../constants');
 const { ok, fail, fmtDate, paginate, setPageHeaders } = require('../util');
 const authMiddleware = require('../middleware/auth');
 const { requireRole } = require('../middleware/rbac');
 const { recordLog } = require('../services/log');
 
-// 生成随机临时密码（与 users.js 一致），避免弱口令 123456
-function genTempPwd() {
-  const chars = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  const bytes = crypto.randomBytes(10);
-  let s = '';
-  for (let i = 0; i < bytes.length; i++) s += chars[bytes[i] % chars.length];
-  return s;
-}
-
 // 列表：管理员/主理人/小组长看全班（分页，数组主体 + 响应头元信息）；成员仅看自己
+// F6 软删除：默认过滤已删除（deleted_at IS NULL）
 router.get('/', authMiddleware, async (req, res) => {
   const { page, pageSize, offset } = paginate(req.query);
+  const includeDeleted = String(req.query.includeDeleted || '') === '1';
+  const deletedFilter = includeDeleted ? '' : ' AND s.deleted_at IS NULL';
   let total, rows;
   if (req.user.role === 'STUDENT') {
     total = 1;
-    rows = await db.prepare(`SELECT s.*, c.name AS className FROM student s LEFT JOIN clazz c ON s.class_id=c.id WHERE s.id=?`)
+    rows = await db.prepare(`SELECT s.*, c.name AS className FROM student s LEFT JOIN clazz c ON s.class_id=c.id WHERE s.id=? AND s.deleted_at IS NULL`)
       .all(req.user.studentId);
   } else {
-    total = (await db.prepare('SELECT COUNT(*) AS c FROM student').get()).c;
-    rows = await db.prepare(`SELECT s.*, c.name AS className FROM student s LEFT JOIN clazz c ON s.class_id=c.id ORDER BY s.id LIMIT ? OFFSET ?`).all(pageSize, offset);
+    total = (await db.prepare(`SELECT COUNT(*) AS c FROM student s WHERE 1=1${deletedFilter}`).get()).c;
+    rows = await db.prepare(`SELECT s.*, c.name AS className FROM student s LEFT JOIN clazz c ON s.class_id=c.id WHERE 1=1${deletedFilter} ORDER BY s.id LIMIT ? OFFSET ?`).all(pageSize, offset);
   }
   const list = await Promise.all(rows.map(async r => ({
     id: r.id, studentNo: r.student_no, name: r.name, classId: r.class_id,
@@ -144,13 +138,22 @@ router.put('/:id', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (req, 
   ok(res, { ok: true });
 });
 
-// 删除
+// 删除（F6 软删除）：标记 deleted_at 而非真删，便于 7 天内回收站恢复
+// 只对 student 表做软删除；对应 STUDENT 角色 sys_user 账号保留，student 查询过滤即可
 router.delete('/:id', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (req, res) => {
-  const before = await db.prepare('SELECT * FROM student WHERE id=?').get(req.params.id);
+  const before = await db.prepare('SELECT * FROM student WHERE id=? AND deleted_at IS NULL').get(req.params.id);
   if (!before) return fail(res, 404, '成员不存在');
-  await db.prepare('DELETE FROM sys_user WHERE role=? AND student_id=?').run('STUDENT', req.params.id);
-  await db.prepare('DELETE FROM student WHERE id=?').run(req.params.id);
+  await db.prepare('UPDATE student SET deleted_at=NOW() WHERE id=?').run(req.params.id);
   recordLog(req.user, 'DELETE', 'student', req.params.id, before, null);
+  ok(res, { ok: true, recoverable: true });
+});
+
+// 恢复软删除的成员（回收站恢复入口）
+router.post('/:id/restore', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (req, res) => {
+  const before = await db.prepare('SELECT * FROM student WHERE id=? AND deleted_at IS NOT NULL').get(req.params.id);
+  if (!before) return fail(res, 404, '该成员未被删除，无需恢复');
+  await db.prepare('UPDATE student SET deleted_at=NULL WHERE id=?').run(req.params.id);
+  recordLog(req.user, 'UPDATE', 'student', req.params.id, before, { action: 'restore' });
   ok(res, { ok: true });
 });
 

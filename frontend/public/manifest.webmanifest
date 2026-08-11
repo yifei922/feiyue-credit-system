@@ -1,0 +1,27 @@
+{
+  "name": "点滴进步 · 成长记录",
+  "short_name": "成长记录",
+  "description": "个人成长打卡与积分记录（PWA）",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5f7fb",
+  "theme_color": "#c8102e",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "/logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "education"]
+}

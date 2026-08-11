@@ -47,7 +47,7 @@
           <el-table-column prop="createTime" label="时间" width="160" />
           <el-table-column prop="taskTitle" label="来源任务" min-width="160" />
           <el-table-column label="类型" width="110">
-            <template #default="{ row }">{{ flowTypeText[row.flowType] }}</template>
+            <template #default="{ row }">{{ flowTypeLabel(row.flowType) }}</template>
           </el-table-column>
           <el-table-column label="变动" width="100" align="right">
             <template #default="{ row }">
@@ -166,7 +166,7 @@
           <div v-for="(rec, i) in mySubs" :key="i" class="sub-item">
             <div class="sub-head">
               <b>{{ rec.taskTitle }}</b>
-              <el-tag size="small" :type="statusTag(rec.status)">{{ statusText[rec.status] || rec.status }}</el-tag>
+              <el-tag size="small" :type="statusTag(rec.status)">{{ statusLabel(rec.status) }}</el-tag>
               <span class="sub-time">{{ rec.completionTime || '未标记时间' }}</span>
             </div>
             <div v-if="rec.attachments && rec.attachments.length" class="sub-atts">
@@ -199,7 +199,7 @@ import { listAlerts, resolveAlert } from '@/api/alert'
 import { fetchAttachmentUrl } from '@/api/upload'
 import { downloadBlob } from '@/utils/download'
 import { compressImage, formatSize } from '@/utils/compress'
-import { flowTypeText, statusText } from '@/api/mock'
+import { flowTypeLabel, statusLabel } from '@/utils/credit'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()

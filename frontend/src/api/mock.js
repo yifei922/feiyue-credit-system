@@ -1,9 +1,10 @@
 // =============================================================================
-// 前端 Mock 数据层
-// 作用：本沙箱无 Java 运行时，后端无法启动。开启 VITE_USE_MOCK=true 时，
-//       所有 API 调用返回本地模拟数据，使页面（积分流水 / 预警中心 / 推荐任务 /
-//       数据看板）可立即演示。接上真实 Spring Boot 后端后，将该变量置为 false 即可。
+// [已废弃] 本文件原本是前端 Mock 数据层（早期沙箱无 Java 后端时的占位）。
+// 现已对接真实 Express 后端（server/src/），mockApi 不再被调用。
+// 字典常量已迁至 @/utils/credit（statusLabel / flowTypeLabel / typeLabel / calcCredit）。
+// 文件名保留仅为最小化改动；mockApi 等占位实现已不再被引用。
 // =============================================================================
+export {};
 
 const useMock = import.meta.env.VITE_USE_MOCK === 'true'
 

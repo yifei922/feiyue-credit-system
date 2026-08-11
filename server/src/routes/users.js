@@ -1,25 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const crypto = require('crypto');
 const { db } = require('../db');
 const { hashPassword } = require('../auth');
+const { ROLE_LABEL, genTempPwd } = require('../constants');
 const { ok, fail, paginate, setPageHeaders } = require('../util');
 const { requireRole } = require('../middleware/rbac');
 const { recordLog } = require('../services/log');
-
-const ROLE_LABEL = { ADMIN: '管理员', TEACHER: '主理人', REP: '小组长', STUDENT: '成员' };
-
-/**
- * 生成 10 位随机临时密码（含大小写+数字），前端一次性展示给管理员，
- * 用户首次登录后由 must_change_pwd 强制改密。
- */
-function genTempPwd() {
-  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-  let s = '';
-  const bytes = crypto.randomBytes(10);
-  for (let i = 0; i < 10; i++) s += chars[bytes[i] % chars.length];
-  return s;
-}
 
 // 账号列表（管理员/主理人）：含角色、姓名、编号、负责兴趣分类（分页；数组主体 + 响应头元信息）
 router.get('/', requireRole('ADMIN', 'TEACHER'), async (req, res) => {

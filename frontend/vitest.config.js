@@ -16,7 +16,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],
-      include: ['src/utils/**', 'src/api/mock.js'],
+      include: ['src/utils/**'],
       thresholds: { lines: 80 }
     }
   }

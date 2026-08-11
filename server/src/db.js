@@ -332,6 +332,33 @@ CREATE TABLE IF NOT EXISTS attachment (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   KEY idx_attachment_task_stu (task_id, student_id)
 );
+
+-- ── 软删除列（F6 回收站）：已删除记录 7 天内可恢复；后续可加定时清理任务 ──
+-- 注：MySQL 不支持 ADD COLUMN IF NOT EXISTS，db.exec 已 try/catch 单条 DDL，重复 ALTER 会被 warn 吞掉
+ALTER TABLE student ADD COLUMN deleted_at DATETIME DEFAULT NULL;
+ALTER TABLE task ADD COLUMN deleted_at DATETIME DEFAULT NULL;
+ALTER TABLE completion_record ADD COLUMN deleted_at DATETIME DEFAULT NULL;
+
+-- ── 徽章系统（F2 习惯追踪激励）──
+CREATE TABLE IF NOT EXISTS badge (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  code VARCHAR(64) NOT NULL UNIQUE,
+  name VARCHAR(128) NOT NULL,
+  description TEXT,
+  icon VARCHAR(32) DEFAULT 'Trophy',
+  category VARCHAR(32) DEFAULT 'STREAK',
+  threshold INT DEFAULT 0,
+  sort_order INT DEFAULT 0,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS user_badge (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  user_id INT NOT NULL,
+  badge_id INT NOT NULL,
+  earned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_user_badge (user_id, badge_id)
+);
 `;
 
 async function seed() {

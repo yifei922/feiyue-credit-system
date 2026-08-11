@@ -6,12 +6,21 @@ const { ok, fail } = require('../util');
 const authMiddleware = require('../middleware/auth');
 const { getManagedSubjectIds } = require('../middleware/rbac');
 const { recordLog } = require('../services/log');
+const {
+  loginAttemptGuard,
+  recordLoginFail,
+  clearLoginAttempts,
+} = require('../middleware/loginAttempt');
 
-router.post('/login', async (req, res) => {
+router.post('/login', loginAttemptGuard, async (req, res) => {
   const { username, password } = req.body || {};
   if (!username || !password) return fail(res, 400, '请输入账号和密码');
   const user = await db.prepare('SELECT * FROM sys_user WHERE username=?').get(username);
-  if (!user || !verifyPassword(password, user.password)) return fail(res, 401, '用户名或密码错误');
+  if (!user || !verifyPassword(password, user.password)) {
+    recordLoginFail(username, req.ip);
+    return fail(res, 401, '用户名或密码错误');
+  }
+  clearLoginAttempts(username, req.ip);
   const managedSubjects = await getManagedSubjectIds({ id: user.id, role: user.role });
   const token = signToken({
     id: user.id, username: user.username, role: user.role, name: user.name, studentId: user.student_id
