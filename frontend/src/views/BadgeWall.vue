@@ -20,8 +20,10 @@
         :title="earnedCodes.has(b.code) ? '已获得' : '尚未解锁'"
       >
         <div class="badge-icon">
-          <el-icon :size="28"><Trophy v-if="earnedCodes.has(b.code)" /></el-icon>
-          <el-icon :size="28"><Lock v-else /></el-icon>
+          <el-icon :size="28">
+            <Trophy v-if="earnedCodes.has(b.code)" />
+            <Lock v-else />
+          </el-icon>
         </div>
         <div class="badge-name">{{ b.name }}</div>
         <div class="badge-desc">{{ b.description }}</div>
