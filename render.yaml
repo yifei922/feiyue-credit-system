@@ -6,10 +6,31 @@ services:
     runtime: node
     plan: free
     envVars:
+      # ── 运行环境 ──
       - key: NODE_ENV
         value: production
+      # ── JWT 签名（Render 自动生成，每次部署不变）──
       - key: JWT_SECRET
         generateValue: true
+      # ── 数据库（腾讯云 MySQL，与 server/.env 保持一致）──
+      - key: DB_HOST
+        value: 10.18.108.46
+      - key: DB_PORT
+        value: "3306"
+      - key: DB_USER
+        value: root
+      - key: DB_PASSWORD
+        value: Xpm8swMt
+      - key: DB_NAME
+        value: credit
+      # ── 微信小程序凭证（网页端登录/回调需要）──
+      - key: WX_APP_ID
+        value: wx64664e7fa8d4f747
+      - key: WX_APP_SECRET
+        value: de8898c3212be995d07661294158c57a
+      # ── 积分规则 ──
+      - key: INIT_POINTS
+        value: "100"
     # 构建前端 + 安装后端依赖
     buildCommand: cd frontend && npm install --include=dev && npx vite build --mode server && cd ../server && npm install
     # 启动服务
