@@ -11,11 +11,97 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="成长记录" />
     <title>成长记录</title>
+    <style>
+      /* 启动画屏（Splash）内联样式：保证 JS 跑前已可见，避免白屏冷启动 */
+      html, body { margin: 0; padding: 0; height: 100%; }
+      body {
+        font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+        background: linear-gradient(135deg, #fef2f3 0%, #fdf2f4 50%, #ffffff 100%);
+        color: #1f2937;
+      }
+      #splash {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #fef2f3 0%, #fdf2f4 50%, #ffffff 100%);
+        animation: splashFadeOut 0.4s ease 1.6s forwards;
+      }
+      .splash-logo {
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
+        background: #c8102e;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 36px;
+        font-weight: 700;
+        box-shadow: 0 8px 24px rgba(200, 16, 46, 0.3);
+        animation: splashPulse 1.6s ease-in-out infinite;
+      }
+      .splash-title {
+        margin-top: 16px;
+        font-size: 16px;
+        font-weight: 600;
+        color: #1f2937;
+        letter-spacing: 1px;
+      }
+      .splash-tip {
+        margin-top: 8px;
+        font-size: 12px;
+        color: #6b7280;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .splash-dots { display: inline-flex; gap: 4px; }
+      .splash-dots span {
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: #c8102e;
+        opacity: 0.3;
+        animation: dotBlink 1.2s infinite;
+      }
+      .splash-dots span:nth-child(2) { animation-delay: 0.2s; }
+      .splash-dots span:nth-child(3) { animation-delay: 0.4s; }
+      @keyframes splashPulse {
+        0%, 100% { transform: scale(1); box-shadow: 0 8px 24px rgba(200, 16, 46, 0.3); }
+        50% { transform: scale(1.06); box-shadow: 0 12px 32px rgba(200, 16, 46, 0.5); }
+      }
+      @keyframes dotBlink {
+        0%, 80%, 100% { opacity: 0.3; transform: scale(0.85); }
+        40% { opacity: 1; transform: scale(1); }
+      }
+      @keyframes splashFadeOut {
+        from { opacity: 1; }
+        to { opacity: 0; visibility: hidden; }
+      }
+    </style>
   </head>
   <body>
     <!-- WCAG：键盘用户可跳过导航直达主内容 -->
     <a href="#app" class="skip-link">跳到主要内容</a>
+
+    <!-- 启动画屏（Splash）：在 JS 启动前已可见，避免「冷启动白屏」误以为是错误。
+         JS 启动后由 main.js 在 mount 完成时移除 <#splash>。
+         设计：品牌色 Logo + 脉冲动画 + 跳动点 + 趣味文案 -->
+    <div id="splash" role="status" aria-label="正在打开">
+      <div class="splash-logo">成</div>
+      <div class="splash-title">成长记录</div>
+      <div class="splash-tip">
+        <span>小助手正在准备</span>
+        <span class="splash-dots"><span></span><span></span><span></span></span>
+      </div>
+    </div>
+
     <div id="app"></div>
+
     <script type="module" src="/src/main.js"></script>
     <script>
       // 注册 Service Worker（PWA 离线能力）
@@ -24,6 +110,21 @@
           navigator.serviceWorker.register('/sw.js').catch((e) => console.warn('[sw] register failed:', e));
         });
       }
+      // 注入主题偏好到 <html>，供 tokens.css 的 [data-theme] 选择器即时生效
+      (function () {
+        try {
+          var t = localStorage.getItem('theme');
+          if (t === 'dark' || (!t && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            var sp = document.getElementById('splash'); if (sp) sp.setAttribute('data-theme', 'dark');
+          }
+        } catch (_) {}
+      })();
+      // mount 完成时移除 splash（兜底：CSS fadeOut 1.6s 后还会自动淡出）
+      window.__removeSplash = function () {
+        var sp = document.getElementById('splash');
+        if (sp && sp.parentNode) sp.parentNode.removeChild(sp);
+      };
     </script>
   </body>
 </html>

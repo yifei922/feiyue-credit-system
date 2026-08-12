@@ -1,108 +1,181 @@
-:root {
-  /* ── 品牌色 ── */
-  --brand: #c8102e;
-  --brand-soft: #fef2f2;
-  --brand-strong: #a30d24;
+/* =====================================================================
+   全局样式入口
+   设计令牌由 tokens.css 提供；本文件只放重置 + 通用工具类。
+   ===================================================================== */
+@import './tokens.css';
 
-  /* ── 表面色 ── */
-  --bg: #f5f7fb;
-  --surface: #ffffff;
-  --text: #1f2937;
-  --text-soft: #6b7280;
-  --border: #e5e7eb;
+* { box-sizing: border-box; }
 
-  /* ── 圆角系统 ── */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-
-  /* ── 阴影系统 ── */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.10);
-
-  /* ── 字体阶梯 ── */
-  --text-xs: 12px;
-  --text-sm: 13px;
-  --text-base: 14px;
-  --text-lg: 16px;
-  --text-xl: 18px;
-  --text-2xl: 22px;
-
-  /* ── 间距系统（4 基线）── */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-7: 32px;
-  --space-8: 48px;
-
-  /* ── Element Plus 主题覆盖：把品牌红注入 EP 主色 ── */
-  --el-color-primary: var(--brand);
-  --el-color-primary-light-3: #d9425b;
-  --el-color-primary-light-5: #e57489;
-  --el-color-primary-light-7: #f1a7b6;
-  --el-color-primary-light-9: var(--brand-soft);
-  --el-color-primary-dark-2: var(--brand-strong);
-  --el-border-radius-base: var(--radius-md);
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html,
-body,
-#app {
-  height: 100%;
-  margin: 0;
-}
+html, body, #app { height: 100%; margin: 0; }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
-    'Microsoft YaHei', sans-serif;
+  font-family: var(--font-family);
   background: var(--bg);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 a {
   color: var(--brand);
   text-decoration: none;
+  transition: color 0.15s ease;
 }
+a:hover { color: var(--brand-strong); }
 
-/* ── 全局统一：EP 按钮/链接/激活态走品牌色 ── */
+/* EP 主题色硬绑定（防御性兜底，确保组件库始终跟随 tokens） */
 .el-button--primary {
   --el-button-bg-color: var(--brand);
   --el-button-border-color: var(--brand);
   --el-button-hover-bg-color: var(--brand-strong);
   --el-button-hover-border-color: var(--brand-strong);
-  --el-button-active-bg-color: var(--brand-strong);
-  --el-button-active-border-color: var(--brand-strong);
+  --el-button-active-bg-color: var(--brand-700);
+  --el-button-active-border-color: var(--brand-700);
 }
-
 .el-link.el-link--primary,
 .el-tabs__item.is-active,
 .el-menu-item.is-active {
   color: var(--brand) !important;
 }
 
-/* ── 暗色模式（手动切换：通过 <html data-theme="dark">） ── */
-html[data-theme='dark'] {
-  --bg: #0f172a;
-  --surface: #1e293b;
-  --text: #f1f5f9;
-  --text-soft: #94a3b8;
-  --border: #334155;
-  --brand-soft: #3a1a1f;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+/* WCAG：键盘可达 */
+*:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
 }
-html[data-theme='dark'] body {
-  background: var(--bg);
+
+/* 减少动效的用户偏好支持 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* === 通用工具类 === */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--s4) var(--s5);
+  box-shadow: var(--shadow-sm);
+}
+
+.text-soft { color: var(--text-soft); }
+.text-muted { color: var(--text-muted); }
+.text-brand { color: var(--brand); }
+
+.flex { display: flex; }
+.flex-1 { flex: 1; }
+.gap-2 { gap: var(--s2); }
+.gap-3 { gap: var(--s3); }
+.gap-4 { gap: var(--s4); }
+.center { display: flex; align-items: center; justify-content: center; }
+
+/* WCAG：跳过导航链接（仅键盘 Tab 时可见） */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  padding: 8px 16px;
+  background: var(--brand);
+  color: white;
+  z-index: 9999;
+}
+.skip-link:focus {
+  left: 16px;
+  top: 16px;
+}
+
+/* === 启动画屏（Splash） === */
+/* 在 index.html 中静态包含，避免 SPA 启动前白屏 */
+/* 配套见 index.html <div id="splash">，加载完成后由 main.js removeChild() 移除 */
+#splash {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #fef2f3 0%, #fdf2f4 50%, #ffffff 100%);
+  animation: splashFadeOut 0.4s ease 1.6s forwards;
+}
+#splash[data-theme="dark"] { background: linear-gradient(135deg, #1d0e10 0%, #1c2128 50%, #161b22 100%); }
+.splash-logo {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  background: var(--brand);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(200, 16, 46, 0.3);
+  animation: splashPulse 1.6s ease-in-out infinite;
+}
+.splash-title {
+  margin-top: var(--s4);
+  font-size: var(--fs-md);
+  font-weight: 600;
   color: var(--text);
+  letter-spacing: 1px;
+}
+.splash-tip {
+  margin-top: var(--s2);
+  font-size: var(--fs-sm);
+  color: var(--text-soft);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.splash-dots {
+  display: inline-flex;
+  gap: 4px;
+}
+.splash-dots span {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--brand);
+  opacity: 0.3;
+  animation: dotBlink 1.2s infinite;
+}
+.splash-dots span:nth-child(2) { animation-delay: 0.2s; }
+.splash-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes splashPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 8px 24px rgba(200, 16, 46, 0.3); }
+  50% { transform: scale(1.06); box-shadow: 0 12px 32px rgba(200, 16, 46, 0.5); }
+}
+@keyframes dotBlink {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.85); }
+  40% { opacity: 1; transform: scale(1); }
+}
+@keyframes splashFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; visibility: hidden; }
+}
+
+/* === 路由切换中的内嵌进度条（替代冷启动骨架） === */
+.route-progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--brand) 0%, #ff5c79 100%);
+  z-index: 9998;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 8px rgba(200, 16, 46, 0.5);
+}
+.route-progress.indeterminate {
+  width: 30% !important;
+  animation: routeProgressSlide 1.2s ease-in-out infinite;
+}
+@keyframes routeProgressSlide {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
 }

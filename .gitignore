@@ -73,3 +73,16 @@ assets/mp-icons-final/
 
 # 提审指引生成脚本（一次性辅助工具，非部署产物）
 generate_miniapp_review_guide.py
+
+# 一次性调试快照（沙箱残留）
+_*.input
+mktree-*.input
+_be*.py
+_debug_*.py
+_diag*.py
+_fix_*.py
+_run_*.py
+_selftest*.*
+_st*.py
+_st*.bat
+_pdf_tmp/
