@@ -66,7 +66,7 @@ import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { ElMessage } from 'element-plus'
-import { DataLine, ArrowDown, Files, EditPen, User, UserFilled, Bell, Setting, Menu, Search, Sunny, Moon, MagicStick } from '@element-plus/icons-vue'
+import { DataLine, ArrowDown, Files, EditPen, User, UserFilled, Bell, Setting, Menu, Search, Sunny, Moon, MagicStick, Trophy, Delete } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -90,10 +90,12 @@ const ALL_MENUS = [
   { index: '/completion', label: '完成登记', icon: 'EditPen', roles: ['TEACHER', 'REP', 'ADMIN'] },
   { index: '/students', label: '学生端', icon: 'User', roles: ['TEACHER', 'REP', 'ADMIN', 'STUDENT'] },
   { index: '/manage', label: '学生管理', icon: 'UserFilled', roles: ['TEACHER', 'REP', 'ADMIN'] },
+  { index: '/badges', label: '徽章墙', icon: 'Trophy', roles: ['TEACHER', 'REP', 'ADMIN', 'STUDENT'] },
+  { index: '/recycle', label: '回收站', icon: 'Delete', roles: ['TEACHER', 'ADMIN'] },
   { index: '/alerts', label: '预警中心', icon: 'Bell', roles: ['TEACHER', 'REP', 'ADMIN'] },
   { index: '/settings', label: '系统设置', icon: 'Setting', roles: ['TEACHER', 'REP', 'ADMIN'] }
 ]
-const ICONS = { DataLine, Files, EditPen, User, UserFilled, Bell, Setting }
+const ICONS = { DataLine, Files, EditPen, User, UserFilled, Bell, Setting, Trophy, Delete }
 
 const menus = computed(() => {
   const role = auth.user?.role || 'TEACHER'

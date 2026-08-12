@@ -38,8 +38,21 @@
       <div class="section-head">
         <span class="section-title">学生名单</span>
         <span class="section-sub">共 {{ students.length }} 人</span>
+        <div class="batch-bar" v-if="selected.length > 0">
+          <el-tag effect="light" type="info">已选 {{ selected.length }} 人</el-tag>
+          <el-button size="small" type="warning" @click="batchResetPwd">批量重置密码</el-button>
+          <el-button size="small" type="danger" @click="batchSoftDelete">批量删除（可恢复）</el-button>
+          <el-button size="small" text @click="selected = []">取消选择</el-button>
+        </div>
       </div>
-      <el-table :data="students" stripe border class="tbl">
+      <el-table
+        :data="students"
+        stripe
+        border
+        class="tbl"
+        @selection-change="onSelectionChange"
+      >
+        <el-table-column type="selection" width="48" />
         <el-table-column prop="studentNo" label="学号" width="130" />
         <el-table-column prop="name" label="姓名" width="120" />
         <el-table-column prop="className" label="班级" />
@@ -48,10 +61,11 @@
             <el-tag :type="row.totalCredits > 0 ? 'success' : 'info'" effect="light">{{ row.totalCredits || 0 }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="220" fixed="right">
+        <el-table-column label="操作" width="260" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="openAdjust(row)">学分增减</el-button>
             <el-button link type="warning" @click="doResetPwd(row)">重置密码</el-button>
+            <el-button link type="danger" @click="doDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -110,10 +124,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { listStudents, importStudents, exportStudents, resetStudentPassword } from '@/api/student'
+import request from '@/api/request'
+import { listStudents, importStudents, exportStudents, resetStudentPassword, batchResetStudentPassword, restoreStudent } from '@/api/student'
 import { listCompletions, importCompletions, exportCompletions } from '@/api/completion'
 import { adjustCredit } from '@/api/creditFlow'
-import { downloadBlob } from '@/utils/download'
 import { statusLabel } from '@/utils/credit'
 
 const students = ref([])
@@ -123,6 +137,7 @@ const rosterFile = ref(null)
 const scoreFile = ref(null)
 const adjustVisible = ref(false)
 const adjustForm = ref({ studentId: null, name: '', current: 0, amount: 1, reason: '' })
+const selected = ref([])
 
 function statusTag(status) {
   return { DONE_ONTIME: 'success', DONE_OVERDUE: 'warning', UNFINISHED: 'info', FAILED: 'danger' }[status] || 'info'
@@ -177,18 +192,16 @@ async function onScoreFile(e) {
 
 async function doExportRoster() {
   try {
-    const blob = await exportStudents('csv')
-    downloadBlob(blob, `students_${Date.now()}.csv`)
-    ElMessage.success('名单已导出')
-  } catch (e) { /* 拦截器已提示 */ }
+    const r = await exportStudents('csv')
+    ElMessage.success(`名单已导出（${r.filename}）`)
+  } catch (e) { /* downloadBlobApi 已提示 */ }
 }
 
 async function doExportScore() {
   try {
-    const blob = await exportCompletions('csv')
-    downloadBlob(blob, `completions_${Date.now()}.csv`)
-    ElMessage.success('成绩已导出')
-  } catch (e) { /* 拦截器已提示 */ }
+    const r = await exportCompletions('csv')
+    ElMessage.success(`成绩已导出（${r.filename}）`)
+  } catch (e) { /* downloadBlobApi 已提示 */ }
 }
 
 // 重置学生密码
@@ -203,6 +216,83 @@ async function doResetPwd(row) {
     const d = res.data ?? res
     ElMessageBox.alert(`账号：${d.username}\n新密码：${d.password}`, '重置成功', { confirmButtonText: '知道了' })
   } catch (e) { /* 取消或拦截器已提示 */ }
+}
+
+// 单条删除（软删除，可从回收站恢复）
+async function doDelete(row) {
+  try {
+    await ElMessageBox.confirm(
+      `删除「${row.name}」？该操作可在 30 天内从回收站恢复。`,
+      '删除确认',
+      { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' }
+    )
+  } catch (_) { return }
+  try {
+    await request.delete(`/api/students/${row.id}`)
+    ElMessage.success(`已删除 ${row.name}，如需恢复请到回收站`)
+    await loadAll()
+  } catch (e) { /* 拦截器已提示 */ }
+}
+
+// 批量勾选状态
+function onSelectionChange(rows) {
+  selected.value = rows
+}
+
+// 批量重置密码（统一密码，留空则随机）
+async function batchResetPwd() {
+  if (selected.value.length === 0) return
+  try {
+    const { value } = await ElMessageBox.prompt(
+      `将对 ${selected.value.length} 名成员统一重置密码，留空则各自生成随机临时密码。`,
+      '批量重置密码',
+      {
+        confirmButtonText: '确认重置',
+        cancelButtonText: '取消',
+        inputPlaceholder: '统一密码（至少 6 位，留空=随机）',
+        inputValidator: (v) => !v || v.length >= 6 || '密码至少 6 位'
+      }
+    )
+  } catch (_) { return }
+  ElMessage.info('正在批量重置，请稍候…')
+  // 单条接口循环（前端实现简单、便于错误部分回显）
+  const results = []
+  for (const row of selected.value) {
+    try {
+      const res = await resetStudentPassword(row.id, undefined)
+      const d = res.data || res
+      results.push({ ok: true, name: row.name, username: d.username, password: d.password })
+    } catch (e) {
+      results.push({ ok: false, name: row.name, error: e.message || '失败' })
+    }
+  }
+  const okCount = results.filter((r) => r.ok).length
+  const samples = results.filter((r) => r.ok).slice(0, 5).map((r) => `${r.name}/${r.username}=${r.password}`).join('\n')
+  const summary = `批量重置完成：成功 ${okCount}/${results.length}${samples ? '\n\n' + samples + (results.length > 5 ? '\n…(更多见操作日志)' : '') : ''}`
+  ElMessageBox.alert(summary, '批量重置结果', { confirmButtonText: '知道了' })
+  await loadAll()
+}
+
+// 批量删除（软删除，可从回收站恢复）
+async function batchSoftDelete() {
+  if (selected.value.length === 0) return
+  try {
+    await ElMessageBox.confirm(
+      `将 ${selected.value.length} 名成员移入回收站，可 30 天内从「回收站」恢复。`,
+      '批量删除',
+      { type: 'warning', confirmButtonText: '移入回收站', cancelButtonText: '取消' }
+    )
+  } catch (_) { return }
+  let okCount = 0
+  for (const row of selected.value) {
+    try {
+      await request.delete(`/api/students/${row.id}`)
+      okCount++
+    } catch (e) { /* 单条失败跳过 */ }
+  }
+  ElMessage.success(`已移入回收站 ${okCount}/${selected.value.length} 人`)
+  selected.value = []
+  await loadAll()
 }
 
 // 打开学分调整
@@ -236,9 +326,16 @@ onMounted(loadAll)
 .hidden-file { display: none; }
 .result { border-radius: 12px; }
 .err-list { margin-top: 6px; font-size: 12px; color: #b45309; max-height: 120px; overflow: auto; }
-.section-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; }
+.section-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
 .section-title { font-size: 15px; font-weight: 600; }
 .section-sub { font-size: 12px; color: #8a94a6; }
+.batch-bar {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
 .tbl { width: 100%; }
 .hint { font-size: 13px; color: #5b6573; line-height: 1.9; }
 .hint-title { font-weight: 600; margin-bottom: 4px; color: #2b3242; }

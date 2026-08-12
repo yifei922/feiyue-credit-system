@@ -170,7 +170,8 @@ router.get('/export', async (req, res) => {
     ...rows.map(r => `${r.studentNo || ''},${r.studentName || ''},${r.taskTitle || ''},${r.subject || ''},${r.status || ''},${r.creditEarned || 0},${r.completionTime || ''}`)
   ];
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-  res.setHeader('Content-Disposition', 'attachment; filename="completions.csv"');
+  const fname = `completions_${new Date().toISOString().slice(0, 10)}.csv`;
+  res.setHeader('Content-Disposition', `attachment; filename="${fname}"; filename*=UTF-8''${encodeURIComponent('成绩明细_' + fname)}`);
   res.send('\uFEFF' + lines.join('\r\n'));
 });
 

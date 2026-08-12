@@ -74,6 +74,18 @@ const routes = [
         name: 'settings',
         component: () => import('@/views/SystemSettings.vue'),
         meta: { title: '系统设置', roles: ['TEACHER', 'REP', 'ADMIN'] }
+      },
+      {
+        path: 'badges',
+        name: 'badges',
+        component: () => import('@/views/BadgeWall.vue'),
+        meta: { title: '徽章墙', roles: ['STUDENT', 'TEACHER', 'REP', 'ADMIN'] }
+      },
+      {
+        path: 'recycle',
+        name: 'recycle',
+        component: () => import('@/views/RecycleBin.vue'),
+        meta: { title: '回收站', roles: ['TEACHER', 'ADMIN'] }
       }
     ]
   },

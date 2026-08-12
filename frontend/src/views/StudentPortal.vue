@@ -197,7 +197,6 @@ import { listTasks } from '@/api/task'
 import { uploadFile, uploadFileWithProgress, deleteAttachment, getPendingUploads, addPendingUpload, removePendingUpload, clearPendingUploads } from '@/api/upload'
 import { listAlerts, resolveAlert } from '@/api/alert'
 import { fetchAttachmentUrl } from '@/api/upload'
-import { downloadBlob } from '@/utils/download'
 import { compressImage, formatSize } from '@/utils/compress'
 import { flowTypeLabel, statusLabel } from '@/utils/credit'
 import { useAuthStore } from '@/stores/auth'
@@ -405,11 +404,9 @@ async function loadRec() {
 
 async function exportMine() {
   try {
-    const blob = await exportCompletions('csv', { studentId: studentId.value })
-    const d = new Date().toISOString().slice(0, 10)
-    downloadBlob(blob, `我的成绩单_${d}.csv`)
-    ElMessage.success('成绩单已导出')
-  } catch (e) { }
+    const r = await exportCompletions('csv', { studentId: studentId.value })
+    ElMessage.success(`成绩单已导出（${r.filename}）`)
+  } catch (e) { /* downloadBlobApi 已提示 */ }
 }
 
 onMounted(async () => {

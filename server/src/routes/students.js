@@ -47,8 +47,10 @@ router.get('/export', authMiddleware, requireRole('ADMIN', 'TEACHER', 'REP'), as
     header,
     ...rows.map(r => `${r.studentNo || ''},${r.name},${r.className || ''},${r.totalCredits || 0}`)
   ];
+  const fname = `students_${new Date().toISOString().slice(0, 10)}.csv`;
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-  res.setHeader('Content-Disposition', 'attachment; filename="students.csv"');
+  // 同时给 ASCII fallback + RFC 5987 UTF-8 双版本，兼容老旧浏览器
+  res.setHeader('Content-Disposition', `attachment; filename="${fname}"; filename*=UTF-8''${encodeURIComponent('成员名单_' + fname)}`);
   res.send('\uFEFF' + lines.join('\r\n'));
 });
 
@@ -114,6 +116,29 @@ router.post('/:id/reset-password', authMiddleware, requireRole('ADMIN', 'TEACHER
   ok(res, { ok: true, username: user.username, password: newPwd, temp: !custom });
 });
 
+// 批量重置多个成员的密码（统一密码；不传则各自生成随机临时密码）
+// 限管理员/主理人。前端循环调用单条接口也可，本接口用于事务式批量以减少请求往返。
+router.post('/batch-reset-password', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (req, res) => {
+  const ids = Array.isArray(req.body?.ids) ? req.body.ids.filter((x) => Number.isInteger(+x)) : [];
+  if (ids.length === 0) return fail(res, 400, '请选择至少一名成员');
+  if (ids.length > 200) return fail(res, 400, '单次最多 200 人');
+  const custom = String(req.body?.password || '').trim();
+  const useUniform = !!custom && custom.length >= 6;
+  const results = [];
+  for (const id of ids) {
+    const student = await db.prepare("SELECT * FROM student WHERE id=? AND deleted_at IS NULL").get(id);
+    if (!student) { results.push({ id, ok: false, error: '成员不存在或已删除' }); continue; }
+    const user = await db.prepare("SELECT * FROM sys_user WHERE role='STUDENT' AND student_id=?").get(student.id);
+    if (!user) { results.push({ id, ok: false, error: '该成员尚无登录账号' }); continue; }
+    const newPwd = useUniform ? custom : genTempPwd();
+    await db.prepare('UPDATE sys_user SET password=?, must_change_pwd=1 WHERE id=?').run(hashPassword(newPwd), user.id);
+    results.push({ id, ok: true, username: user.username, password: newPwd, temp: !useUniform });
+  }
+  recordLog(req.user, 'UPDATE', 'sys_user', null, null, { action: 'batch-reset-password', count: results.length, uniform: useUniform });
+  const succeeded = results.filter((r) => r.ok).length;
+  ok(res, { ok: true, total: ids.length, succeeded, failed: ids.length - succeeded, results });
+});
+
 // 新增单个成员（管理员/主理人）
 router.post('/', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (req, res) => {
   const { name, studentNo } = req.body || {};
@@ -138,14 +163,23 @@ router.put('/:id', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (req, 
   ok(res, { ok: true });
 });
 
-// 删除（F6 软删除）：标记 deleted_at 而非真删，便于 7 天内回收站恢复
-// 只对 student 表做软删除；对应 STUDENT 角色 sys_user 账号保留，student 查询过滤即可
+// 删除（F6 软删除，默认）：标记 deleted_at 而非真删，便于 30 天内回收站恢复
+// ?hard=1 时彻底物理删除（同步删 STUDENT 角色 sys_user 账号），不可恢复
 router.delete('/:id', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (req, res) => {
-  const before = await db.prepare('SELECT * FROM student WHERE id=? AND deleted_at IS NULL').get(req.params.id);
-  if (!before) return fail(res, 404, '成员不存在');
-  await db.prepare('UPDATE student SET deleted_at=NOW() WHERE id=?').run(req.params.id);
-  recordLog(req.user, 'DELETE', 'student', req.params.id, before, null);
-  ok(res, { ok: true, recoverable: true });
+  const hard = String(req.query.hard || '') === '1';
+  const sql = hard ? 'SELECT * FROM student WHERE id=?' : 'SELECT * FROM student WHERE id=? AND deleted_at IS NULL';
+  const before = await db.prepare(sql).get(req.params.id);
+  if (!before) return fail(res, 404, hard ? '成员不存在' : '成员不存在或已删除');
+  if (hard) {
+    await db.prepare("DELETE FROM sys_user WHERE role='STUDENT' AND student_id=?").run(req.params.id);
+    await db.prepare('DELETE FROM student WHERE id=?').run(req.params.id);
+    recordLog(req.user, 'DELETE_HARD', 'student', req.params.id, before, null);
+    ok(res, { ok: true, hard: true });
+  } else {
+    await db.prepare('UPDATE student SET deleted_at=NOW() WHERE id=?').run(req.params.id);
+    recordLog(req.user, 'DELETE', 'student', req.params.id, before, null);
+    ok(res, { ok: true, recoverable: true });
+  }
 });
 
 // 恢复软删除的成员（回收站恢复入口）
