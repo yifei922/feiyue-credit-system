@@ -14,11 +14,11 @@ services:
         generateValue: true
       # ── 数据库（腾讯云 CloudBase SQL 数据库 · 公网地址）──
       # 来源：CloudBase 控制台 → zq123466 环境 → SQL型数据库 → 连接信息
-      # 注意：端口是 21010（非默认 3306），公网连接需开 SSL
+      # 注意：端口是 21210（非默认 3306），公网连接需开 SSL
       - key: DB_HOST
-        value: sh-cynosdbmysql-gp-6fcdca.sql.tencentcdb.com
+        value: sh-cynosdbmysql-grp-0o7o6uce.sql.tencentcdb.com
       - key: DB_PORT
-        value: "21010"
+        value: "21210"
       - key: DB_USER
         value: root
       - key: DB_PASSWORD
