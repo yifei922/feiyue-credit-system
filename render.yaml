@@ -12,17 +12,21 @@ services:
       # ── JWT 签名（Render 自动生成，每次部署不变）──
       - key: JWT_SECRET
         generateValue: true
-      # ── 数据库（腾讯云 MySQL，与 server/.env 保持一致）──
+      # ── 数据库（腾讯云 CloudBase SQL 数据库 · 公网地址）──
+      # 来源：CloudBase 控制台 → zq123466 环境 → SQL型数据库 → 连接信息
+      # 注意：端口是 21010（非默认 3306），公网连接需开 SSL
       - key: DB_HOST
-        value: 10.18.108.46
+        value: sh-cynosdbmysql-gp-6fcdca.sql.tencentcdb.com
       - key: DB_PORT
-        value: "3306"
+        value: "21010"
       - key: DB_USER
         value: root
       - key: DB_PASSWORD
         value: Xpm8swMt
       - key: DB_NAME
         value: credit
+      - key: DB_SSL
+        value: "1"
       # ── 微信小程序凭证（网页端登录/回调需要）──
       - key: WX_APP_ID
         value: wx64664e7fa8d4f747
