@@ -31,7 +31,7 @@
         </el-button>
       </el-form>
 
-      <p class="hint">默认账号：teacher01(教师) / rep01(科代) / student01(学生) / admin　·　密码均为 123456</p>
+      <p class="hint">默认账号：teacher01(教师) / rep01(课代表) / student01(学生) / admin　·　密码均为 123456</p>
 
       <el-alert
         v-if="coldStartTip"
@@ -100,7 +100,7 @@ async function onSubmit() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #eef2ff 0%, #f5f7fb 60%);
+  background: linear-gradient(135deg, #ede9fe 0%, #ecfeff 50%, #f5f7fb 100%);
 }
 .login-card {
   width: 380px;
@@ -133,6 +133,12 @@ async function onSubmit() {
 .submit {
   width: 100%;
   margin-top: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  height: 44px;
+  border-radius: 10px;
+  box-shadow: var(--shadow-brand);
 }
 .hint {
   margin-top: 18px;
@@ -153,18 +159,18 @@ async function onSubmit() {
 .cold-start-foot {
   margin-top: 14px;
   padding: 8px 10px;
-  background: #f6f8ff;
+  background: #f5f3ff;
   border-radius: 8px;
   display: flex;
   align-items: flex-start;
   gap: 6px;
-  color: #5b6478;
+  color: #5b5470;
   font-size: 12px;
   line-height: 1.5;
 }
 .cold-start-foot .el-icon {
   margin-top: 2px;
-  color: #8893ad;
+  color: #7C3AED;
   flex-shrink: 0;
 }
 

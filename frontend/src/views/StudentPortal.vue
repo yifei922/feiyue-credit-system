@@ -449,7 +449,7 @@ onBeforeUnmount(() => {
 .deadline-hint { font-size: 12px; color: var(--text-soft); margin-left: 10px; }
 .tip { font-size: 12px; color: var(--text-soft); margin-left: 10px; }
 .size-tip { margin-left: 12px; font-size: 12px; color: #b35900; background: #fff7e6; padding: 4px 10px; border-radius: 4px; border: 1px solid #ffd591; }
-.size-tip b { color: #c8102e; }
+.size-tip b { color: var(--brand); }
 .att-list { margin: 8px 0 4px; display: flex; flex-direction: column; gap: 10px; }
 .resume-alert { margin-bottom: 14px; }
 .resume-body { font-size: 13px; line-height: 1.7; }

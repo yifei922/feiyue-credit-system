@@ -1,18 +1,28 @@
 // =============================================================================
 // 设计令牌（Design Tokens）：所有视觉变量集中在此
 // ★ 改主题 = 改 CSS 变量一处；不需改任何业务组件。
+// 品牌色：紫罗兰（Violet）— 稳重/智慧/成长，教育类产品亲和配色
 // =============================================================================
 
 :root {
-  /* ── 品牌 ── */
-  --brand: #c8102e;          /* 洛一高红 / 成长记录红 */
-  --brand-soft: #fdf2f4;
-  --brand-strong: #a0001e;
-  --brand-50: #fef2f3;
-  --brand-100: #fde0e4;
-  --brand-500: #c8102e;
-  --brand-600: #b30d28;
-  --brand-700: #9a0a22;
+  /* ── 品牌（紫罗兰色系） ── */
+  --brand: #7C3AED;            /* Violet-600 / 主品牌色 */
+  --brand-soft: #f5f3ff;       /* Violet-50 极浅紫背景 */
+  --brand-strong: #6D28D9;     /* Violet-700 深紫（hover/active） */
+  --brand-50: #f5f3ff;
+  --brand-100: #ede9fe;
+  --brand-200: #ddd6fe;
+  --brand-300: #c4b5fd;
+  --brand-400: #a78bfa;
+  --brand-500: #8B5CF6;
+  --brand-600: #7C3AED;
+  --brand-700: #6D28D9;
+  --brand-800: #5B21B6;
+  --brand-900: #4C1D95;
+
+  /* ── 辅助色（青碧 = 紫的互补色，用于渐变/点缀） ── */
+  --accent: #06B6D4;           /* Cyan-500 辅助强调 */
+  --accent-soft: #ecfeff;
 
   /* ── 中性 ── */
   --bg: #f7f8fa;
@@ -46,6 +56,7 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
   --shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.10);
+  --shadow-brand: 0 4px 14px rgba(124, 58, 237, 0.25);
 
   /* 4px 栅格 */
   --s0: 0;
@@ -89,12 +100,14 @@
     --border: #2a313a;
     --border-strong: #404952;
     --hover: #252b33;
-    --brand-soft: #2a1418;
-    --brand-50: #1d0e10;
-    --brand-100: #3a1a20;
+    --brand-soft: #1e1b4b;
+    --brand-50: #1e1b4b;
+    --brand-100: #2e1065;
+    --brand-200: #3b0764;
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
     --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
     --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.5);
+    --shadow-brand: 0 4px 14px rgba(124, 58, 237, 0.35);
   }
 }
 
@@ -109,13 +122,16 @@
   --border: #2a313a;
   --border-strong: #404952;
   --hover: #252b33;
-  --brand-soft: #2a1418;
-  --brand-50: #1d0e10;
-  --brand-100: #3a1a20;
-  --brand: #ef4444;
+  --brand-soft: #1e1b4b;
+  --brand-50: #1e1b4b;
+  --brand-100: #2e1065;
+  --brand-200: #3b0764;
+  --brand: #A78BFA;
+  --brand-strong: #8B5CF6;
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.5);
+  --shadow-brand: 0 4px 14px rgba(124, 58, 237, 0.35);
 }
 
 [data-theme="light"] {
@@ -129,7 +145,7 @@
 /* ── 让 Element Plus 全部跟随品牌色 ── */
 :root {
   --el-color-primary: var(--brand);
-  --el-color-primary-light-3: var(--brand-100);
+  --el-color-primary-light-3: var(--brand-200);
   --el-color-primary-light-5: var(--brand-soft);
   --el-color-primary-light-7: var(--brand-50);
   --el-color-primary-light-8: var(--brand-50);

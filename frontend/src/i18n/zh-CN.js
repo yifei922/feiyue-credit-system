@@ -31,9 +31,9 @@ export default {
   },
   role: {
     ADMIN: '管理员',
-    TEACHER: '主理人',
-    REP: '小组长',
-    STUDENT: '成员',
+    TEACHER: '教师',
+    REP: '课代表',
+    STUDENT: '学生',
   },
   badge: {
     firstDay: '初识打卡',

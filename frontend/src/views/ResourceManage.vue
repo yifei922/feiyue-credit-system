@@ -278,5 +278,5 @@ onMounted(loadAll)
 .filters { display: flex; gap: 12px; align-items: center; margin: 12px 0 16px; flex-wrap: wrap; }
 .muted { color: #8893ad; font-size: 12px; }
 .result { margin-top: 16px; }
-.err-list { margin-top: 8px; color: #c8102e; font-size: 12px; max-height: 120px; overflow: auto; }
+.err-list { margin-top: 8px; color: var(--brand); font-size: 12px; max-height: 120px; overflow: auto; }
 </style>
