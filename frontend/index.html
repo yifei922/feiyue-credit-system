@@ -101,6 +101,14 @@
 
     <script type="module" src="/src/main.js"></script>
     <script>
+      // 【关键】skip-link 默认隐藏（Vite 构建会剥离内联 style/前置 script，
+      //        故在此存活脚本中注入，确保冷启动时不裸露「跳到主要内容」）
+      (function(){
+        var ss = document.createElement('style');
+        ss.textContent = '.skip-link{position:absolute;left:-9999px;top:0;padding:8px 16px;background:#7C3AED;color:#fff;z-index:9999;font-size:14px;text-decoration:none;border-radius:4px}.skip-link:focus{left:16px;top:16px}';
+        document.head.insertBefore(ss, document.head.firstChild);
+      })();
+
       // 注册 Service Worker（PWA 离线能力）
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
