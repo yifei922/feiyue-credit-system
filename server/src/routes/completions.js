@@ -199,7 +199,7 @@ router.get('/', async (req, res) => {
   ok(res, rows.map(r => ({
     id: r.id, taskId: r.task_id, studentId: r.student_id, studentName: r.studentName,
     taskTitle: r.taskTitle, status: r.status, completionTime: r.completion_time, creditEarned: r.credit_earned,
-    attachments: attStmt.all(r.task_id, r.student_id).map(a => ({ ...a, url: `/api/uploads/${a.storedName}` }))
+    attachments: (await attStmt.all(r.task_id, r.student_id)).map(a => ({ ...a, url: `/api/uploads/${a.storedName}` }))
   })));
 });
 
