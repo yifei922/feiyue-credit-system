@@ -25,6 +25,8 @@
 - 任何 commit 提交时如遇 safe-delete 拦截：`python -c "import os; os.remove('.git/index.lock')"` 清锁
 - **Splash 覆盖层必须与 Vue 挂载解耦**：`#splash` 是 `z-index:9999` 全屏启动画屏，原移除逻辑依赖 `app.mount()` 成功；一旦挂载期异常/JS 崩溃会永久盖屏，表现为"页面空白 / 登录按钮完全看不到"。已加固为三层兜底（`index.html` 底部存活脚本：`__removeSplash()` + `window load` + 2500ms 硬超时淡出；`main.js` 把 `app.mount()` 包 try/catch）。**新增全局组件/根逻辑时务必确保不会让 Splash 卡死。**
 - vite build 需 `env -u NODE_OPTIONS` 跑（否则 safe-delete 拦截 Node 工具导致卡死）；Element Plus 仅内置部分图标，用前先确认存在（无 Hands/Reading/Crown）。
+- **「主理人」陷阱（已根治）**：界面显示"主理人"不是角色标签问题，而是 `db.js` 把**人名(name)字段**污染了——①seed 把 `teacher01` 的 name 写死"主理人"；②`migrate()` 曾每重启执行 `UPDATE sys_user SET name='主理人' WHERE name LIKE '%老师'`，把所有"X老师"账号改名成角色名。前端顶栏显示的是 `auth.user.realName`(=name)。**禁止再写此类把人名改成角色名的 migrate**；角色术语统一在前端 `ROLE_LABELS`(MainLayout) 与服务端 `ROLE_LABEL`(constants.js) 维护。线上数据已由 migrate 幂等修复（`role='TEACHER' AND name='主理人'` → '杨老师'）。
+- 浏览器 localStorage 缓存了旧 `user`(含旧 realName)：部署后用户**必须退出重新登录**才能拿到新姓名/角色，否则仍显示旧值。
 
 ## 邮箱/推送/Git
 - 远程：github.com:yifei922/feiyue-credit-system.git

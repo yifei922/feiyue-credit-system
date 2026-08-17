@@ -45,7 +45,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
   Search, DataLine, Files, EditPen, User, UserFilled, Bell, Setting, Refresh,
-  Lock, Document, Sunny
+  Lock, Document, Sunny, Trophy, Promotion
 } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 
@@ -66,21 +66,35 @@ const NAV = computed(() => {
     { title: '学生管理', sub: '成员名单与积分管理', icon: UserFilled, route: '/manage', roles: ['TEACHER', 'REP', 'ADMIN'] },
     { title: '预警中心', sub: '查看逾期/低积分等提醒', icon: Bell, route: '/alerts', roles: ['TEACHER', 'REP', 'ADMIN'] },
     { title: '系统设置', sub: '账号与系统配置', icon: Setting, route: '/settings', roles: ['TEACHER', 'REP', 'ADMIN'] },
+    { title: '荣誉殿堂', sub: '徽章墙与成长激励', icon: Trophy, route: '/badges', roles: ['TEACHER', 'REP', 'ADMIN', 'STUDENT'] },
   ]
   return items.filter((it) => !role || it.roles.includes(role))
 })
 
-const ACTIONS = [
-  { title: '刷新当前页', sub: '重新加载当前路由的数据', icon: Refresh, tag: '操作',
-    run: () => window.dispatchEvent(new CustomEvent('app:reload')) },
-  { title: '修改密码', sub: '前往修改个人密码', icon: Lock, tag: '账户',
-    run: () => router.push('/settings') },
-  { title: '切换主题', sub: '在浅色 / 深色模式间切换', icon: Sunny, tag: '主题',
-    run: () => document.documentElement.dataset.theme =
-      document.documentElement.dataset.theme === 'dark' ? '' : 'dark' },
-]
+const ACTIONS = computed(() => {
+  const role = auth.user?.role
+  const items = [
+    { title: '刷新当前页', sub: '重新加载当前路由的数据', icon: Refresh, tag: '操作',
+      run: () => window.dispatchEvent(new CustomEvent('app:reload')) },
+    { title: '修改密码', sub: '前往修改个人密码', icon: Lock, tag: '账户',
+      run: () => router.push('/settings') },
+    { title: '切换主题', sub: '在浅色 / 深色模式间切换', icon: Sunny, tag: '主题',
+      run: () => document.documentElement.dataset.theme =
+        document.documentElement.dataset.theme === 'dark' ? '' : 'dark' },
+  ]
+  if (['TEACHER', 'ADMIN'].includes(role)) {
+    items.push({
+      title: '快速颁发徽章', sub: '进入荣誉殿堂并打开批量颁发', icon: Promotion, tag: '教师',
+      run: () => {
+        router.push('/badges')
+        window.dispatchEvent(new CustomEvent('app:open-batch-grant'))
+      },
+    })
+  }
+  return items
+})
 
-const ALL_ITEMS = computed(() => [...NAV.value, ...ACTIONS])
+const ALL_ITEMS = computed(() => [...NAV.value, ...ACTIONS.value])
 
 const filtered = computed(() => {
   const q = kw.value.trim().toLowerCase()
