@@ -1,7 +1,7 @@
 // 集中常量与工具：避免多处复制
 const crypto = require('crypto');
 
-const ROLE_LABEL = { ADMIN: '管理员', TEACHER: '主理人', REP: '小组长', STUDENT: '成员' };
+const ROLE_LABEL = { ADMIN: '管理员', TEACHER: '教师', REP: '课代表', STUDENT: '学生' };
 
 const STATUS_LABEL = {
   DONE_ONTIME: '按时完成',

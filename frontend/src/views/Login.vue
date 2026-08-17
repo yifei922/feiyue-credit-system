@@ -100,14 +100,35 @@ async function onSubmit() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #ede9fe 0%, #ecfeff 50%, #f5f7fb 100%);
+  background: linear-gradient(135deg, #6D28D9 0%, #7C3AED 35%, #06B6D4 100%);
+  position: relative;
+  overflow: hidden;
+}
+/* 装饰性背景圆 — 增加层次感 */
+.login-page::before {
+  content: '';
+  position: absolute;
+  width: 420px; height: 420px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  top: -120px; right: -80px;
+}
+.login-page::after {
+  content: '';
+  position: absolute;
+  width: 300px; height: 300px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  bottom: -60px; left: -40px;
 }
 .login-card {
   width: 380px;
-  background: #fff;
-  border-radius: 16px;
-  padding: 36px 32px;
-  box-shadow: 0 12px 40px rgba(31, 41, 55, 0.1);
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 40px 32px 32px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255,255,255,0.1);
+  position: relative;
+  z-index: 1;
 }
 .brand {
   display: flex;
@@ -122,8 +143,9 @@ async function onSubmit() {
   object-fit: contain;
 }
 .brand h1 {
-  font-size: 20px;
+  font-size: 21px;
   margin: 0;
+  color: #1f2937;
 }
 .brand p {
   margin: 2px 0 0;
@@ -132,13 +154,24 @@ async function onSubmit() {
 }
 .submit {
   width: 100%;
-  margin-top: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: 4px;
-  height: 44px;
-  border-radius: 10px;
-  box-shadow: var(--shadow-brand);
+  margin-top: 12px;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 6px;
+  height: 48px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+  color: #ffffff !important;
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.45), 0 2px 6px rgba(124, 58, 237, 0.3);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.submit:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 28px rgba(124, 58, 237, 0.55), 0 4px 10px rgba(124, 58, 237, 0.35);
+}
+.submit:active {
+  transform: translateY(0);
 }
 .hint {
   margin-top: 18px;
@@ -158,15 +191,16 @@ async function onSubmit() {
 }
 .cold-start-foot {
   margin-top: 14px;
-  padding: 8px 10px;
-  background: #f5f3ff;
-  border-radius: 8px;
+  padding: 10px 12px;
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+  border-radius: 10px;
   display: flex;
   align-items: flex-start;
   gap: 6px;
-  color: #5b5470;
+  color: #4c3a8c;
   font-size: 12px;
-  line-height: 1.5;
+  line-height: 1.6;
+  border: 1px solid rgba(124, 58, 237, 0.1);
 }
 .cold-start-foot .el-icon {
   margin-top: 2px;

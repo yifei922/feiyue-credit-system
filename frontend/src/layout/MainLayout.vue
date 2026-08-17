@@ -90,7 +90,7 @@ const ALL_MENUS = [
   { index: '/completion', label: '完成登记', icon: 'EditPen', roles: ['TEACHER', 'REP', 'ADMIN'] },
   { index: '/students', label: '学生端', icon: 'User', roles: ['TEACHER', 'REP', 'ADMIN', 'STUDENT'] },
   { index: '/manage', label: '学生管理', icon: 'UserFilled', roles: ['TEACHER', 'REP', 'ADMIN'] },
-  { index: '/badges', label: '徽章墙', icon: 'Trophy', roles: ['TEACHER', 'REP', 'ADMIN', 'STUDENT'] },
+  { index: '/badges', label: '荣誉殿堂', icon: 'Trophy', roles: ['TEACHER', 'REP', 'ADMIN', 'STUDENT'] },
   { index: '/recycle', label: '回收站', icon: 'Delete', roles: ['TEACHER', 'ADMIN'] },
   { index: '/alerts', label: '预警中心', icon: 'Bell', roles: ['TEACHER', 'REP', 'ADMIN'] },
   { index: '/settings', label: '系统设置', icon: 'Setting', roles: ['TEACHER', 'REP', 'ADMIN'] }

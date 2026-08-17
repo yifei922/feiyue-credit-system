@@ -16,8 +16,8 @@
       html, body { margin: 0; padding: 0; height: 100%; }
       body {
         font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
-        background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 50%, #ffffff 100%);
-        color: #1f2937;
+        background: linear-gradient(135deg, #6D28D9 0%, #7C3AED 35%, #06B6D4 100%);
+        color: #ffffff;
       }
       #splash {
         position: fixed;
@@ -27,7 +27,7 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 50%, #ffffff 100%);
+        background: linear-gradient(135deg, #6D28D9 0%, #7C3AED 35%, #06B6D4 100%);
         transition: opacity 0.35s ease, visibility 0.35s ease;
       }
       #splash.splash-hide { opacity: 0; visibility: hidden; pointer-events: none; }
@@ -47,26 +47,26 @@
       }
       .splash-title {
         margin-top: 16px;
-        font-size: 16px;
+        font-size: 17px;
         font-weight: 600;
-        color: #1f2937;
-        letter-spacing: 1px;
+        color: #ffffff;
+        letter-spacing: 2px;
       }
       .splash-tip {
         margin-top: 8px;
         font-size: 12px;
-        color: #6b7280;
+        color: rgba(255,255,255,0.7);
         display: flex;
         align-items: center;
         gap: 6px;
       }
       .splash-dots { display: inline-flex; gap: 4px; }
       .splash-dots span {
-        width: 4px;
-        height: 4px;
+        width: 5px;
+        height: 5px;
         border-radius: 50%;
-        background: #7C3AED;
-        opacity: 0.3;
+        background: #ffffff;
+        opacity: 0.35;
         animation: dotBlink 1.2s infinite;
       }
       .splash-dots span:nth-child(2) { animation-delay: 0.2s; }
@@ -121,15 +121,33 @@
           var t = localStorage.getItem('theme');
           if (t === 'dark' || (!t && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.setAttribute('data-theme', 'dark');
-            var sp = document.getElementById('splash'); if (sp) sp.setAttribute('data-theme', 'dark');
+            var sp0 = document.getElementById('splash'); if (sp0) sp0.setAttribute('data-theme', 'dark');
           }
         } catch (_) {}
       })();
-      // mount 完成时移除 splash（兜底：CSS fadeOut 1.6s 后还会自动淡出）
-      window.__removeSplash = function () {
+
+      // ===== 启动画屏（Splash）移除：与 Vue 挂载成败彻底解耦 =====
+      // 设计原则：Splash 只应「短暂出现」，绝不可因 JS 异常/挂载失败而永久盖住页面。
+      // 因此提供三层移除通道：
+      //   1) main.js 在 app.mount 成功后调用 window.__removeSplash()（最快，正常路径）
+      //   2) window 'load' 事件兜底（资源全部就绪时）
+      //   3) 硬超时兜底（最大 2.5s，哪怕 JS 完全崩溃也强制淡出，露出页面内容）
+      function __forceHideSplash() {
         var sp = document.getElementById('splash');
-        if (sp && sp.parentNode) sp.parentNode.removeChild(sp);
-      };
+        if (!sp) return;
+        if (sp.dataset.hiding) return;           // 防重复
+        sp.dataset.hiding = '1';
+        sp.classList.add('splash-hide');          // 触发 CSS 淡出
+        setTimeout(function () {
+          if (sp && sp.parentNode) sp.parentNode.removeChild(sp);
+        }, 400);
+      }
+      // 暴露给 main.js（正常路径调用，带最小展示时长逻辑）
+      window.__removeSplash = function () { __forceHideSplash(); };
+      // 兜底 2：所有资源加载完成（含 JS bundle）即视为可移除
+      window.addEventListener('load', function () { setTimeout(__forceHideSplash, 600); });
+      // 兜底 3：硬超时——哪怕 JS 完全没跑起来，也不让 Splash 永久遮挡内容
+      setTimeout(__forceHideSplash, 2500);
     </script>
   </body>
 </html>

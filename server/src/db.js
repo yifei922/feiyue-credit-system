@@ -471,7 +471,22 @@ async function seed() {
   await db.prepare('INSERT INTO task_template(name, subject_id, type, credit_value, description) VALUES(?,?,?,?,?)')
     .run('结构化写作练习·模板', 2, 'HOMEWORK', 5, '用 PREP 模板写一段 200 字自我介绍');
 
-  console.log('[seed] 初始数据已写入（通用兴趣类）');
+  // ── 徽章种子（荣誉殿堂）──
+  const insBadge = db.prepare('INSERT INTO badge (code, name, description, icon, category, threshold, sort_order) VALUES(?,?,?,?,?,?,?)');
+  const badgeSeeds = [
+    ['first_login',   '初来乍到', '完成首次登录系统', 'User', 'MILESTONE', 1, 1],
+    ['week_streak',   '坚持一周', '连续7天完成任务打卡', 'Calendar', 'STREAK', 7, 2],
+    ['month_streak',  '月度达人', '连续30天不间断', 'Trophy', 'STREAK', 30, 3],
+    ['perfect_week',  '完美一周', '一周内所有任务按时完成', 'Star', 'QUALITY', 5, 4],
+    ['top_credits',   '积分之星', '累计积分达到100分', 'Medal', 'CREDIT', 100, 5],
+    ['early_bird',    '早起鸟儿', '连续5天在9点前提交', 'Sunny', 'HABIT', 5, 6],
+    ['bookworm',      '小书虫', '完成10篇阅读笔记', 'Reading', 'SUBJECT', 10, 7],
+    ['helper',        '小帮手', '帮助同学获得3次好评', 'Hands', 'SOCIAL', 3, 8],
+    ['all_rounder',   '全能选手', '获得全部类型徽章各一枚', 'Crown', 'SPECIAL', 0, 9],
+  ];
+  for (const b of badgeSeeds) await insBadge.run(...b);
+
+  console.log('[seed] 初始数据已写入（通用兴趣类 + 徽章）');
 }
 
 // ── 幂等迁移：每次启动都执行，用于给「已存在的库」补齐新功能所需的数据 ──
@@ -573,6 +588,25 @@ async function migrate() {
   // 10) 合规整改：把历史遗留的 K12 学科/难度字段重命名为中性兴趣标签（幂等，重启只跑一次）
   //     个人主体小程序禁止 K12 学科类校外培训；旧数据若被审核员看到会被驳回。
   await normalizeK12ToNeutral();
+
+  // 11) 徽章种子（荣誉殿堂）：确保 badge 表有初始数据
+  const badgeCount = (await db.prepare('SELECT COUNT(*) AS c FROM badge').get()).c;
+  if (badgeCount === 0) {
+    const insBadge = db.prepare('INSERT INTO badge (code, name, description, icon, category, threshold, sort_order) VALUES(?,?,?,?,?,?,?)');
+    const seeds = [
+      ['first_login',   '初来乍到', '完成首次登录系统', 'User', 'MILESTONE', 1, 1],
+      ['week_streak',   '坚持一周', '连续7天完成任务打卡', 'Calendar', 'STREAK', 7, 2],
+      ['month_streak',  '月度达人', '连续30天不间断', 'Trophy', 'STREAK', 30, 3],
+      ['perfect_week',  '完美一周', '一周内所有任务按时完成', 'Star', 'QUALITY', 5, 4],
+      ['top_credits',   '积分之星', '累计积分达到100分', 'Medal', 'CREDIT', 100, 5],
+      ['early_bird',    '早起鸟儿', '连续5天在9点前提交', 'Sunny', 'HABIT', 5, 6],
+      ['bookworm',      '小书虫', '完成10篇阅读笔记', 'Reading', 'SUBJECT', 10, 7],
+      ['helper',        '小帮手', '帮助同学获得3次好评', 'Hands', 'SOCIAL', 3, 8],
+      ['all_rounder',   '全能选手', '获得全部类型徽章各一枚', 'Crown', 'SPECIAL', 0, 9],
+    ];
+    for (const b of seeds) await insBadge.run(...b);
+    console.log('[migrate] 荣誉殿堂徽章种子已写入');
+  }
 }
 
 /**
