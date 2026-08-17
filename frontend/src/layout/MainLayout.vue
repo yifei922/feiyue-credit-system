@@ -37,6 +37,7 @@
             <span class="user-trigger">
               <el-avatar :size="30" class="avatar">{{ userInitial }}</el-avatar>
               <span class="username">{{ auth.user?.realName || auth.user?.username }}</span>
+              <el-tag v-if="roleLabel" :type="roleTagType" size="small" effect="plain" class="role-tag">{{ roleLabel }}</el-tag>
               <el-icon><ArrowDown /></el-icon>
             </span>
             <template #dropdown>
@@ -107,6 +108,12 @@ const currentTitle = computed(() => route.meta.title || '洛一高附中八（�
 const userInitial = computed(
   () => (auth.user?.realName || auth.user?.username || '?').charAt(0)
 )
+
+// Web 端独立角色术语（与小程序解耦）：教师 / 课代表 / 学生 / 管理员
+const ROLE_LABELS = { ADMIN: '管理员', TEACHER: '教师', REP: '课代表', STUDENT: '学生' }
+const ROLE_TAG_TYPES = { ADMIN: 'danger', TEACHER: 'warning', REP: 'success', STUDENT: 'info' }
+const roleLabel = computed(() => ROLE_LABELS[auth.user?.role] || '')
+const roleTagType = computed(() => ROLE_TAG_TYPES[auth.user?.role] || 'info')
 
 function onCommand(cmd) {
   if (cmd === 'logout') {
@@ -189,6 +196,11 @@ onMounted(() => {
 }
 .username {
   font-size: 14px;
+}
+.role-tag {
+  margin-left: 2px;
+  border-radius: 10px;
+  transform: translateY(1px);
 }
 .main {
   background: var(--bg);

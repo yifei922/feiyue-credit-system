@@ -23,6 +23,8 @@
 - `_*.input / _*.py / _pdf_tmp/` 等一次性调试残留已用 .gitignore 屏蔽（如需"真删"再单独处理）
 - mock.js 已加废弃注释但**文件保留**（8 个 API 文件仍 `import { mockApi }`，mockApi 导出在 mock.js:128）
 - 任何 commit 提交时如遇 safe-delete 拦截：`python -c "import os; os.remove('.git/index.lock')"` 清锁
+- **Splash 覆盖层必须与 Vue 挂载解耦**：`#splash` 是 `z-index:9999` 全屏启动画屏，原移除逻辑依赖 `app.mount()` 成功；一旦挂载期异常/JS 崩溃会永久盖屏，表现为"页面空白 / 登录按钮完全看不到"。已加固为三层兜底（`index.html` 底部存活脚本：`__removeSplash()` + `window load` + 2500ms 硬超时淡出；`main.js` 把 `app.mount()` 包 try/catch）。**新增全局组件/根逻辑时务必确保不会让 Splash 卡死。**
+- vite build 需 `env -u NODE_OPTIONS` 跑（否则 safe-delete 拦截 Node 工具导致卡死）；Element Plus 仅内置部分图标，用前先确认存在（无 Hands/Reading/Crown）。
 
 ## 邮箱/推送/Git
 - 远程：github.com:yifei922/feiyue-credit-system.git

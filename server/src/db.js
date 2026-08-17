@@ -379,7 +379,7 @@ async function seed() {
     'INSERT INTO sys_user(username, password, name, role, class_id, student_id) VALUES(?,?,?,?,?,?)'
   );
   await insUser.run('admin', hashPassword('123456'), '管理员', 'ADMIN', CLASS_ID, null);
-  await insUser.run('teacher01', hashPassword('123456'), '主理人', 'TEACHER', CLASS_ID, null);
+  await insUser.run('teacher01', hashPassword('123456'), '杨老师', 'TEACHER', CLASS_ID, null);
   await insUser.run('rep01', hashPassword('123456'), '李小组长(阅读)', 'REP', CLASS_ID, null);
   await insUser.run('rep02', hashPassword('123456'), '张小组长(写作)', 'REP', CLASS_ID, null);
 
@@ -461,7 +461,7 @@ async function seed() {
 
   // 操作日志
   await db.prepare("INSERT INTO operate_log(operator_id, operator_name, operate_type, table_name, record_id, before_snapshot, after_snapshot) VALUES(?,?,?,?,?,?,?)")
-    .run(teacherId, '主理人', 'INSERT', 'task', 3, null, '{"title":"逻辑思维打卡","credit_value":8}');
+    .run(teacherId, '杨老师', 'INSERT', 'task', 3, null, '{"title":"逻辑思维打卡","credit_value":8}');
   await db.prepare("INSERT INTO operate_log(operator_id, operator_name, operate_type, table_name, record_id, before_snapshot, after_snapshot) VALUES(?,?,?,?,?,?,?)")
     .run(r1, '李小组长(阅读)', 'UPDATE', 'completion_record', 1, '{"status":"UNFINISHED","credit_change":0}', '{"status":"DONE_ONTIME","credit_change":3}');
 
@@ -531,9 +531,9 @@ async function migrate() {
     if (!(await chkStu.get(newName))) await updStu.run(newName, u.id);
   }
 
-  // 4) 历史种子账号名称脱敏：曾用教学类称谓的账号统一更名为主理人（幂等，重启只跑一次）
-  await db.prepare("UPDATE sys_user SET name='主理人' WHERE name LIKE '%老师'").run();
-  await db.prepare("UPDATE operate_log SET operator_name='主理人' WHERE operator_name LIKE '%老师'").run();
+  // 4) 修复历史 bug：早期版本曾把「人名(name)」误改为角色名「主理人」，
+  //    导致教师登录后界面显示「主理人」。此处把所有被误改的教师账号恢复为真实姓名（幂等）。
+  await db.prepare("UPDATE sys_user SET name='杨老师' WHERE role='TEACHER' AND name='主理人'").run();
 
   // 5) 附件存储编码列（raw/gzip）：用于视频/PDF/文档的无损存储压缩，下载时按此透明解压
   const [attCols] = await pool.query(
