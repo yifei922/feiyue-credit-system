@@ -196,11 +196,12 @@ router.get('/', async (req, res) => {
   sql += ' ORDER BY cr.id DESC';
   const rows = await db.prepare(sql).all(...params);
   const attStmt = await db.prepare('SELECT id, original_name AS originalName, stored_name AS storedName, mime, size_original AS sizeOriginal, size_compressed AS sizeCompressed, width, height FROM attachment WHERE task_id=? AND student_id=?');
-  ok(res, rows.map(r => ({
+  const list = await Promise.all(rows.map(async r => ({
     id: r.id, taskId: r.task_id, studentId: r.student_id, studentName: r.studentName,
     taskTitle: r.taskTitle, status: r.status, completionTime: r.completion_time, creditEarned: r.credit_earned,
     attachments: (await attStmt.all(r.task_id, r.student_id)).map(a => ({ ...a, url: `/api/uploads/${a.storedName}` }))
   })));
+  ok(res, list);
 });
 
 module.exports = router;
