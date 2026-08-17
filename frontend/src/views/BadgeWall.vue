@@ -297,6 +297,7 @@
         >
           <b>{{ log.operator_name || '管理员' }}</b>
           {{ log.operate_type === 'badge_grant' ? '颁发徽章' : log.operate_type === 'badge_grant_batch' ? '批量颁发徽章' : '撤销徽章' }}
+          <div class="log-detail" v-if="logDetail(log)">{{ logDetail(log) }}</div>
         </el-timeline-item>
       </el-timeline>
       <el-empty v-else description="暂无授予记录" />
@@ -442,6 +443,15 @@ function formatDate(s) {
   const d = new Date(s)
   if (Number.isNaN(d.getTime())) return s
   return d.toLocaleDateString('zh-CN')
+}
+// 从 after_snapshot(JSON) 中解析可读详情，用于授予记录时间线
+function logDetail(log) {
+  try {
+    const obj = typeof log.after_snapshot === 'string' ? JSON.parse(log.after_snapshot) : (log.after_snapshot || {})
+    return obj.detail || ''
+  } catch {
+    return ''
+  }
 }
 function categoryLabel(cat) { return categoryMap[cat] || cat }
 function thresholdTextLocal(badge) {

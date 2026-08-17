@@ -35,7 +35,7 @@ router.post('/grant', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (re
   const existing = await db.prepare('SELECT id FROM user_badge WHERE user_id=? AND badge_id=?').get(userId, badge.id);
   if (existing) return fail(res, '该用户已获得此徽章', 409);
   await db.prepare('INSERT INTO user_badge (user_id, badge_id) VALUES (?, ?)').run(userId, badge.id);
-  recordLog(req.user.id, 'badge_grant', `授予用户${userId}徽章[${code}]`);
+  recordLog(req.user, 'badge_grant', 'user_badge', badge.id, null, { detail: `授予用户${userId}徽章[${code}]`, userId, code });
   ok(res, { granted: true, badgeCode: code, userId });
 });
 
@@ -46,7 +46,7 @@ router.post('/revoke', authMiddleware, requireRole('ADMIN'), async (req, res) =>
   const badge = await db.prepare('SELECT id FROM badge WHERE code=?').get(code);
   if (!badge) return fail(res, '徽章不存在', 404);
   await db.prepare('DELETE FROM user_badge WHERE user_id=? AND badge_id=?').run(userId, badge.id);
-  recordLog(req.user.id, 'badge_revoke', `撤销用户${userId}徽章[${code}]`);
+  recordLog(req.user, 'badge_revoke', 'user_badge', badge.id, null, { detail: `撤销用户${userId}徽章[${code}]`, userId, code });
   ok(res, { revoked: true });
 });
 
@@ -68,7 +68,7 @@ router.post('/grant-batch', authMiddleware, requireRole('ADMIN', 'TEACHER'), asy
     results.push({ userId, code, ok: true });
     successCount++;
   }
-  recordLog(req.user.id, 'badge_grant_batch', `批量颁发 ${grants.length} 项，成功 ${successCount}`);
+  recordLog(req.user, 'badge_grant_batch', 'user_badge', null, null, { detail: `批量颁发 ${grants.length} 项，成功 ${successCount}`, total: grants.length, success: successCount });
   ok(res, { results, successCount });
 });
 
@@ -124,7 +124,13 @@ router.get('/progress', authMiddleware, async (req, res) => {
     // 用服务端 CURDATE() 避免 JS 时区偏差（completion_time 由 CURRENT_TIMESTAMP 写入，为服务端时区）
     const t = await db.prepare('SELECT CURDATE() AS today').get();
     let cur = new Date(t.today + 'T00:00:00');
-    const fmt = (d) => d.toISOString().slice(0, 10);
+    // 用本地日期分量格式化（不要用 toISOString，否则非 UTC 时区会把日期整体偏移导致 streak 算错）
+    const fmt = (d) => {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    };
     // 今天还没打卡则从昨天起算
     if (!daySet.has(fmt(cur))) cur.setDate(cur.getDate() - 1);
     while (daySet.has(fmt(cur))) { streak++; cur.setDate(cur.getDate() - 1); }
@@ -171,7 +177,7 @@ router.post('/', authMiddleware, requireRole('ADMIN'), async (req, res) => {
   const r = await db.prepare(
     'INSERT INTO badge (code,name,description,icon,category,threshold,sort_order) VALUES(?,?,?,?,?,?,?)'
   ).run(code, name, description || '', icon || 'Trophy', category || 'STREAK', Number(threshold) || 0, Number(sort_order) || 0);
-  recordLog(req.user.id, 'badge_create', `创建徽章[${code}]`);
+  recordLog(req.user, 'badge_create', 'badge', r.lastInsertRowid, null, { detail: `创建徽章[${code}] ${name}`, code, name });
   ok(res, { id: r.lastInsertRowid });
 });
 
@@ -183,7 +189,7 @@ router.put('/:id', authMiddleware, requireRole('ADMIN'), async (req, res) => {
   await db.prepare(
     'UPDATE badge SET name=?, description=?, icon=?, category=?, threshold=?, sort_order=? WHERE id=?'
   ).run(name, description, icon, category, Number(threshold) || 0, Number(sort_order) || 0, id);
-  recordLog(req.user.id, 'badge_update', `更新徽章[${id}]`);
+  recordLog(req.user, 'badge_update', 'badge', id, null, { detail: `更新徽章[${id}]`, id });
   ok(res, { updated: true });
 });
 
@@ -193,7 +199,7 @@ router.delete('/:id', authMiddleware, requireRole('ADMIN'), async (req, res) => 
   if (!Number.isInteger(id)) return fail(res, '无效 id', 400);
   await db.prepare('DELETE FROM user_badge WHERE badge_id=?').run(id);
   await db.prepare('DELETE FROM badge WHERE id=?').run(id);
-  recordLog(req.user.id, 'badge_delete', `删除徽章[${id}]`);
+  recordLog(req.user, 'badge_delete', 'badge', id, null, { detail: `删除徽章[${id}]`, id });
   ok(res, { deleted: true });
 });
 
