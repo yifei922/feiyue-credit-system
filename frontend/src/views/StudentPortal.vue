@@ -67,13 +67,14 @@
         />
         <el-row :gutter="12">
           <el-col :span="8" v-for="r in recs" :key="r.taskId">
-            <el-card shadow="hover" class="rec-card">
+            <el-card shadow="hover" class="rec-card clickable" @click="openRecTask(r)">
               <div class="rec-title">{{ r.title }}</div>
               <div class="rec-meta">
                 <el-tag size="small">{{ r.subjectName }}</el-tag>
                 <el-tag size="small" type="warning">+{{ r.creditValue }} 学分</el-tag>
               </div>
               <div class="rec-reason">{{ r.reason }}</div>
+              <div class="rec-go" v-if="isStudent">点击去提交 →</div>
             </el-card>
           </el-col>
         </el-row>
@@ -102,7 +103,7 @@
           <el-form label-width="88px">
             <el-form-item label="选择任务">
               <el-select v-model="submitTaskId" placeholder="请选择要提交的作业" style="width: 320px" @change="onTaskChange">
-                <el-option v-for="t in openTasks" :key="t.id" :label="`${t.title}（${t.subjectName}）`" :value="t.id" />
+                <el-option v-for="t in submitTaskOptions" :key="t.id" :label="`${t.title}（${t.subjectName}）`" :value="t.id" />
               </el-select>
               <span class="deadline-hint" v-if="submitTask">
                 {{ isOverdue(submitTask) ? '⚠️ 已逾期，提交记为「逾期完成」' : '在截止前提交记为「按时完成」' }}
@@ -186,7 +187,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Download, Bell, Paperclip, Document } from '@element-plus/icons-vue'
 import { listStudents } from '@/api/student'
@@ -247,7 +248,15 @@ function ignorePending() {
 }
 
 const openTasks = computed(() => allTasks.value.filter((t) => t.status === 'OPEN'))
-const submitTask = computed(() => allTasks.value.find((t) => t.id === submitTaskId.value) || null)
+// 提交作业可选任务：开放任务 + 从「推荐任务」点进来但可能未标记 OPEN 的任务，保证一定能选到
+const extraTasks = ref([])
+const submitTaskOptions = computed(() => {
+  const map = new Map()
+  for (const t of openTasks.value) map.set(t.id, t)
+  for (const t of extraTasks.value) if (!map.has(t.id)) map.set(t.id, t)
+  return [...map.values()]
+})
+const submitTask = computed(() => submitTaskOptions.value.find((t) => t.id === submitTaskId.value) || null)
 const uploadedCount = computed(() => pending.value.filter((a) => a.phase === 'done').length)
 
 function isImage(a) { return (a.mime || '').startsWith('image/') }
@@ -266,6 +275,28 @@ function onTaskChange() {
   // 切换任务时清空已选附件（附件与任务绑定）
   pending.value.forEach((a) => a.previewUrl && URL.revokeObjectURL(a.previewUrl))
   pending.value = []
+}
+
+// 点击「推荐任务」卡片 → 直接定位到该作业的提交入口（深层修复：原先卡片无点击响应）
+async function openRecTask(r) {
+  if (!isStudent.value) {
+    ElMessage.info('请在学生端提交该作业')
+    return
+  }
+  tab.value = 'submit'
+  // 若该任务不在开放任务列表中，临时补入下拉，确保可选中
+  if (!submitTaskOptions.value.some((t) => t.id === r.taskId)) {
+    extraTasks.value = [
+      ...extraTasks.value.filter((t) => t.id !== r.taskId),
+      { id: r.taskId, title: r.title, subjectName: r.subjectName, status: 'OPEN', deadline: null },
+    ]
+  }
+  submitTaskId.value = r.taskId
+  onTaskChange()
+  ElMessage.info(`已为你定位到「${r.title}」，请在下方选择附件后提交`)
+  await nextTick()
+  const el = document.querySelector('.submit-bar') || document.querySelector('.my-submit')
+  el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
 }
 
 async function onPickFiles(e) {
@@ -435,6 +466,10 @@ onBeforeUnmount(() => {
 .plus { color: #22c55e; font-weight: 600; }
 .minus { color: #ef4444; font-weight: 600; }
 .rec-card { margin-bottom: 12px; }
+.rec-card.clickable { cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease; }
+.rec-card.clickable:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
+.rec-card.clickable:active { transform: translateY(0); }
+.rec-go { margin-top: 8px; font-size: 12px; font-weight: 600; color: var(--brand); }
 .rec-title { font-weight: 600; margin-bottom: 8px; }
 .rec-meta { display: flex; gap: 6px; margin-bottom: 8px; }
 .rec-reason { color: var(--text-soft); font-size: 12px; }

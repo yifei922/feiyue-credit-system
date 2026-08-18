@@ -6,7 +6,7 @@
         <img src="/logo.jpg" alt="洛一高附中" class="logo-img" />
         <span class="logo-text">洛一高附中八（十）班</span>
       </div>
-      <el-menu :default-active="activeMenu" router class="menu">
+      <el-menu :default-active="activeMenu" router class="menu" @select="onMenuSelect">
         <el-menu-item v-for="m in menus" :key="m.index" :index="m.index">
           <el-icon><component :is="m.icon" /></el-icon>
           <span>{{ m.label }}</span>
@@ -63,7 +63,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted, onUnmounted } from 'vue'
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { ElMessage } from 'element-plus'
@@ -139,6 +139,9 @@ onMounted(() => {
     if (localStorage.getItem('theme') === 'dark') applyTheme(true)
   } catch (_) {}
 })
+
+// 路由变化时自动收起抽屉式导览（手机端选择某一项后不应仍盖住内容）
+watch(() => route.path, () => { menuOpen.value = false })
 </script>
 
 <style scoped>

@@ -87,7 +87,10 @@
           </thead>
           <tbody>
             <tr v-for="stu in overview.students" :key="stu.id">
-              <td class="m-stu">{{ stu.name }}<small v-if="stu.studentNo"> · {{ stu.studentNo }}</small></td>
+              <td class="m-stu stu-clickable" @click="openStudentManage(stu)">
+                {{ stu.name }}<small v-if="stu.studentNo"> · {{ stu.studentNo }}</small>
+                <span class="stu-manage-hint">管理</span>
+              </td>
               <td v-for="b in overview.badges" :key="b.id">
                 <span
                   class="m-cell"
@@ -339,6 +342,24 @@
         </div>
       </div>
     </el-dialog>
+
+    <!-- ── 学生徽章快捷管理（点学生姓名进入，即时授予/撤销）── -->
+    <el-dialog v-model="showStudentDialog" :title="`${studentMgr?.name || ''} 的徽章`" width="520px" class="mobile-fit" :close-on-click-modal="false">
+      <p class="stu-mgr-tip">点击徽章即可即时授予 / 撤销，无需逐个确认</p>
+      <div class="stu-mgr-grid">
+        <div
+          v-for="b in allBadges"
+          :key="b.code"
+          class="stu-mgr-chip"
+          :class="{ on: studentMgrIds.includes(b.id) }"
+          @click="toggleStudentBadge(b)"
+        >
+          <el-icon :size="20"><component :is="iconMap[b.icon] || Trophy" /></el-icon>
+          <span>{{ b.name }}</span>
+          <span class="stu-mgr-check" v-if="studentMgrIds.includes(b.id)"><el-icon :size="12"><Check /></el-icon></span>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -448,6 +469,11 @@ const showLogs = ref(false)
 const showDetailDialog = ref(false)
 const detailBadge = ref(null)
 
+// 学生徽章快捷管理（点姓名进入）
+const showStudentDialog = ref(false)
+const studentMgr = ref(null)
+const studentMgrIds = ref([])
+
 const granting = ref(false)
 const batchGranting = ref(false)
 const libSaving = ref(false)
@@ -549,14 +575,51 @@ async function doGrant() {
 }
 
 async function openBatch() {
-  loadingStudents.value = true
-  try {
-    const res = await listUsers({ role: 'STUDENT' })
-    studentList.value = res.data || res || []
-  } catch (_) {}
-  loadingStudents.value = false
+  // 优先用已加载的班级概览，免一次网络请求 → 弹窗即时打开（反映更及时）
+  if (overview.value?.students?.length) {
+    studentList.value = overview.value.students
+  } else {
+    loadingStudents.value = true
+    try {
+      const res = await listUsers({ role: 'STUDENT' })
+      studentList.value = res.data || res || []
+    } catch (_) {}
+    loadingStudents.value = false
+  }
   batchForm.value = { userIds: [], code: '' }
   showBatch.value = true
+}
+
+// 点学生姓名 → 进入该生徽章快捷管理
+function openStudentManage(stu) {
+  studentMgr.value = stu
+  studentMgrIds.value = [...(overview.value?.owned?.[stu.id] || [])]
+  showStudentDialog.value = true
+}
+
+// 即时授予 / 撤销（乐观更新，无需逐个 confirm）
+async function toggleStudentBadge(badge) {
+  const stu = studentMgr.value
+  if (!stu) return
+  const has = studentMgrIds.value.includes(badge.id)
+  // 乐观更新
+  studentMgrIds.value = has
+    ? studentMgrIds.value.filter((id) => id !== badge.id)
+    : [...studentMgrIds.value, badge.id]
+  try {
+    if (has) await badgeStore.revoke(stu.id, badge.code)
+    else await badgeStore.grant(stu.id, badge.code)
+    ElMessage.success(has ? `已撤销 ${stu.name} 的「${badge.name}」` : `已颁发「${badge.name}」给 ${stu.name}`)
+    celebrate()
+    await badgeStore.loadOverview(true)
+    // 以最新概览为准，保证矩阵与本弹窗一致
+    studentMgrIds.value = [...(overview.value?.owned?.[stu.id] || [])]
+  } catch (_) {
+    // 失败回滚
+    studentMgrIds.value = has
+      ? [...studentMgrIds.value, badge.id]
+      : studentMgrIds.value.filter((id) => id !== badge.id)
+  }
 }
 
 async function doBatchGrant() {
@@ -703,6 +766,13 @@ onBeforeUnmount(() => {
 .matrix-table thead th:first-child { z-index: 3; }
 .m-stu { text-align: left !important; white-space: nowrap; font-size: 12px; min-width: 92px; }
 .m-stu small { color: var(--text-muted); }
+.stu-clickable { cursor: pointer; border-radius: 8px; padding: 4px 6px; transition: background 0.15s ease; }
+.stu-clickable:hover { background: var(--brand-50); }
+.stu-manage-hint { display: none; }
+@media (max-width: 600px) {
+  .stu-clickable { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+  .stu-manage-hint { display: inline-block; font-size: 10px; color: var(--brand); background: var(--brand-soft); padding: 1px 6px; border-radius: 6px; font-weight: 600; }
+}
 .m-cell { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 13px; }
 .m-cell.on { background: var(--brand-soft); color: var(--brand); }
 .m-cell.off { background: var(--bg-subtle); color: transparent; }
@@ -744,6 +814,21 @@ onBeforeUnmount(() => {
 /* ── 徽章库 ── */
 .lib-toolbar { margin-bottom: 12px; display: flex; justify-content: flex-end; }
 
+/* ── 学生徽章快捷管理 ── */
+.stu-mgr-tip { font-size: 12px; color: var(--text-soft); margin: 0 0 12px; }
+.stu-mgr-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.stu-mgr-chip {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 14px 8px; border-radius: 12px; border: 2px solid var(--border); cursor: pointer;
+  background: #fff; transition: all 0.15s ease; font-size: 12px; text-align: center; line-height: 1.3;
+}
+.stu-mgr-chip:hover { border-color: var(--brand-200); }
+.stu-mgr-chip.on { border-color: var(--brand); background: var(--brand-soft); color: var(--brand); font-weight: 600; }
+.stu-mgr-check {
+  position: absolute; top: 4px; right: 4px; width: 16px; height: 16px; border-radius: 50%;
+  background: #10B981; color: #fff; display: flex; align-items: center; justify-content: center;
+}
+
 /* ── 详情弹窗 ── */
 .detail-body { display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .detail-img { width: 88px; height: 88px; border-radius: 22px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
@@ -763,9 +848,23 @@ onBeforeUnmount(() => {
   .hero-content { flex-direction: column; text-align: center; padding: 20px 16px; }
   .hero-stats { margin-left: 0; margin-top: 12px; width: 100%; justify-content: center; }
   .grant-badge-grid { grid-template-columns: repeat(2, 1fr); }
-  .mobile-fit.el-dialog { width: 92vw !important; max-width: 92vw; margin: 8vh auto !important; }
-  .mobile-fit .el-dialog__body { padding: 16px !important; }
-  .mobile-fit .el-dialog__header { padding: 16px 16px 10px !important; }
-  .mobile-fit .el-dialog__footer { padding: 10px 16px 16px !important; }
+  .stu-mgr-grid { grid-template-columns: repeat(2, 1fr); }
+  /* 弹窗在手机上：限制高度 + 内容区滚动，避免显示不全；圆角 + 实底，避免与背景重影 */
+  .mobile-fit.el-dialog {
+    width: 92vw !important; max-width: 92vw;
+    margin: 5vh auto !important;
+    max-height: 90vh;
+    display: flex; flex-direction: column;
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+  }
+  .mobile-fit .el-dialog__header { padding: 16px 18px 8px !important; margin-right: 0 !important; flex-shrink: 0; }
+  .mobile-fit .el-dialog__title { font-size: 16px; font-weight: 700; }
+  .mobile-fit .el-dialog__body { flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 12px 18px 16px !important; }
+  .mobile-fit .el-dialog__footer { padding: 10px 18px 16px !important; flex-shrink: 0; }
+}
+/* 手机端遮罩略加深，弱化背景文字透出的重影感 */
+@media (max-width: 600px) {
+  .el-overlay { background-color: rgba(15, 23, 42, 0.55); }
 }
 </style>
