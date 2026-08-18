@@ -82,4 +82,70 @@ router.post('/:id/role', requireRole('ADMIN'), async (req, res) => {
   ok(res, { ok: true, role, subjectIds: role === 'REP' ? (subjectIds || []) : [] });
 });
 
+// 创建账号（仅 ADMIN）—— 填补产品空白：此前账号只能靠 db seed 注入，老师/管理员无法在界面新增成员
+// body: { username, name, role, password?, studentNo?, subjectIds?, mustChangePwd? }
+router.post('/', requireRole('ADMIN'), async (req, res) => {
+  const { username, name, role, password, studentNo, subjectIds, mustChangePwd } = req.body || {};
+  if (!username || !name || !role) return fail(res, 400, '用户名/姓名/角色必填');
+  const validRoles = ['ADMIN', 'TEACHER', 'REP', 'STUDENT'];
+  if (!validRoles.includes(role)) return fail(res, 400, '角色非法');
+  const uname = String(username).trim();
+  if (!/^[A-Za-z0-9_]{3,32}$/.test(uname)) return fail(res, 400, '用户名仅限字母数字下划线(3-32位)');
+  if (await db.prepare('SELECT id FROM sys_user WHERE username=?').get(uname)) return fail(res, 409, '用户名已存在');
+
+  // 仅超级管理员可指定明文密码；其余一律生成随机临时密码（安全加固）
+  const isSuper = req.user.username === 'superadmin';
+  const customPwd = String(password || '').trim();
+  const newPwd = (customPwd && isSuper) ? customPwd : genTempPwd();
+  if (newPwd.length < 8) return fail(res, 400, '密码至少 8 位');
+
+  const CLASS_ID = 1;
+  let studentId = null;
+  if (role === 'STUDENT') {
+    const r = await db.prepare('INSERT INTO student(name, student_no, class_id) VALUES(?,?,?)').run(name, studentNo || null, CLASS_ID);
+    studentId = r.lastInsertRowid;
+  }
+  const ins = await db.prepare(
+    'INSERT INTO sys_user(username, password, name, role, class_id, student_id, must_change_pwd) VALUES(?,?,?,?,?,?,?)'
+  ).run(uname, hashPassword(newPwd), name, role, CLASS_ID, studentId, (customPwd && isSuper) ? 0 : 1);
+  const uid = ins.lastInsertRowid;
+
+  if (role === 'REP' && Array.isArray(subjectIds)) {
+    const insRep = await db.prepare('INSERT IGNORE INTO subject_rep(subject_id, user_id) VALUES(?,?)');
+    for (const sid of subjectIds.map(Number)) {
+      if (sid) await insRep.run(sid, uid);
+    }
+  }
+  recordLog(req.user, 'INSERT', 'sys_user', uid, null, { username: uname, role, name });
+  ok(res, {
+    id: uid, username: uname, role, name,
+    password: (customPwd && isSuper) ? newPwd : undefined,
+    mustChangePwd: !(customPwd && isSuper),
+  });
+});
+
+// 删除账号（仅 ADMIN）—— 含受保护账号名单与关联清理（库无外键，按依赖顺序删子表）
+const PROTECTED_USERS = new Set([
+  'superadmin', 'admin', 'teacher01', 'rep01', 'rep02',
+  'student01', 'student02', 'student03', 'student04', 'student05', 'student06',
+]);
+router.delete('/:id', requireRole('ADMIN'), async (req, res) => {
+  const target = await db.prepare('SELECT * FROM sys_user WHERE id=?').get(req.params.id);
+  if (!target) return fail(res, 404, '账号不存在');
+  if (target.username === 'superadmin') return fail(res, 403, '不能删除超级管理员');
+  if (target.id === req.user.id) return fail(res, 403, '不能删除自己');
+  if (PROTECTED_USERS.has(target.username)) return fail(res, 403, '受保护账号不可删除');
+
+  await db.prepare('DELETE FROM subject_rep WHERE user_id=?').run(target.id);
+  await db.prepare('DELETE FROM user_badge WHERE user_id=?').run(target.id);
+  if (target.student_id) {
+    await db.prepare('DELETE FROM completion_record WHERE student_id=?').run(target.student_id);
+    await db.prepare('DELETE FROM credit_flow WHERE student_id=?').run(target.student_id);
+    await db.prepare('DELETE FROM student WHERE id=?').run(target.student_id);
+  }
+  await db.prepare('DELETE FROM sys_user WHERE id=?').run(target.id);
+  recordLog(req.user, 'DELETE', 'sys_user', target.id, { username: target.username }, null);
+  ok(res, { ok: true });
+});
+
 module.exports = router;
