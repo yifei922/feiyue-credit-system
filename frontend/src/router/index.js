@@ -73,7 +73,7 @@ const routes = [
         path: 'settings',
         name: 'settings',
         component: () => import('@/views/SystemSettings.vue'),
-        meta: { title: '系统设置', roles: ['TEACHER', 'REP', 'ADMIN'] }
+        meta: { title: '系统设置', roles: ['TEACHER', 'ADMIN'] }
       },
       {
         path: 'badges',
