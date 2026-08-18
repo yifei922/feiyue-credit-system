@@ -71,6 +71,38 @@
       }
       .splash-dots span:nth-child(2) { animation-delay: 0.2s; }
       .splash-dots span:nth-child(3) { animation-delay: 0.4s; }
+      .splash-progress {
+        width: 220px;
+        height: 6px;
+        border-radius: 3px;
+        background: rgba(255,255,255,0.25);
+        margin-top: 22px;
+        overflow: hidden;
+      }
+      .splash-progress-bar {
+        width: 0%;
+        height: 100%;
+        border-radius: 3px;
+        background: #ffffff;
+        box-shadow: 0 0 10px rgba(255,255,255,0.4);
+        transition: width 0.25s linear;
+      }
+      .splash-stage {
+        margin-top: 12px;
+        font-size: 12px;
+        color: rgba(255,255,255,0.9);
+        min-height: 18px;
+        letter-spacing: 0.5px;
+      }
+      .splash-slow {
+        margin-top: 6px;
+        font-size: 11px;
+        color: rgba(255,255,255,0.65);
+        min-height: 16px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .splash-slow.show { opacity: 1; }
       @keyframes splashPulse {
         0%, 100% { transform: scale(1); box-shadow: 0 8px 24px rgba(124, 58, 237, 0.3); }
         50% { transform: scale(1.06); box-shadow: 0 12px 32px rgba(124, 58, 237, 0.5); }
@@ -91,10 +123,9 @@
     <div id="splash" role="status" aria-label="正在打开">
       <div class="splash-logo">成</div>
       <div class="splash-title">成长记录</div>
-      <div class="splash-tip">
-        <span>小助手正在准备</span>
-        <span class="splash-dots"><span></span><span></span><span></span></span>
-      </div>
+      <div class="splash-progress"><div class="splash-progress-bar" id="splashBar"></div></div>
+      <div class="splash-stage" id="splashStage">正在准备页面...</div>
+      <div class="splash-slow" id="splashSlow">网络有点慢，首次加载需要一点时间，请耐心等待...</div>
     </div>
 
     <div id="app"></div>
@@ -126,28 +157,55 @@
         } catch (_) {}
       })();
 
-      // ===== 启动画屏（Splash）移除：与 Vue 挂载成败彻底解耦 =====
+      // ===== 启动画屏（Splash）进度条 + 移除：与 Vue 挂载成败彻底解耦 =====
       // 设计原则：Splash 只应「短暂出现」，绝不可因 JS 异常/挂载失败而永久盖住页面。
       // 因此提供三层移除通道：
       //   1) main.js 在 app.mount 成功后调用 window.__removeSplash()（最快，正常路径）
       //   2) window 'load' 事件兜底（资源全部就绪时）
-      //   3) 硬超时兜底（最大 2.5s，哪怕 JS 完全崩溃也强制淡出，露出页面内容）
+      //   3) 硬超时兜底（最大 5s，哪怕 JS 完全崩溃也强制淡出，露出页面内容）
+      var splashBar = document.getElementById('splashBar');
+      var splashStage = document.getElementById('splashStage');
+      var splashSlow = document.getElementById('splashSlow');
+      function __setProgress(pct) {
+        if (splashBar) splashBar.style.width = pct + '%';
+      }
+      function __setStage(text) {
+        if (splashStage) splashStage.textContent = text;
+      }
+      // 分阶段进度动画：让用户感知「正在加载」，避免误认死机
+      var splashSteps = [
+        { t: 0,    pct: 5,  text: '正在准备页面...' },
+        { t: 350,  pct: 22, text: '正在加载资源...' },
+        { t: 900,  pct: 48, text: '正在初始化应用...' },
+        { t: 1700, pct: 72, text: '正在连接数据服务...' },
+        { t: 2600, pct: 88, text: '马上就好...' }
+      ];
+      splashSteps.forEach(function (s) {
+        setTimeout(function () { __setProgress(s.pct); __setStage(s.text); }, s.t);
+      });
+      // 慢网络提示：超过 3.5s 仍未加载完，安抚用户
+      setTimeout(function () { if (splashSlow) splashSlow.classList.add('show'); }, 3500);
+
       function __forceHideSplash() {
         var sp = document.getElementById('splash');
         if (!sp) return;
         if (sp.dataset.hiding) return;           // 防重复
         sp.dataset.hiding = '1';
-        sp.classList.add('splash-hide');          // 触发 CSS 淡出
+        __setProgress(100);
+        __setStage('加载完成');
         setTimeout(function () {
-          if (sp && sp.parentNode) sp.parentNode.removeChild(sp);
-        }, 400);
+          sp.classList.add('splash-hide');          // 触发 CSS 淡出
+          setTimeout(function () {
+            if (sp && sp.parentNode) sp.parentNode.removeChild(sp);
+          }, 400);
+        }, 220);
       }
       // 暴露给 main.js（正常路径调用，带最小展示时长逻辑）
       window.__removeSplash = function () { __forceHideSplash(); };
       // 兜底 2：所有资源加载完成（含 JS bundle）即视为可移除
       window.addEventListener('load', function () { setTimeout(__forceHideSplash, 600); });
       // 兜底 3：硬超时——哪怕 JS 完全没跑起来，也不让 Splash 永久遮挡内容
-      setTimeout(__forceHideSplash, 2500);
+      setTimeout(__forceHideSplash, 5000);
     </script>
   </body>
 </html>

@@ -134,11 +134,14 @@
         >
           <div class="card-inner">
             <div class="badge-icon-wrap">
-              <div class="badge-icon" :style="earnedSet.has(b.code) ? earnedIconStyle(b) : {}">
-                <el-icon :size="earnedSet.has(b.code) ? 28 : 22">
-                  <component :is="iconMap[b.icon] || Trophy" />
-                </el-icon>
-              </div>
+              <img
+                :src="badgeImage(b.code)"
+                :alt="b.name"
+                class="badge-img"
+                :class="{ locked: !earnedSet.has(b.code) }"
+                loading="lazy"
+                @error="$event.target.src = '/badges/default.svg'"
+              />
               <div class="lock-overlay" v-if="!earnedSet.has(b.code)">
                 <el-icon :size="18"><Lock /></el-icon>
               </div>
@@ -166,9 +169,12 @@
       <div class="section-title">最近获得</div>
       <div class="recent-list">
         <div class="recent-item" v-for="item in recentEarned" :key="item.code + item.earnedAt">
-          <div class="recent-icon" style="background: var(--brand-soft); color: var(--brand)">
-            <el-icon :size="16"><Trophy /></el-icon>
-          </div>
+          <img
+            :src="badgeImage(item.code)"
+            class="recent-img"
+            :alt="item.name"
+            @error="$event.target.src = '/badges/default.svg'"
+          />
           <div class="recent-info">
             <b>{{ item.name }}</b>
             <span>{{ formatDate(item.earnedAt) }}</span>
@@ -178,7 +184,7 @@
     </div>
 
     <!-- ── 教师单发弹窗（从矩阵空单元格快速授予）── -->
-    <el-dialog v-model="showGrantDialog" title="颁发徽章" width="420px" :close-on-click-modal="false">
+    <el-dialog v-model="showGrantDialog" title="颁发徽章" width="420px" class="mobile-fit" :close-on-click-modal="false">
       <el-form :model="grantForm" label-width="80px">
         <el-form-item label="学生">
           <el-input :model-value="grantForm.stuName" disabled />
@@ -207,7 +213,7 @@
     </el-dialog>
 
     <!-- ── 批量颁发弹窗 ── -->
-    <el-dialog v-model="showBatch" title="批量颁发徽章" width="520px" :close-on-click-modal="false">
+    <el-dialog v-model="showBatch" title="批量颁发徽章" width="520px" class="mobile-fit" :close-on-click-modal="false">
       <el-form label-width="80px">
         <el-form-item label="选择学生">
           <el-select v-model="batchForm.userIds" multiple filterable placeholder="搜索并选择学生" style="width: 100%">
@@ -239,7 +245,7 @@
     </el-dialog>
 
     <!-- ── 徽章库管理弹窗 ── -->
-    <el-dialog v-model="showLibrary" title="徽章库管理" width="640px" :close-on-click-modal="false">
+    <el-dialog v-model="showLibrary" title="徽章库管理" width="640px" class="mobile-fit" :close-on-click-modal="false">
       <div class="lib-toolbar">
         <el-button type="primary" :icon="Plus" @click="openLibCreate">新增徽章</el-button>
       </div>
@@ -261,7 +267,7 @@
         </el-table-column>
       </el-table>
 
-      <el-dialog v-model="showLibForm" :title="libForm.id ? '编辑徽章' : '新增徽章'" width="420px" append-to-body>
+      <el-dialog v-model="showLibForm" :title="libForm.id ? '编辑徽章' : '新增徽章'" width="420px" class="mobile-fit" append-to-body>
         <el-form :model="libForm" label-width="80px">
           <el-form-item label="code"><el-input v-model="libForm.code" :disabled="!!libForm.id" placeholder="唯一标识，如 first-task" /></el-form-item>
           <el-form-item label="名称"><el-input v-model="libForm.name" placeholder="如 初心徽章" /></el-form-item>
@@ -287,7 +293,7 @@
     </el-dialog>
 
     <!-- ── 授予记录弹窗 ── -->
-    <el-dialog v-model="showLogs" title="授予记录" width="520px">
+    <el-dialog v-model="showLogs" title="授予记录" width="520px" class="mobile-fit">
       <el-timeline v-if="grantLogs.length">
         <el-timeline-item
           v-for="log in grantLogs"
@@ -304,11 +310,12 @@
     </el-dialog>
 
     <!-- ── 徽章详情弹窗 ── -->
-    <el-dialog v-model="showDetailDialog" :title="detailBadge?.name" width="380px">
+    <el-dialog v-model="showDetailDialog" :title="detailBadge?.name" width="380px" class="mobile-fit">
       <div class="detail-body" v-if="detailBadge">
-        <div class="detail-icon" :style="earnedSet.has(detailBadge?.code) ? earnedIconStyle(detailBadge) : { background: '#f1f3f7', color: '#8a94a6' }">
-          <el-icon :size="36"><component :is="iconMap[detailBadge.icon] || 'Trophy'" /></el-icon>
-        </div>
+        <img :src="badgeImage(detailBadge.code)" class="detail-img" :alt="detailBadge.name" @error="$event.target.src = '/badges/default.svg'" />
+        <p class="detail-quote" v-if="BADGE_QUOTES[detailBadge.code]">
+          “{{ BADGE_QUOTES[detailBadge.code] }}”
+        </p>
         <p class="detail-desc">{{ detailBadge.description }}</p>
         <div class="detail-meta">
           <div class="meta-row">
@@ -366,6 +373,20 @@ const categoryMap = {
   CREDIT: '积分成就', HABIT: '好习惯', SUBJECT: '学科', SOCIAL: '社交', SPECIAL: '特殊荣誉',
 }
 const iconOptions = ['Trophy', 'Medal', 'Star', 'Sunny', 'Calendar', 'User', 'Coin', 'Service', 'Connection', 'Lock', 'Check', 'Plus', 'Edit', 'Delete', 'Grid', 'Document', 'Promotion', 'Collection']
+
+// 徽章插画与激励语（与 public/badges/<code>.svg 一一对应）
+const BADGE_QUOTES = {
+  first_login: '每一次开始，都是成长的起点。',
+  week_streak: '坚持七天，遇见更好的自己。',
+  month_streak: '三十天不间断，习惯成自然。',
+  perfect_week: '一周全力以赴，不负每一刻。',
+  top_credits: '积分记录努力，努力成就光芒。',
+  early_bird: '晨光不负早起人。',
+  bookworm: '每一页，都是通往世界的窗。',
+  helper: '帮助别人，也是温暖自己。',
+  all_rounder: '全面发展，样样精彩。',
+}
+function badgeImage(code) { return `/badges/${code}.svg` }
 
 const isTeacherOrAdmin = computed(() => ['ADMIN', 'TEACHER'].includes(auth.user?.role))
 const isAdmin = computed(() => auth.user?.role === 'ADMIN')
@@ -674,11 +695,13 @@ onBeforeUnmount(() => {
 .card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 18px; }
 
 /* ── 班级矩阵 ── */
-.matrix-scroll { overflow-x: auto; }
-.matrix-table { border-collapse: collapse; width: 100%; }
-.matrix-table th, .matrix-table td { border: 1px solid var(--border); padding: 6px 8px; text-align: center; }
-.matrix-table th { background: var(--bg); position: sticky; top: 0; }
-.m-stu { text-align: left !important; white-space: nowrap; font-size: 13px; }
+.matrix-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 10px; border: 1px solid var(--border); }
+.matrix-table { border-collapse: collapse; width: 100%; min-width: 480px; }
+.matrix-table th, .matrix-table td { border: 1px solid var(--border); padding: 8px 6px; text-align: center; font-size: 12px; }
+.matrix-table th { background: var(--bg); position: sticky; top: 0; z-index: 1; }
+.matrix-table th:first-child, .matrix-table td:first-child { position: sticky; left: 0; background: var(--bg); z-index: 2; }
+.matrix-table thead th:first-child { z-index: 3; }
+.m-stu { text-align: left !important; white-space: nowrap; font-size: 12px; min-width: 92px; }
 .m-stu small { color: var(--text-muted); }
 .m-cell { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 13px; }
 .m-cell.on { background: var(--brand-soft); color: var(--brand); }
@@ -692,10 +715,11 @@ onBeforeUnmount(() => {
 .badge-card.earned { background: linear-gradient(180deg, #fffbf0 0%, #fff8e6 100%); border: 1px solid rgba(245, 158, 11, 0.25); box-shadow: 0 4px 14px rgba(0,0,0,0.04); }
 .badge-card.locked { background: #fafbfc; border: 1px solid var(--border); opacity: 0.75; }
 .card-inner { padding: 16px 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
-.badge-icon-wrap { position: relative; width: 52px; height: 52px; }
-.badge-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: #f1f3f7; color: #8a94a6; transition: transform 0.2s ease; }
-.badge-card:hover .badge-icon { transform: scale(1.08); }
-.lock-overlay { position: absolute; inset: 0; border-radius: 14px; background: rgba(241, 243, 247, 0.7); display: flex; align-items: center; justify-content: center; color: #9ca3af; }
+.badge-icon-wrap { position: relative; width: 56px; height: 56px; }
+.badge-img { width: 56px; height: 56px; border-radius: 16px; object-fit: contain; display: block; transition: transform 0.2s ease, filter 0.2s ease; }
+.badge-card:hover .badge-img { transform: scale(1.08); }
+.badge-card.locked .badge-img { filter: grayscale(100%) opacity(0.55); }
+.lock-overlay { position: absolute; inset: 0; border-radius: 16px; background: rgba(241, 243, 247, 0.55); display: flex; align-items: center; justify-content: center; color: #9ca3af; }
 .check-badge { position: absolute; bottom: -2px; right: -2px; width: 18px; height: 18px; border-radius: 50%; background: #10B981; color: #fff; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; }
 .badge-name { font-size: 13px; font-weight: 600; color: var(--text); }
 .badge-desc { font-size: 11px; color: var(--text-soft); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -705,7 +729,7 @@ onBeforeUnmount(() => {
 /* ── 最近获得 ── */
 .recent-list { display: flex; flex-direction: column; gap: 8px; }
 .recent-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; background: var(--bg); }
-.recent-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.recent-img { width: 32px; height: 32px; border-radius: 8px; object-fit: contain; flex-shrink: 0; background: var(--bg-subtle); }
 .recent-info { display: flex; flex-direction: column; }
 .recent-info b { font-size: 13px; }
 .recent-info span { font-size: 11px; color: var(--text-soft); }
@@ -721,8 +745,9 @@ onBeforeUnmount(() => {
 .lib-toolbar { margin-bottom: 12px; display: flex; justify-content: flex-end; }
 
 /* ── 详情弹窗 ── */
-.detail-body { display: flex; flex-direction: column; align-items: center; gap: 14px; }
-.detail-icon { width: 72px; height: 72px; border-radius: 20px; display: flex; align-items: center; justify-content: center; }
+.detail-body { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.detail-img { width: 88px; height: 88px; border-radius: 22px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+.detail-quote { text-align: center; font-size: 14px; color: var(--brand); font-weight: 600; margin: 0; line-height: 1.6; }
 .detail-desc { text-align: center; color: var(--text-soft); font-size: 13px; line-height: 1.6; margin: 0; }
 .detail-meta { width: 100%; display: flex; flex-direction: column; gap: 10px; }
 .meta-row { display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
@@ -731,12 +756,16 @@ onBeforeUnmount(() => {
 /* ── 响应式 ── */
 @media (max-width: 600px) {
   .badge-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .card-inner { padding: 12px 8px; }
-  .badge-icon-wrap, .badge-icon { width: 44px; height: 44px; border-radius: 12px; }
+  .card-inner { padding: 12px 6px; }
+  .badge-icon-wrap, .badge-img { width: 46px; height: 46px; border-radius: 12px; }
   .badge-name { font-size: 12px; }
   .badge-desc { font-size: 10px; -webkit-line-clamp: 1; }
   .hero-content { flex-direction: column; text-align: center; padding: 20px 16px; }
   .hero-stats { margin-left: 0; margin-top: 12px; width: 100%; justify-content: center; }
-  .grant-badge-grid { grid-template-columns: repeat(3, 1fr); }
+  .grant-badge-grid { grid-template-columns: repeat(2, 1fr); }
+  .mobile-fit.el-dialog { width: 92vw !important; max-width: 92vw; margin: 8vh auto !important; }
+  .mobile-fit .el-dialog__body { padding: 16px !important; }
+  .mobile-fit .el-dialog__header { padding: 16px 16px 10px !important; }
+  .mobile-fit .el-dialog__footer { padding: 10px 16px 16px !important; }
 }
 </style>
