@@ -37,9 +37,21 @@
   /* 弹窗 / 确认框满屏留边（!important 覆盖组件内联宽度） */
   .el-dialog {
     width: 92vw !important;
+    max-height: 88vh !important;
+    display: flex;
+    flex-direction: column;
   }
   .el-dialog__body {
     padding: 16px !important;
+    overflow-y: auto;
+  }
+  .el-dialog__header {
+    padding: 16px 16px 10px !important;
+    flex-shrink: 0;
+  }
+  .el-dialog__footer {
+    padding: 10px 16px 16px !important;
+    flex-shrink: 0;
   }
   .el-message-box {
     width: 92vw !important;
