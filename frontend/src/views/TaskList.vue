@@ -6,9 +6,6 @@
         <el-button type="primary" @click="openCreate">
           <el-icon><Plus /></el-icon> 新建任务
         </el-button>
-        <el-button @click="openTemplateDialog">
-          <el-icon><Files /></el-icon> 从模板创建
-        </el-button>
         <el-select v-model="filterSubject" placeholder="全部科目" clearable style="width: 140px" @change="applyFilter">
           <el-option v-for="s in subjects" :key="s.id" :label="s.name" :value="s.id" />
         </el-select>
@@ -59,7 +56,6 @@
           <template #default="{ row }">
             <el-button link type="primary" @click="openEdit(row)"><el-icon><Edit /></el-icon> 编辑</el-button>
             <el-button link type="danger" @click="onDelete(row)"><el-icon><Delete /></el-icon> 删除</el-button>
-            <el-button link @click="saveTemplate(row)"><el-icon><Trophy /></el-icon> 存模板</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -80,9 +76,15 @@
       <el-form :model="form" label-width="84px">
         <el-form-item label="标题"><el-input v-model="form.title" placeholder="如：黑板报设计、卫生值日、班级活动等" /></el-form-item>
         <el-form-item label="科目">
-          <el-select v-model="form.subjectId" style="width: 100%" @change="onSubjectChange">
-            <el-option v-for="s in subjects" :key="s.id" :label="s.name" :value="s.id" />
-          </el-select>
+          <div class="subject-pick">
+            <el-select v-model="form.subjectId" style="flex:1" @change="onSubjectChange" placeholder="选择科目">
+              <el-option v-for="s in subjects" :key="s.id" :label="s.name" :value="s.id" />
+            </el-select>
+            <el-button @click="addCustomSubject" title="其他科目可无限添加">
+              <el-icon><Plus /></el-icon> 其他
+            </el-button>
+          </div>
+          <div class="subject-hint" v-if="isCustomCategory">已选「其他」：可点上方「其他」按钮无限添加自定义科目</div>
         </el-form-item>
         <el-form-item v-if="isCustomCategory" label="自定义类别">
           <el-input v-model="form.customCategory" placeholder="输入自定义类别名称（如：劳动实践、班级事务）" />
@@ -109,17 +111,6 @@
       <template #footer>
         <el-button @click="formVisible = false">取消</el-button>
         <el-button type="primary" :loading="saving" @click="submitForm">保存</el-button>
-      </template>
-    </el-dialog>
-
-    <!-- 从模板创建 -->
-    <el-dialog v-model="tplVisible" title="从模板创建任务" width="460px" class="mobile-fit">
-      <el-radio-group v-model="selectedTpl">
-        <el-radio-button v-for="t in templates" :key="t.id" :value="t.id">{{ t.name }}</el-radio-button>
-      </el-radio-group>
-      <template #footer>
-        <el-button @click="tplVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitFromTemplate">创建</el-button>
       </template>
     </el-dialog>
 
@@ -163,17 +154,16 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { Plus, Files, Edit, Delete, View, Search, Refresh, Trophy } from '@element-plus/icons-vue'
+import { Plus, Edit, Delete, View, Search, Refresh } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
-  listTasks, createTask, updateTask, deleteTask, saveAsTemplate, createFromTemplate, listTemplates,
+  listTasks, createTask, updateTask, deleteTask,
 } from '@/api/task'
 import { listCompletions, registerCompletion } from '@/api/completion'
-import { listSubjects } from '@/api/subject'
+import { listSubjects, createSubject } from '@/api/subject'
 
 const tasks = ref([])
 const subjects = ref([])
-const templates = ref([])
 const filterSubject = ref('')
 const filterStatus = ref('')
 const keyword = ref('')
@@ -185,8 +175,6 @@ const form = ref({ id: null, title: '', subjectId: 1, type: 'HOMEWORK', status: 
 const editingId = ref(null)
 const formVisible = ref(false)
 const saving = ref(false)
-const tplVisible = ref(false)
-const selectedTpl = ref(null)
 
 const compVisible = ref(false)
 const currentTask = ref(null)
@@ -232,10 +220,31 @@ async function load() {
 function onSubjectChange() { if (!isCustomCategory.value) form.value.customCategory = '' }
 
 async function loadSubjects() {
-  const r = await listSubjects()
+  const r = await listSubjects('WEB')
   subjects.value = r.data ?? r
   if (subjects.value.length && !subjects.value.find((s) => s.id === form.value.subjectId)) {
     form.value.subjectId = subjects.value[0].id
+  }
+}
+
+// 其他选项：可无限添加自定义科目（直接创建 WEB 平台学科）
+async function addCustomSubject() {
+  const { value } = await ElMessageBox.prompt('输入自定义科目名称（将作为新科目保存，可反复添加）', '添加自定义科目', {
+    confirmButtonText: '添加',
+    cancelButtonText: '取消',
+    inputPattern: /\S+/,
+    inputErrorMessage: '科目名称不能为空',
+  }).catch(() => ({ value: null }))
+  if (!value) return
+  const name = value.trim()
+  if (subjects.value.some((s) => s.name === name)) return ElMessage.warning('该科目已存在')
+  try {
+    const r = await createSubject({ name, platform: 'WEB' })
+    await loadSubjects()
+    form.value.subjectId = r.data?.id ?? subjects.value.find((s) => s.name === name)?.id
+    ElMessage.success(`已添加科目「${name}」`)
+  } catch (e) {
+    ElMessage.error(e?.response?.data?.message || '添加科目失败')
   }
 }
 
@@ -280,36 +289,6 @@ async function onDelete(row) {
     await load()
   } catch (e) {
     ElMessage.error(e?.response?.data?.message || '删除失败')
-  }
-}
-
-async function saveTemplate(row) {
-  try {
-    await saveAsTemplate({ title: row.title, subjectId: row.subjectId, type: row.type, creditValue: row.creditValue, description: row.description })
-    ElMessage.success(`已存为模板：${row.title}·模板`)
-  } catch (e) {
-    ElMessage.error(e?.response?.data?.message || '存为模板失败')
-  }
-}
-
-async function openTemplateDialog() {
-  await loadTemplates()
-  selectedTpl.value = templates.value[0]?.id ?? null
-  tplVisible.value = true
-}
-async function loadTemplates() {
-  const r = await listTemplates()
-  templates.value = r.data ?? r
-}
-async function submitFromTemplate() {
-  if (!selectedTpl.value) return ElMessage.warning('请选择模板')
-  try {
-    await createFromTemplate(selectedTpl.value)
-    ElMessage.success('已从模板创建任务')
-    tplVisible.value = false
-    await load()
-  } catch (e) {
-    ElMessage.error(e?.response?.data?.message || '创建失败')
   }
 }
 
@@ -370,4 +349,6 @@ onMounted(() => {
 .comp-title { font-weight: 600; font-size: 14px; }
 .done-mark { color: #10B981; font-weight: 700; }
 .overdue { color: #ef4444; }
+.subject-pick { display: flex; gap: 8px; width: 100%; align-items: center; }
+.subject-hint { font-size: 12px; color: var(--text-soft); line-height: 1.5; margin-top: 4px; }
 </style>

@@ -47,9 +47,10 @@ router.post('/:id/reset-password', requireRole('ADMIN', 'TEACHER', 'REP'), async
   if (target.username === 'superadmin' && req.user.username !== 'superadmin') {
     return fail(res, 403, '超级管理员密码只能由本人修改');
   }
-  // 仅超级管理员可自定义密码；其他人一律生成随机临时密码
+  // 仅超级管理员或教师可自定义密码；其他人一律生成随机临时密码
   const customPwd = String(req.body?.password || '').trim();
-  const newPwd = (customPwd && req.user.username === 'superadmin') ? customPwd : genTempPwd();
+  const canSetPwd = (customPwd && (req.user.username === 'superadmin' || req.user.role === 'TEACHER'));
+  const newPwd = canSetPwd ? customPwd : genTempPwd();
   if (newPwd.length < 8) return fail(res, 400, '密码至少 8 位');
   await db.prepare('UPDATE sys_user SET password=?, must_change_pwd=1 WHERE id=?').run(hashPassword(newPwd), target.id);
   recordLog(req.user, 'UPDATE', 'sys_user', target.id, { username: target.username }, { action: 'reset-password' });
@@ -82,21 +83,25 @@ router.post('/:id/role', requireRole('ADMIN'), async (req, res) => {
   ok(res, { ok: true, role, subjectIds: role === 'REP' ? (subjectIds || []) : [] });
 });
 
-// 创建账号（仅 ADMIN）—— 填补产品空白：此前账号只能靠 db seed 注入，老师/管理员无法在界面新增成员
+// 创建账号（ADMIN / TEACHER）—— 填补产品空白：此前账号只能靠 db seed 注入，老师/管理员无法在界面新增成员
+// 教师可新增"除杨老师以外"的其他老师（权限相同）；可指定密码。
 // body: { username, name, role, password?, studentNo?, subjectIds?, mustChangePwd? }
-router.post('/', requireRole('ADMIN'), async (req, res) => {
+router.post('/', requireRole('ADMIN', 'TEACHER'), async (req, res) => {
   const { username, name, role, password, studentNo, subjectIds, mustChangePwd } = req.body || {};
   if (!username || !name || !role) return fail(res, 400, '用户名/姓名/角色必填');
   const validRoles = ['ADMIN', 'TEACHER', 'REP', 'STUDENT'];
   if (!validRoles.includes(role)) return fail(res, 400, '角色非法');
+  // 教师只能创建 TEACHER/REP/STUDENT，禁止创建 ADMIN（防横向提权）
+  if (req.user.role === 'TEACHER' && role === 'ADMIN') return fail(res, 403, '教师不能创建管理员账号');
   const uname = String(username).trim();
   if (!/^[A-Za-z0-9_]{3,32}$/.test(uname)) return fail(res, 400, '用户名仅限字母数字下划线(3-32位)');
   if (await db.prepare('SELECT id FROM sys_user WHERE username=?').get(uname)) return fail(res, 409, '用户名已存在');
 
-  // 仅超级管理员可指定明文密码；其余一律生成随机临时密码（安全加固）
+  // 仅超级管理员或教师可指定明文密码；其余一律生成随机临时密码（安全加固）
   const isSuper = req.user.username === 'superadmin';
+  const isTeacher = req.user.role === 'TEACHER';
   const customPwd = String(password || '').trim();
-  const newPwd = (customPwd && isSuper) ? customPwd : genTempPwd();
+  const newPwd = (customPwd && (isSuper || isTeacher)) ? customPwd : genTempPwd();
   if (newPwd.length < 8) return fail(res, 400, '密码至少 8 位');
 
   const CLASS_ID = 1;
@@ -105,9 +110,10 @@ router.post('/', requireRole('ADMIN'), async (req, res) => {
     const r = await db.prepare('INSERT INTO student(name, student_no, class_id) VALUES(?,?,?)').run(name, studentNo || null, CLASS_ID);
     studentId = r.lastInsertRowid;
   }
+  const canSetPwd = customPwd && (isSuper || isTeacher);
   const ins = await db.prepare(
     'INSERT INTO sys_user(username, password, name, role, class_id, student_id, must_change_pwd) VALUES(?,?,?,?,?,?,?)'
-  ).run(uname, hashPassword(newPwd), name, role, CLASS_ID, studentId, (customPwd && isSuper) ? 0 : 1);
+  ).run(uname, hashPassword(newPwd), name, role, CLASS_ID, studentId, canSetPwd ? 0 : 1);
   const uid = ins.lastInsertRowid;
 
   if (role === 'REP' && Array.isArray(subjectIds)) {
@@ -119,22 +125,27 @@ router.post('/', requireRole('ADMIN'), async (req, res) => {
   recordLog(req.user, 'INSERT', 'sys_user', uid, null, { username: uname, role, name });
   ok(res, {
     id: uid, username: uname, role, name,
-    password: (customPwd && isSuper) ? newPwd : undefined,
-    mustChangePwd: !(customPwd && isSuper),
+    password: canSetPwd ? newPwd : undefined,
+    mustChangePwd: !canSetPwd,
   });
 });
 
-// 删除账号（仅 ADMIN）—— 含受保护账号名单与关联清理（库无外键，按依赖顺序删子表）
+// 删除账号（ADMIN / TEACHER）—— 含受保护账号名单与关联清理（库无外键，按依赖顺序删子表）
+// 教师只能删除学生(STUDENT)账号（符合"学生课代表设置、重置密码、删除等管理只能老师和管理员可以操作"）
 const PROTECTED_USERS = new Set([
   'superadmin', 'admin', 'teacher01', 'rep01', 'rep02',
   'student01', 'student02', 'student03', 'student04', 'student05', 'student06',
 ]);
-router.delete('/:id', requireRole('ADMIN'), async (req, res) => {
+router.delete('/:id', requireRole('ADMIN', 'TEACHER'), async (req, res) => {
   const target = await db.prepare('SELECT * FROM sys_user WHERE id=?').get(req.params.id);
   if (!target) return fail(res, 404, '账号不存在');
   if (target.username === 'superadmin') return fail(res, 403, '不能删除超级管理员');
   if (target.id === req.user.id) return fail(res, 403, '不能删除自己');
   if (PROTECTED_USERS.has(target.username)) return fail(res, 403, '受保护账号不可删除');
+  // 教师只能删除学生，不能删除老师/管理员/小组长（防越权）
+  if (req.user.role === 'TEACHER' && target.role !== 'STUDENT') {
+    return fail(res, 403, '教师只能删除学生账号');
+  }
 
   await db.prepare('DELETE FROM subject_rep WHERE user_id=?').run(target.id);
   await db.prepare('DELETE FROM user_badge WHERE user_id=?').run(target.id);

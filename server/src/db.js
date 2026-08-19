@@ -149,9 +149,11 @@ CREATE TABLE IF NOT EXISTS subject (
   name VARCHAR(255) NOT NULL,
   class_id INT,
   teacher_id INT,
+  platform VARCHAR(16) DEFAULT 'MP',
   create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
   KEY idx_subject_class (class_id),
-  KEY idx_subject_teacher (teacher_id)
+  KEY idx_subject_teacher (teacher_id),
+  KEY idx_subject_platform (platform)
 );
 CREATE TABLE IF NOT EXISTS sys_user (
   id INT PRIMARY KEY AUTO_INCREMENT,
@@ -509,17 +511,37 @@ async function migrate() {
     if (process.env.DEBUG_MIGRATE === '1') console.log('[migrate] 超级管理员账号已创建: superadmin / (密码已设置，请及时修改)');
   }
 
-  // 2) 兴趣分类兴趣分类补齐（合规整改：个人主体小程序禁止 K12 学科类培训，改通用兴趣标签）
+  // 2) 平台隔离列：为已存在的库补齐 platform 列（Web=初二学科体系 / MP=中性兴趣科目）
+  const [subjCols] = await pool.query(
+    "SELECT COLUMN_NAME AS name FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=? AND TABLE_NAME='subject'",
+    [DB_NAME]
+  );
+  if (!subjCols.some((c) => c.name === 'platform')) {
+    await db.prepare("ALTER TABLE subject ADD COLUMN platform VARCHAR(16) DEFAULT 'MP'").run();
+  }
+  // 存量科目若无 platform 值，默认归属小程序（中性兴趣科目，避免被误判为 K12 学科）
+  await db.prepare("UPDATE subject SET platform='MP' WHERE platform IS NULL OR platform=''").run();
+
+  const teacherRow = await db.prepare("SELECT id FROM sys_user WHERE role='TEACHER' ORDER BY id LIMIT 1").get();
+  const teacherId = teacherRow ? teacherRow.id : null;
+  const insSubj = db.prepare('INSERT INTO subject(name, class_id, teacher_id, platform) VALUES(?,?,?,?)');
+  // 2a) 小程序端：中性兴趣科目（合规整改：个人主体小程序禁止 K12 学科类培训）
   const FULL_SUBJECTS = [
     '阅读', '写作', '思维', '编程', '艺术', '手工',
     '科普', '语言', '历史人文', '运动健康', '其他'
   ];
-  const teacherRow = await db.prepare("SELECT id FROM sys_user WHERE role='TEACHER' ORDER BY id LIMIT 1").get();
-  const teacherId = teacherRow ? teacherRow.id : null;
-  const insSubj = db.prepare('INSERT INTO subject(name, class_id, teacher_id) VALUES(?,?,?)');
   for (const name of FULL_SUBJECTS) {
-    const exist = await db.prepare('SELECT id FROM subject WHERE name=? AND class_id=?').get(name, CLASS_ID);
-    if (!exist) await insSubj.run(name, CLASS_ID, teacherId);
+    const exist = await db.prepare('SELECT id FROM subject WHERE name=? AND class_id=? AND platform=?').get(name, CLASS_ID, 'MP');
+    if (!exist) await insSubj.run(name, CLASS_ID, teacherId, 'MP');
+  }
+  // 2b) Web 管理端：初中二年级学科体系（围绕全部学科罗列 + 其他可自定义）
+  const WEB_SUBJECTS = [
+    '语文', '数学', '英语', '物理', '化学', '生物',
+    '地理', '历史', '道德与法治', '体育', '其他'
+  ];
+  for (const name of WEB_SUBJECTS) {
+    const exist = await db.prepare('SELECT id FROM subject WHERE name=? AND class_id=? AND platform=?').get(name, CLASS_ID, 'WEB');
+    if (!exist) await insSubj.run(name, CLASS_ID, teacherId, 'WEB');
   }
 
   // 3) 成员账号用户名规范化：stu01 -> student01（修复 student01 登录失败问题）
@@ -636,7 +658,8 @@ async function normalizeK12ToNeutral() {
   const GRADE_TO_LEVEL = { '初一': '入门', '初二': '进阶', '初三': '挑战', '初四': '挑战' };
 
   let changed = 0;
-  const updSubj = db.prepare('UPDATE subject SET name=? WHERE name=?');
+  // 仅处理小程序(MP)平台科目，避免把 Web 端初二学科体系误改回中性名（双科目体系隔离）
+  const updSubj = db.prepare("UPDATE subject SET name=? WHERE name=? AND platform='MP'");
   for (const [from, to] of Object.entries(K12_TO_NEUTRAL)) {
     const r = await updSubj.run(to, from);
     if (r.changes) changed += r.changes;

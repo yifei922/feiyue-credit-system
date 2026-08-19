@@ -14,3 +14,13 @@ export function resetPassword(userId, password) {
 export function setUserRole(userId, role, subjectIds) {
   return request.post(`/api/users/${userId}/role`, { role, subjectIds })
 }
+
+// 创建账号（ADMIN/TEACHER，可指定密码）
+export function createUser(data) {
+  return request.post('/api/users', data)
+}
+
+// 删除账号（ADMIN 全部 / TEACHER 仅学生）
+export function deleteUser(userId) {
+  return request.delete(`/api/users/${userId}`)
+}

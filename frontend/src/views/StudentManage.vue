@@ -33,6 +33,66 @@
       </div>
     </el-alert>
 
+    <!-- 科目与课代表管理（仅 老师/管理员） -->
+    <div class="card section" v-if="isTeacherOrAdmin">
+      <div class="section-head">
+        <span class="section-title">科目与课代表管理</span>
+        <span class="section-sub">围绕初中二年级学科 · 老师/管理员可设置课代表、自定义科目、删除科目</span>
+        <div class="batch-bar">
+          <el-button size="small" type="primary" @click="addCustomSubject"><el-icon><Plus /></el-icon> 添加科目</el-button>
+        </div>
+      </div>
+      <el-table :data="subjects" stripe border class="tbl" max-height="360">
+        <el-table-column prop="name" label="科目" width="120" />
+        <el-table-column label="课代表" min-width="160">
+          <template #default="{ row }">
+            <el-select
+              v-model="row.repUserIds"
+              multiple
+              collapse-tags
+              collapse-tags-tooltip
+              placeholder="选择课代表"
+              style="width: 100%"
+              @change="(v) => onSetReps(row, v)"
+            >
+              <el-option v-for="u in repCandidates" :key="u.id" :label="`${u.name}${u.role === 'TEACHER' ? '（老师）' : u.role === 'REP' ? '（课代表）' : ''}`" :value="u.id" />
+            </el-select>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="90" align="center">
+          <template #default="{ row }">
+            <el-button link type="danger" @click="removeSubject(row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
+
+    <!-- 教师账号（仅 老师/管理员）：可新增其他老师，权限相同，可指定密码 -->
+    <div class="card section" v-if="isTeacherOrAdmin">
+      <div class="section-head">
+        <span class="section-title">教师账号</span>
+        <span class="section-sub">老师/管理员可新增老师账号，权限相同，可指定登录密码</span>
+        <div class="batch-bar">
+          <el-button size="small" type="primary" @click="addTeacherVisible = true"><el-icon><Plus /></el-icon> 新增老师</el-button>
+        </div>
+      </div>
+      <el-table :data="teachers" stripe border class="tbl" max-height="300">
+        <el-table-column prop="name" label="姓名" width="140" />
+        <el-table-column prop="username" label="用户名" width="150" />
+        <el-table-column label="角色" width="120">
+          <template #default>
+            <el-tag effect="light" type="warning">老师</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="200">
+          <template #default="{ row }">
+            <el-button link type="warning" @click="resetTeacherPwd(row)">重置密码</el-button>
+            <el-button v-if="isAdmin" link type="danger" @click="removeTeacher(row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
+
     <!-- 学生名单 -->
     <div class="card section">
       <div class="section-head">
@@ -40,8 +100,8 @@
         <span class="section-sub">共 {{ students.length }} 人</span>
         <div class="batch-bar" v-if="selected.length > 0">
           <el-tag effect="light" type="info">已选 {{ selected.length }} 人</el-tag>
-          <el-button size="small" type="warning" @click="batchResetPwd">批量重置密码</el-button>
-          <el-button size="small" type="danger" @click="batchSoftDelete">批量删除（可恢复）</el-button>
+          <el-button v-if="isTeacherOrAdmin" size="small" type="warning" @click="batchResetPwd">批量重置密码</el-button>
+          <el-button v-if="isTeacherOrAdmin" size="small" type="danger" @click="batchSoftDelete">批量删除（可恢复）</el-button>
           <el-button size="small" text @click="selected = []">取消选择</el-button>
         </div>
       </div>
@@ -64,8 +124,8 @@
         <el-table-column label="操作" width="260" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="openAdjust(row)">学分增减</el-button>
-            <el-button link type="warning" @click="doResetPwd(row)">重置密码</el-button>
-            <el-button link type="danger" @click="doDelete(row)">删除</el-button>
+            <el-button v-if="isTeacherOrAdmin" link type="warning" @click="doResetPwd(row)">重置密码</el-button>
+            <el-button v-if="isTeacherOrAdmin" link type="danger" @click="doDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -91,6 +151,21 @@
         <el-table-column prop="completionTime" label="完成时间" min-width="150" />
       </el-table>
     </div>
+
+    <!-- 新增老师弹窗 -->
+    <el-dialog v-model="addTeacherVisible" title="新增老师账号" width="440px">
+      <el-form label-width="90px">
+        <el-form-item label="姓名"><el-input v-model="teacherForm.name" placeholder="老师真实姓名" /></el-form-item>
+        <el-form-item label="用户名"><el-input v-model="teacherForm.username" placeholder="字母数字下划线，3-32位" /></el-form-item>
+        <el-form-item label="登录密码">
+          <el-input v-model="teacherForm.password" type="password" show-password placeholder="留空则生成随机临时密码（至少8位）" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="addTeacherVisible = false">取消</el-button>
+        <el-button type="primary" :loading="savingTeacher" @click="submitTeacher">创建</el-button>
+      </template>
+    </el-dialog>
 
     <!-- 学分增减弹窗 -->
     <el-dialog v-model="adjustVisible" :title="`学分增减 · ${adjustForm.name}`" width="420px">
@@ -122,22 +197,36 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Plus } from '@element-plus/icons-vue'
 import request from '@/api/request'
+import { useAuthStore } from '@/stores/auth'
 import { listStudents, importStudents, exportStudents, resetStudentPassword, batchResetStudentPassword, restoreStudent } from '@/api/student'
 import { listCompletions, importCompletions, exportCompletions } from '@/api/completion'
 import { adjustCredit } from '@/api/creditFlow'
 import { statusLabel } from '@/utils/credit'
+import { listSubjects, setSubjectReps, createSubject, deleteSubject } from '@/api/subject'
+import { listUsers, createUser, deleteUser, resetPassword } from '@/api/user'
+
+const auth = useAuthStore()
+const isTeacherOrAdmin = computed(() => ['TEACHER', 'ADMIN'].includes(auth.role))
+const isAdmin = computed(() => auth.role === 'ADMIN')
 
 const students = ref([])
 const completions = ref([])
+const subjects = ref([])
+const repCandidates = ref([])
+const teachers = ref([])
 const importResult = ref(null)
 const rosterFile = ref(null)
 const scoreFile = ref(null)
 const adjustVisible = ref(false)
 const adjustForm = ref({ studentId: null, name: '', current: 0, amount: 1, reason: '' })
 const selected = ref([])
+const addTeacherVisible = ref(false)
+const savingTeacher = ref(false)
+const teacherForm = ref({ name: '', username: '', password: '' })
 
 function statusTag(status) {
   return { DONE_ONTIME: 'success', DONE_OVERDUE: 'warning', UNFINISHED: 'info', FAILED: 'danger' }[status] || 'info'
@@ -153,8 +242,136 @@ async function loadAll() {
       studentNo: r.studentNo, studentName: r.studentName, taskTitle: r.taskTitle,
       subject: r.subject, status: r.status, creditEarned: r.creditEarned, completionTime: r.completionTime
     }))
+    if (isTeacherOrAdmin.value) {
+      await Promise.all([loadSubjects(), loadTeachers(), loadRepCandidates()])
+    }
   } catch (e) {
     /* 错误已由拦截器提示 */
+  }
+}
+
+// 科目与课代表管理（Web 初二学科体系）
+async function loadSubjects() {
+  try {
+    const r = await listSubjects('WEB')
+    subjects.value = (r.data || r || []).map((s) => ({ ...s, repUserIds: s.repUserIds || [] }))
+  } catch (e) { /* 拦截器已提示 */ }
+}
+
+// 课代表候选：老师 + 现有课代表 + 学生（可选），供下拉选择
+async function loadRepCandidates() {
+  try {
+    const r = await listUsers()
+    const users = r.data || r || []
+    repCandidates.value = users.filter((u) => ['TEACHER', 'REP', 'STUDENT'].includes(u.role))
+  } catch (e) { /* 拦截器已提示 */ }
+}
+
+// 教师账号列表
+async function loadTeachers() {
+  try {
+    const r = await listUsers('TEACHER')
+    teachers.value = r.data || r || []
+  } catch (e) { /* 拦截器已提示 */ }
+}
+
+// 设置某科目的课代表（老师/管理员）
+async function onSetReps(row, userIds) {
+  try {
+    await setSubjectReps(row.id, userIds || [])
+    ElMessage.success(`已更新「${row.name}」课代表`)
+    await loadSubjects()
+  } catch (e) {
+    ElMessage.error(e?.response?.data?.message || '设置课代表失败')
+    await loadSubjects() // 回滚显示
+  }
+}
+
+// 添加自定义科目（其他科目可无限添加）
+async function addCustomSubject() {
+  const { value } = await ElMessageBox.prompt('输入新科目名称（围绕初二学科体系，可无限添加自定义科目）', '添加科目', {
+    confirmButtonText: '添加',
+    cancelButtonText: '取消',
+    inputPattern: /\S+/,
+    inputErrorMessage: '科目名称不能为空',
+  }).catch(() => ({ value: null }))
+  if (!value) return
+  const name = value.trim()
+  if (subjects.value.some((s) => s.name === name)) return ElMessage.warning('该科目已存在')
+  try {
+    await createSubject({ name, platform: 'WEB' })
+    ElMessage.success(`已添加科目「${name}」`)
+    await loadSubjects()
+  } catch (e) {
+    ElMessage.error(e?.response?.data?.message || '添加科目失败')
+  }
+}
+
+// 删除科目（老师/管理员）
+async function removeSubject(row) {
+  try {
+    await ElMessageBox.confirm(`删除科目「${row.name}」？该科目下的任务、完成记录与课代表绑定将被移除。`, '删除科目', { type: 'warning' })
+  } catch (_) { return }
+  try {
+    await deleteSubject(row.id)
+    ElMessage.success('科目已删除')
+    await loadSubjects()
+  } catch (e) {
+    ElMessage.error(e?.response?.data?.message || '删除科目失败')
+  }
+}
+
+// 新增老师（可指定密码）
+async function submitTeacher() {
+  const f = teacherForm.value
+  if (!f.name.trim()) return ElMessage.warning('请输入老师姓名')
+  if (!f.username.trim()) return ElMessage.warning('请输入用户名')
+  if (f.password && f.password.length < 8) return ElMessage.warning('密码至少 8 位')
+  savingTeacher.value = true
+  try {
+    const r = await createUser({ username: f.username.trim(), name: f.name.trim(), role: 'TEACHER', password: f.password || undefined })
+    const d = r.data ?? r
+    const pwdMsg = d.password ? `，初始密码：${d.password}` : '（已使用随机临时密码）'
+    ElMessageBox.alert(`老师「${f.name}」已创建${pwdMsg}\n首次登录需修改密码。`, '创建成功', { confirmButtonText: '知道了' })
+    addTeacherVisible.value = false
+    teacherForm.value = { name: '', username: '', password: '' }
+    await loadTeachers()
+  } catch (e) {
+    ElMessage.error(e?.response?.data?.message || '创建老师失败')
+  } finally {
+    savingTeacher.value = false
+  }
+}
+
+// 重置老师密码
+async function resetTeacherPwd(row) {
+  try {
+    const { value } = await ElMessageBox.prompt(
+      `将重置「${row.name}」的登录密码，留空则生成随机临时密码。`,
+      '重置密码',
+      { confirmButtonText: '确认重置', cancelButtonText: '取消', inputPlaceholder: '新密码（留空=随机，至少8位）' }
+    )
+    const res = await resetPassword(row.id, value)
+    const d = res.data ?? res
+    ElMessageBox.alert(`账号：${d.username}\n新密码：${d.password}`, '重置成功', { confirmButtonText: '知道了' })
+  } catch (e) { /* 取消或拦截器已提示 */ }
+}
+
+// 删除老师
+async function removeTeacher(row) {
+  if (row.username === 'teacher01' || row.username === 'superadmin' || row.username === 'admin') {
+    return ElMessage.warning('受保护账号（杨老师/系统管理员）不可删除')
+  }
+  try {
+    await ElMessageBox.confirm(`确定删除老师「${row.name}」？该账号的关联数据将一并清除，不可恢复。`, '删除确认', { type: 'warning' })
+  } catch (_) { return }
+  try {
+    await deleteUser(row.id)
+    ElMessage.success(`已删除老师 ${row.name}`)
+    await loadTeachers()
+    await loadSubjects()
+  } catch (e) {
+    ElMessage.error(e?.response?.data?.message || '删除失败')
   }
 }
 
