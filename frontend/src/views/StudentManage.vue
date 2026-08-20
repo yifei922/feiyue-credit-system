@@ -36,7 +36,7 @@
       <el-tab-pane label="学生" name="students">
         <div class="section-head">
           <span class="section-title">学生账号</span>
-          <span class="section-sub">共 {{ students.length }} 人</span>
+          <span class="section-sub">共 {{ students.length }} 人，可新增学生、批量重置密码、批量删除</span>
           <div class="batch-bar" v-if="selected.length > 0">
             <el-tag effect="light" type="info">已选 {{ selected.length }} 人</el-tag>
             <el-button v-if="isTeacherOrAdmin" size="small" type="warning" @click="batchResetPwd">批量重置密码</el-button>
@@ -45,6 +45,9 @@
           </div>
           <div class="batch-bar ml-auto">
             <el-button v-if="isTeacherOrAdmin" size="small" type="primary" @click="addStudentVisible = true"><el-icon><Plus /></el-icon> 新增学生</el-button>
+            <el-button v-if="isTeacherOrAdmin && students.length > 0" size="small" type="danger" @click="onBatchDeleteStudents">
+              <el-icon><Delete /></el-icon> 批量删除
+            </el-button>
           </div>
         </div>
         <el-table :data="students" stripe border class="tbl" @selection-change="onSelectionChange">
@@ -93,6 +96,9 @@
           <span class="section-sub">共 {{ teachers.length }} 名教师，可新增老师、批量重置密码、删除账号</span>
           <div class="batch-bar ml-auto">
             <el-button size="small" type="primary" @click="addTeacherVisible = true"><el-icon><Plus /></el-icon> 新增老师</el-button>
+            <el-button v-if="isAdmin && teachers.length > 0" size="small" type="danger" @click="onBatchDeleteTeachers">
+              <el-icon><Delete /></el-icon> 批量删除
+            </el-button>
           </div>
         </div>
         <el-table :data="teachers" stripe border class="tbl">
@@ -215,7 +221,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
+import { Plus, Delete } from '@element-plus/icons-vue'
 import request from '@/api/request'
 import { useAuthStore } from '@/stores/auth'
 import { listStudents, importStudents, exportStudents, resetStudentPassword, batchResetStudentPassword, restoreStudent, createStudent } from '@/api/student'
@@ -421,36 +427,49 @@ async function removeTeacher(row) {
   }
 }
 
-async function onRosterFile(e) {
-  const file = e.target.files?.[0]
-  if (!file) return
-  const text = await file.text()
+// 批量删除教师（保护账号除外）
+async function onBatchDeleteTeachers() {
+  if (teachers.value.length === 0) return
+  const protect = ['teacher01', 'superadmin', 'admin']
+  const deletable = teachers.value.filter((t) => !protect.includes(t.username))
+  if (deletable.length === 0) return ElMessage.warning('没有可删除的教师账号')
   try {
-    const res = await importStudents({ csv: text })
-    importResult.value = res.data || { imported: 0, skipped: 0, errors: [], total: 0 }
-    ElMessage.success(`名单导入成功 ${importResult.value.imported} 条`)
-    await loadAll()
-  } catch (err) {
-    /* 拦截器已提示 */
-  } finally {
-    e.target.value = ''
+    await ElMessageBox.confirm(
+      `将删除 ${deletable.length} 名教师账号（受保护账号除外），不可恢复。`,
+      '批量删除教师',
+      { type: 'warning', confirmButtonText: '确认删除', cancelButtonText: '取消' }
+    )
+  } catch (_) { return }
+  let okCount = 0
+  for (const t of deletable) {
+    try {
+      await deleteUser(t.id)
+      okCount++
+    } catch (_) { /* 单条失败跳过 */ }
   }
+  ElMessage.success(`已删除 ${okCount}/${deletable.length} 名教师`)
+  await loadTeachers()
+  await loadSubjects()
 }
 
-async function onScoreFile(e) {
-  const file = e.target.files?.[0]
-  if (!file) return
-  const text = await file.text()
+async function onBatchDeleteStudents() {
+  if (students.value.length === 0) return
   try {
-    const res = await importCompletions({ csv: text })
-    importResult.value = res.data || { imported: 0, skipped: 0, errors: [], total: 0 }
-    ElMessage.success(`成绩导入成功 ${importResult.value.imported} 条`)
-    await loadAll()
-  } catch (err) {
-    /* 拦截器已提示 */
-  } finally {
-    e.target.value = ''
+    await ElMessageBox.confirm(
+      `将删除全部 ${students.value.length} 名学生（可从回收站恢复），不可恢复。`,
+      '批量删除学生',
+      { type: 'warning', confirmButtonText: '确认删除', cancelButtonText: '取消' }
+    )
+  } catch (_) { return }
+  let okCount = 0
+  for (const s of students.value) {
+    try {
+      await request.delete(`/api/students/${s.id}`)
+      okCount++
+    } catch (_) { /* 单条失败跳过 */ }
   }
+  ElMessage.success(`已删除 ${okCount}/${students.value.length} 名学生`)
+  await loadAll()
 }
 
 async function doExportRoster() {

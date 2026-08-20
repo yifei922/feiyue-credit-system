@@ -4,8 +4,12 @@
     <el-card shadow="never" class="toolbar">
       <div class="left">
         <el-button type="primary" @click="openCreate">
-          <el-icon><Plus /></el-icon> 新建任务
+          <el-icon><Plus /></el-icon> 新增任务
         </el-button>
+        <el-button @click="openManageSubjects">
+          <el-icon><Setting /></el-icon> 管理任务
+        </el-button>
+        <el-divider direction="vertical" />
         <el-select v-model="filterSubject" placeholder="全部科目" clearable style="width: 140px" @change="applyFilter">
           <el-option v-for="s in subjects" :key="s.id" :label="s.name" :value="s.id" />
         </el-select>
@@ -155,12 +159,38 @@
         <el-button @click="loadCompletions"><el-icon><Refresh /></el-icon> 刷新</el-button>
       </template>
     </el-dialog>
+
+    <!-- 管理任务弹窗：各科目任务统计 -->
+    <el-dialog v-model="manageVisible" title="管理任务（各科目任务统计）" width="480px">
+      <el-table :data="subjectSummary" stripe>
+        <el-table-column prop="name" label="科目" width="120" />
+        <el-table-column label="全部" width="80" align="center">
+          <template #default="{ row }"><el-tag size="small" type="info" effect="plain">{{ row.total }}</el-tag></template>
+        </el-table-column>
+        <el-table-column label="进行中" width="90" align="center">
+          <template #default="{ row }"><el-tag size="small" type="success" effect="light">{{ row.openCount }}</el-tag></template>
+        </el-table-column>
+        <el-table-column label="已结束" width="90" align="center">
+          <template #default="{ row }"><el-tag size="small" type="info" effect="light">{{ row.closedCount }}</el-tag></template>
+        </el-table-column>
+        <el-table-column label="草稿" width="80" align="center">
+          <template #default="{ row }"><el-tag size="small" type="warning" effect="light">{{ row.draftCount }}</el-tag></template>
+        </el-table-column>
+        <el-table-column label="操作" width="100" align="center">
+          <template #default="{ row }">
+            <el-button size="small" link type="primary" @click="filterSubject = row.id; manageVisible = false; applyFilter()">
+              查看
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { Plus, Edit, Delete, View, Search, Refresh, InfoFilled } from '@element-plus/icons-vue'
+import { Plus, Edit, Delete, View, Search, Refresh, InfoFilled, Setting } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   listTasks, createTask, updateTask, deleteTask,
@@ -187,6 +217,9 @@ const currentTask = ref(null)
 const completions = ref([])
 const compLoading = ref(false)
 const regId = ref(null)
+
+const manageVisible = ref(false)
+const subjectSummary = ref([])
 
 const isCustomCategory = computed(() => subjects.value.find((s) => s.id === form.value.subjectId)?.name === '其他')
 
@@ -316,6 +349,18 @@ async function loadCompletions() {
   }
 }
 const doneTotal = computed(() => completions.value.filter((x) => isDone(x.status)).length)
+
+async function openManageSubjects() {
+  subjectSummary.value = subjects.value.map((s) => {
+    const subs = tasks.value.filter((t) => t.subjectId === s.id)
+    const openCount = subs.filter((t) => t.status === 'OPEN').length
+    const closedCount = subs.filter((t) => t.status === 'CLOSED').length
+    const draftCount = subs.filter((t) => t.status === 'DRAFT').length
+    return { ...s, total: subs.length, openCount, closedCount, draftCount }
+  })
+  manageVisible.value = true
+}
+
 async function quickComplete(item) {
   regId.value = item.id
   try {
@@ -358,4 +403,5 @@ onMounted(() => {
 .subject-pick { display: flex; gap: 8px; width: 100%; align-items: center; }
 .subject-hint { font-size: 12px; color: var(--text-soft); line-height: 1.5; margin-top: 4px; }
 .desc-popover { font-size: 13px; color: #334155; line-height: 1.7; white-space: pre-wrap; }
+.manage-btn { margin-left: 4px; }
 </style>
