@@ -139,17 +139,20 @@ router.post('/batch-reset-password', authMiddleware, requireRole('ADMIN', 'TEACH
   ok(res, { ok: true, total: ids.length, succeeded, failed: ids.length - succeeded, results });
 });
 
-// 新增单个成员（管理员/主理人）
+// 新增单个成员（老师/管理员）；可指定登录密码，留空则生成随机临时密码
 router.post('/', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (req, res) => {
-  const { name, studentNo } = req.body || {};
+  const { name, studentNo, password } = req.body || {};
   if (!name) return fail(res, 400, '请填写成员姓名');
   const r = await db.prepare('INSERT INTO student(name, student_no, class_id) VALUES(?,?,?)').run(name, studentNo || '', req.user.class_id || 1);
   const studentId = r.lastInsertRowid;
+  const custom = String(password || '').trim();
+  const newPwd = custom || genTempPwd();
+  if (newPwd.length < 6) return fail(res, 400, '密码至少 6 位');
   const username = 'stu' + String(studentId).padStart(2, '0');
   await db.prepare('INSERT INTO sys_user(username, password, name, role, class_id, student_id, must_change_pwd) VALUES(?,?,?,?,?,?,?)')
-    .run(username, hashPassword(genTempPwd()), name, 'STUDENT', req.user.class_id || 1, studentId, 1);
-  recordLog(req.user, 'INSERT', 'student', studentId, null, { name, studentNo });
-  ok(res, { id: studentId, name, studentNo, username });
+    .run(username, hashPassword(newPwd), name, 'STUDENT', req.user.class_id || 1, studentId, 1);
+  recordLog(req.user, 'INSERT', 'student', studentId, null, { name, studentNo, temp: !custom });
+  ok(res, { id: studentId, name, studentNo, username, password: newPwd, temp: !custom });
 });
 
 // 更新

@@ -6,6 +6,11 @@ export function listStudents(params = {}) {
   return request.get('/api/students', { params })
 }
 
+// 新增单个成员（老师/管理员可指定密码，留空则生成随机临时密码）
+export function createStudent(payload) {
+  return request.post('/api/students', payload)
+}
+
 // 名单导入：CSV 文本或 { students: [{name, studentNo}] }
 export function importStudents(payload) {
   return request.post('/api/students/import', payload)

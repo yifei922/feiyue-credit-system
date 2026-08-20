@@ -10,6 +10,7 @@
         <input ref="rosterFile" type="file" accept=".csv,.json" class="hidden-file" @change="onRosterFile" />
         <input ref="scoreFile" type="file" accept=".csv,.json" class="hidden-file" @change="onScoreFile" />
         <el-button type="primary" @click="rosterFile?.click()">导入名单</el-button>
+        <el-button v-if="isTeacherOrAdmin" type="success" @click="addStudentVisible = true"><el-icon><Plus /></el-icon> 新增学生</el-button>
         <el-button @click="doExportRoster">导出名单</el-button>
         <el-button type="primary" @click="scoreFile?.click()">导入成绩</el-button>
         <el-button @click="doExportScore">导出成绩</el-button>
@@ -167,6 +168,21 @@
       </template>
     </el-dialog>
 
+    <!-- 新增学生弹窗（老师/管理员） -->
+    <el-dialog v-model="addStudentVisible" title="新增学生账号" width="440px">
+      <el-form label-width="90px">
+        <el-form-item label="姓名"><el-input v-model="studentForm.name" placeholder="学生姓名" /></el-form-item>
+        <el-form-item label="学号"><el-input v-model="studentForm.studentNo" placeholder="留空则系统自动生成" /></el-form-item>
+        <el-form-item label="登录密码">
+          <el-input v-model="studentForm.password" type="password" show-password placeholder="留空则生成随机临时密码（至少6位）" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="addStudentVisible = false">取消</el-button>
+        <el-button type="primary" :loading="savingStudent" @click="submitStudent">创建</el-button>
+      </template>
+    </el-dialog>
+
     <!-- 学分增减弹窗 -->
     <el-dialog v-model="adjustVisible" :title="`学分增减 · ${adjustForm.name}`" width="420px">
       <el-form label-width="90px">
@@ -202,7 +218,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import request from '@/api/request'
 import { useAuthStore } from '@/stores/auth'
-import { listStudents, importStudents, exportStudents, resetStudentPassword, batchResetStudentPassword, restoreStudent } from '@/api/student'
+import { listStudents, importStudents, exportStudents, resetStudentPassword, batchResetStudentPassword, restoreStudent, createStudent } from '@/api/student'
 import { listCompletions, importCompletions, exportCompletions } from '@/api/completion'
 import { adjustCredit } from '@/api/creditFlow'
 import { statusLabel } from '@/utils/credit'
@@ -227,6 +243,9 @@ const selected = ref([])
 const addTeacherVisible = ref(false)
 const savingTeacher = ref(false)
 const teacherForm = ref({ name: '', username: '', password: '' })
+const addStudentVisible = ref(false)
+const savingStudent = ref(false)
+const studentForm = ref({ name: '', studentNo: '', password: '' })
 
 function statusTag(status) {
   return { DONE_ONTIME: 'success', DONE_OVERDUE: 'warning', UNFINISHED: 'info', FAILED: 'danger' }[status] || 'info'
@@ -340,6 +359,27 @@ async function submitTeacher() {
     ElMessage.error(e?.response?.data?.message || '创建老师失败')
   } finally {
     savingTeacher.value = false
+  }
+}
+
+// 新增学生（老师/管理员）
+async function submitStudent() {
+  const f = studentForm.value
+  if (!f.name.trim()) return ElMessage.warning('请输入学生姓名')
+  if (f.password && f.password.length < 6) return ElMessage.warning('密码至少 6 位')
+  savingStudent.value = true
+  try {
+    const r = await createStudent({ name: f.name.trim(), studentNo: f.studentNo.trim(), password: f.password || undefined })
+    const d = r.data ?? r
+    const pwdMsg = d.password ? `，初始密码：${d.password}` : '（已使用随机临时密码）'
+    ElMessageBox.alert(`学生「${f.name}」已创建${pwdMsg}\n用户名：${d.username}\n首次登录需修改密码。`, '创建成功', { confirmButtonText: '知道了' })
+    addStudentVisible.value = false
+    studentForm.value = { name: '', studentNo: '', password: '' }
+    await loadAll()
+  } catch (e) {
+    ElMessage.error(e?.response?.data?.message || '创建学生失败')
+  } finally {
+    savingStudent.value = false
   }
 }
 
