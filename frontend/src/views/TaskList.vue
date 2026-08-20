@@ -52,8 +52,14 @@
             </el-button>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="操作" width="280" fixed="right">
           <template #default="{ row }">
+            <el-popover placement="top" :width="280" trigger="click" :disabled="!row.description">
+              <template #reference>
+                <el-button link type="info"><el-icon><InfoFilled /></el-icon> 说明</el-button>
+              </template>
+              <div class="desc-popover">{{ row.description || '（无说明）' }}</div>
+            </el-popover>
             <el-button link type="primary" @click="openEdit(row)"><el-icon><Edit /></el-icon> 编辑</el-button>
             <el-button link type="danger" @click="onDelete(row)"><el-icon><Delete /></el-icon> 删除</el-button>
           </template>
@@ -154,7 +160,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { Plus, Edit, Delete, View, Search, Refresh } from '@element-plus/icons-vue'
+import { Plus, Edit, Delete, View, Search, Refresh, InfoFilled } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   listTasks, createTask, updateTask, deleteTask,
@@ -351,4 +357,5 @@ onMounted(() => {
 .overdue { color: #ef4444; }
 .subject-pick { display: flex; gap: 8px; width: 100%; align-items: center; }
 .subject-hint { font-size: 12px; color: var(--text-soft); line-height: 1.5; margin-top: 4px; }
+.desc-popover { font-size: 13px; color: #334155; line-height: 1.7; white-space: pre-wrap; }
 </style>

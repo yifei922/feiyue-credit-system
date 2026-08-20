@@ -17,15 +17,22 @@
     <el-card shadow="never">
       <el-table :data="alerts" stripe>
         <el-table-column prop="studentName" label="学生" width="100" />
-        <el-table-column prop="className" label="班级" width="90" />
-        <el-table-column label="类型" width="130">
+        <el-table-column prop="studentNo" label="学号" width="110" />
+        <el-table-column label="类型" width="148">
           <template #default="{ row }">
-            <el-tag :type="row.type === 'CONSECUTIVE_MISS' ? 'danger' : 'warning'">
-              {{ row.type === 'CONSECUTIVE_MISS' ? '连续未完成' : '临近截止未完成' }}
+            <el-tag :type="typeTag(row.type)" effect="dark">
+              {{ typeIcon(row.type) }} {{ typeLabel(row.type) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="reason" label="预警原因" min-width="260" />
+        <el-table-column prop="taskTitle" label="关联任务" min-width="160" show-overflow-tooltip />
+        <el-table-column label="逾期" width="90" align="center">
+          <template #default="{ row }">
+            <span v-if="row.overdueDays > 0" class="overdue-days">{{ row.overdueDays }}天</span>
+            <span v-else class="ok-text">—</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="reason" label="预警原因" min-width="240" show-overflow-tooltip />
         <el-table-column label="状态" width="100">
           <template #default="{ row }">
             <el-tag :type="row.status === 'PENDING' ? 'info' : 'success'">
@@ -54,6 +61,10 @@ import { listAlerts, resolveAlert, scanAlerts } from '@/api/alert'
 const alerts = ref([])
 const filter = ref('ALL')
 
+function typeIcon(t) { return t === 'CONSECUTIVE_MISS' ? '🔴' : '🔶' }
+function typeLabel(t) { return t === 'CONSECUTIVE_MISS' ? '连续未完成' : '临近截止未完成' }
+function typeTag(t) { return t === 'CONSECUTIVE_MISS' ? 'danger' : 'warning' }
+
 async function load() {
   const r = await listAlerts()
   const list = r.data ?? r
@@ -78,4 +89,6 @@ onMounted(load)
 .left { display: flex; gap: 12px; align-items: center; }
 .right { color: var(--text-soft); font-size: 13px; }
 .done { color: var(--text-soft); }
+.overdue-days { color: #ef4444; font-weight: 600; font-size: 13px; }
+.ok-text { color: var(--text-soft); }
 </style>

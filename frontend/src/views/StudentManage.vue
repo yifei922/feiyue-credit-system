@@ -1,19 +1,15 @@
 <template>
   <div class="manage">
-    <!-- 工具条：导入导出 -->
-    <div class="toolbar card">
+    <!-- 工具条：导入导出（置顶，仅老师/管理员可见） -->
+    <div class="toolbar card" v-if="isTeacherOrAdmin">
       <div class="toolbar-left">
-        <span class="toolbar-title">学生与成绩管理</span>
-        <span class="toolbar-tip">管理员 / 老师 / 课代表可用 · 名单含总学分，成绩可批量导入导出</span>
+        <span class="toolbar-title">人员管理</span>
+        <span class="toolbar-tip">管理员 / 教师可用 · 含学生、教师、课代表三类账号的增删改与密码重置</span>
       </div>
       <div class="toolbar-right">
         <input ref="rosterFile" type="file" accept=".csv,.json" class="hidden-file" @change="onRosterFile" />
-        <input ref="scoreFile" type="file" accept=".csv,.json" class="hidden-file" @change="onScoreFile" />
         <el-button type="primary" @click="rosterFile?.click()">导入名单</el-button>
-        <el-button v-if="isTeacherOrAdmin" type="success" @click="addStudentVisible = true"><el-icon><Plus /></el-icon> 新增学生</el-button>
         <el-button @click="doExportRoster">导出名单</el-button>
-        <el-button type="primary" @click="scoreFile?.click()">导入成绩</el-button>
-        <el-button @click="doExportScore">导出成绩</el-button>
         <el-button text @click="loadAll">刷新</el-button>
       </div>
     </div>
@@ -34,129 +30,122 @@
       </div>
     </el-alert>
 
-    <!-- 科目与课代表管理（仅 老师/管理员） -->
-    <div class="card section" v-if="isTeacherOrAdmin">
-      <div class="section-head">
-        <span class="section-title">科目与课代表管理</span>
-        <span class="section-sub">围绕初中二年级学科 · 老师/管理员可设置课代表、自定义科目、删除科目</span>
-        <div class="batch-bar">
-          <el-button size="small" type="primary" @click="addCustomSubject"><el-icon><Plus /></el-icon> 添加科目</el-button>
+    <!-- 三标签：学生 / 教师 / 课代表 -->
+    <el-tabs v-model="activeTab" class="card tabs-card">
+      <!-- ====== 学生管理 ====== -->
+      <el-tab-pane label="学生" name="students">
+        <div class="section-head">
+          <span class="section-title">学生账号</span>
+          <span class="section-sub">共 {{ students.length }} 人</span>
+          <div class="batch-bar" v-if="selected.length > 0">
+            <el-tag effect="light" type="info">已选 {{ selected.length }} 人</el-tag>
+            <el-button v-if="isTeacherOrAdmin" size="small" type="warning" @click="batchResetPwd">批量重置密码</el-button>
+            <el-button v-if="isTeacherOrAdmin" size="small" type="danger" @click="batchSoftDelete">批量删除（可恢复）</el-button>
+            <el-button size="small" text @click="selected = []">取消选择</el-button>
+          </div>
+          <div class="batch-bar ml-auto">
+            <el-button v-if="isTeacherOrAdmin" size="small" type="primary" @click="addStudentVisible = true"><el-icon><Plus /></el-icon> 新增学生</el-button>
+          </div>
         </div>
-      </div>
-      <el-table :data="subjects" stripe border class="tbl" max-height="360">
-        <el-table-column prop="name" label="科目" width="120" />
-        <el-table-column label="课代表" min-width="160">
-          <template #default="{ row }">
-            <el-select
-              v-model="row.repUserIds"
-              multiple
-              collapse-tags
-              collapse-tags-tooltip
-              placeholder="选择课代表"
-              style="width: 100%"
-              @change="(v) => onSetReps(row, v)"
-            >
-              <el-option v-for="u in repCandidates" :key="u.id" :label="`${u.name}${u.role === 'TEACHER' ? '（老师）' : u.role === 'REP' ? '（课代表）' : ''}`" :value="u.id" />
-            </el-select>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="90" align="center">
-          <template #default="{ row }">
-            <el-button link type="danger" @click="removeSubject(row)">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-    </div>
+        <el-table :data="students" stripe border class="tbl" @selection-change="onSelectionChange">
+          <el-table-column type="selection" width="48" />
+          <el-table-column prop="studentNo" label="学号" width="130" />
+          <el-table-column prop="name" label="姓名" width="120" />
+          <el-table-column prop="className" label="班级" />
+          <el-table-column prop="totalCredits" label="总学分" width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="row.totalCredits > 0 ? 'success' : 'info'" effect="light">{{ row.totalCredits || 0 }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="260" fixed="right">
+            <template #default="{ row }">
+              <el-button link type="primary" @click="openAdjust(row)">学分增减</el-button>
+              <el-button v-if="isTeacherOrAdmin" link type="warning" @click="doResetPwd(row)">重置密码</el-button>
+              <el-button v-if="isTeacherOrAdmin" link type="danger" @click="doDelete(row)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
 
-    <!-- 教师账号（仅 老师/管理员）：可新增其他老师，权限相同，可指定密码 -->
-    <div class="card section" v-if="isTeacherOrAdmin">
-      <div class="section-head">
-        <span class="section-title">教师账号</span>
-        <span class="section-sub">老师/管理员可新增老师账号，权限相同，可指定登录密码</span>
-        <div class="batch-bar">
-          <el-button size="small" type="primary" @click="addTeacherVisible = true"><el-icon><Plus /></el-icon> 新增老师</el-button>
+        <!-- 成绩明细（附属在学生Tab下） -->
+        <div class="section-head" style="margin-top:24px">
+          <span class="section-title">成绩明细</span>
+          <span class="section-sub">共 {{ completions.length }} 条记录</span>
         </div>
-      </div>
-      <el-table :data="teachers" stripe border class="tbl" max-height="300">
-        <el-table-column prop="name" label="姓名" width="140" />
-        <el-table-column prop="username" label="用户名" width="150" />
-        <el-table-column label="角色" width="120">
-          <template #default>
-            <el-tag effect="light" type="warning">老师</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="200">
-          <template #default="{ row }">
-            <el-button link type="warning" @click="resetTeacherPwd(row)">重置密码</el-button>
-            <el-button v-if="isAdmin" link type="danger" @click="removeTeacher(row)">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-    </div>
+        <el-table :data="completions" stripe border class="tbl" max-height="420">
+          <el-table-column prop="studentNo" label="学号" width="120" />
+          <el-table-column prop="studentName" label="姓名" width="120" />
+          <el-table-column prop="taskTitle" label="任务" min-width="160" />
+          <el-table-column prop="subject" label="科目" width="100" />
+          <el-table-column prop="status" label="状态" width="110" align="center">
+            <template #default="{ row }">
+              <el-tag :type="statusTag(row.status)" effect="light" size="small">{{ statusLabel(row.status) }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="creditEarned" label="学分" width="90" align="center" />
+          <el-table-column prop="completionTime" label="完成时间" min-width="150" />
+        </el-table>
+      </el-tab-pane>
 
-    <!-- 学生名单 -->
-    <div class="card section">
-      <div class="section-head">
-        <span class="section-title">学生名单</span>
-        <span class="section-sub">共 {{ students.length }} 人</span>
-        <div class="batch-bar" v-if="selected.length > 0">
-          <el-tag effect="light" type="info">已选 {{ selected.length }} 人</el-tag>
-          <el-button v-if="isTeacherOrAdmin" size="small" type="warning" @click="batchResetPwd">批量重置密码</el-button>
-          <el-button v-if="isTeacherOrAdmin" size="small" type="danger" @click="batchSoftDelete">批量删除（可恢复）</el-button>
-          <el-button size="small" text @click="selected = []">取消选择</el-button>
+      <!-- ====== 教师管理 ====== -->
+      <el-tab-pane label="教师" name="teachers">
+        <div class="section-head">
+          <span class="section-title">教师账号</span>
+          <span class="section-sub">共 {{ teachers.length }} 名教师，可新增老师、批量重置密码、删除账号</span>
+          <div class="batch-bar ml-auto">
+            <el-button size="small" type="primary" @click="addTeacherVisible = true"><el-icon><Plus /></el-icon> 新增老师</el-button>
+          </div>
         </div>
-      </div>
-      <el-table
-        :data="students"
-        stripe
-        border
-        class="tbl"
-        @selection-change="onSelectionChange"
-      >
-        <el-table-column type="selection" width="48" />
-        <el-table-column prop="studentNo" label="学号" width="130" />
-        <el-table-column prop="name" label="姓名" width="120" />
-        <el-table-column prop="className" label="班级" />
-        <el-table-column prop="totalCredits" label="总学分" width="100" align="center">
-          <template #default="{ row }">
-            <el-tag :type="row.totalCredits > 0 ? 'success' : 'info'" effect="light">{{ row.totalCredits || 0 }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="260" fixed="right">
-          <template #default="{ row }">
-            <el-button link type="primary" @click="openAdjust(row)">学分增减</el-button>
-            <el-button v-if="isTeacherOrAdmin" link type="warning" @click="doResetPwd(row)">重置密码</el-button>
-            <el-button v-if="isTeacherOrAdmin" link type="danger" @click="doDelete(row)">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-    </div>
+        <el-table :data="teachers" stripe border class="tbl">
+          <el-table-column prop="name" label="姓名" width="140" />
+          <el-table-column prop="username" label="用户名" width="150" />
+          <el-table-column label="角色" width="120">
+            <template #default>
+              <el-tag effect="light" type="warning">教师</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="240">
+            <template #default="{ row }">
+              <el-button link type="warning" @click="resetTeacherPwd(row)">重置密码</el-button>
+              <el-button v-if="isAdmin" link type="danger" @click="removeTeacher(row)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-tab-pane>
 
-    <!-- 成绩明细 -->
-    <div class="card section">
-      <div class="section-head">
-        <span class="section-title">成绩明细</span>
-        <span class="section-sub">共 {{ completions.length }} 条记录</span>
-      </div>
-      <el-table :data="completions" stripe border class="tbl" max-height="420">
-        <el-table-column prop="studentNo" label="学号" width="120" />
-        <el-table-column prop="studentName" label="姓名" width="120" />
-        <el-table-column prop="taskTitle" label="任务" min-width="160" />
-        <el-table-column prop="subject" label="科目" width="100" />
-        <el-table-column prop="status" label="状态" width="110" align="center">
-          <template #default="{ row }">
-            <el-tag :type="statusTag(row.status)" effect="light" size="small">{{ statusLabel(row.status) }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="creditEarned" label="学分" width="90" align="center" />
-        <el-table-column prop="completionTime" label="完成时间" min-width="150" />
-      </el-table>
-    </div>
+      <!-- ====== 课代表管理 ====== -->
+      <el-tab-pane label="课代表" name="reps">
+        <div class="section-head">
+          <span class="section-title">科目与课代表</span>
+          <span class="section-sub">围绕初二学科体系 · 教师/管理员可为每个科目设置课代表或添加自定义科目</span>
+          <div class="batch-bar ml-auto">
+            <el-button size="small" type="primary" @click="addCustomSubject"><el-icon><Plus /></el-icon> 添加科目</el-button>
+          </div>
+        </div>
+        <el-table :data="subjects" stripe border class="tbl" max-height="480">
+          <el-table-column prop="name" label="科目" width="120" />
+          <el-table-column label="课代表" min-width="200">
+            <template #default="{ row }">
+              <el-tag v-for="(n, i) in (row.repNames || [])" :key="i" class="rep-tag" type="primary" effect="light">{{ n }}</el-tag>
+              <span v-if="!row.repNames || !row.repNames.length" class="muted">未设置</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="200" align="center">
+            <template #default="{ row }">
+              <el-button link type="primary" @click="openRepDialog(row)">设置课代表</el-button>
+              <el-button link type="danger" @click="removeSubject(row)">删除科目</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <div class="hint-box">
+          提示：候选课代表来自「教师」列表中的账号。如需新增课代表，请先到「教师」标签页新增教师身份账号。
+        </div>
+      </el-tab-pane>
+    </el-tabs>
 
     <!-- 新增老师弹窗 -->
-    <el-dialog v-model="addTeacherVisible" title="新增老师账号" width="440px">
+    <el-dialog v-model="addTeacherVisible" title="新增教师账号" width="440px">
       <el-form label-width="90px">
-        <el-form-item label="姓名"><el-input v-model="teacherForm.name" placeholder="老师真实姓名" /></el-form-item>
+        <el-form-item label="姓名"><el-input v-model="teacherForm.name" placeholder="教师真实姓名" /></el-form-item>
         <el-form-item label="用户名"><el-input v-model="teacherForm.username" placeholder="字母数字下划线，3-32位" /></el-form-item>
         <el-form-item label="登录密码">
           <el-input v-model="teacherForm.password" type="password" show-password placeholder="留空则生成随机临时密码（至少8位）" />
@@ -168,7 +157,7 @@
       </template>
     </el-dialog>
 
-    <!-- 新增学生弹窗（老师/管理员） -->
+    <!-- 新增学生弹窗 -->
     <el-dialog v-model="addStudentVisible" title="新增学生账号" width="440px">
       <el-form label-width="90px">
         <el-form-item label="姓名"><el-input v-model="studentForm.name" placeholder="学生姓名" /></el-form-item>
@@ -203,11 +192,22 @@
       </template>
     </el-dialog>
 
+    <!-- 设置课代表弹窗 -->
+    <el-dialog v-model="repDialog" :title="`设置「${repTarget.name}」课代表`" width="420px">
+      <el-select v-model="repSelected" multiple filterable placeholder="选择课代表账号（可多选）" style="width: 100%">
+        <el-option v-for="u in repCandidates" :key="u.id" :label="`${u.name}（${u.username}）`" :value="u.id" />
+      </el-select>
+      <div class="tip-inline" v-if="!repCandidates.length">暂无教师账号，请先在「教师」标签页新增教师。</div>
+      <template #footer>
+        <el-button @click="repDialog = false">取消</el-button>
+        <el-button type="primary" @click="saveReps">保存</el-button>
+      </template>
+    </el-dialog>
+
     <!-- 格式说明 -->
     <div class="card hint">
       <div class="hint-title">导入格式说明</div>
       <div><b>名单 CSV</b>：首行可写表头 <code>name,studentNo</code>，或直接从数据行开始（姓名,学号）。自动按学号去重并建账号。</div>
-      <div><b>成绩 CSV</b>：表头 <code>student_no,task_id,status</code>（或 <code>student_name,task_title,status</code>）。状态取值：DONE_ONTIME / DONE_OVERDUE / UNFINISHED / FAILED。</div>
     </div>
   </div>
 </template>
@@ -219,7 +219,7 @@ import { Plus } from '@element-plus/icons-vue'
 import request from '@/api/request'
 import { useAuthStore } from '@/stores/auth'
 import { listStudents, importStudents, exportStudents, resetStudentPassword, batchResetStudentPassword, restoreStudent, createStudent } from '@/api/student'
-import { listCompletions, importCompletions, exportCompletions } from '@/api/completion'
+import { listCompletions, exportCompletions } from '@/api/completion'
 import { adjustCredit } from '@/api/creditFlow'
 import { statusLabel } from '@/utils/credit'
 import { listSubjects, setSubjectReps, createSubject, deleteSubject } from '@/api/subject'
@@ -236,7 +236,6 @@ const repCandidates = ref([])
 const teachers = ref([])
 const importResult = ref(null)
 const rosterFile = ref(null)
-const scoreFile = ref(null)
 const adjustVisible = ref(false)
 const adjustForm = ref({ studentId: null, name: '', current: 0, amount: 1, reason: '' })
 const selected = ref([])
@@ -246,6 +245,12 @@ const teacherForm = ref({ name: '', username: '', password: '' })
 const addStudentVisible = ref(false)
 const savingStudent = ref(false)
 const studentForm = ref({ name: '', studentNo: '', password: '' })
+
+// 新增：Tab 控制 & 课代表弹窗
+const activeTab = ref('students')
+const repDialog = ref(false)
+const repTarget = ref({})
+const repSelected = ref([])
 
 function statusTag(status) {
   return { DONE_ONTIME: 'success', DONE_OVERDUE: 'warning', UNFINISHED: 'info', FAILED: 'danger' }[status] || 'info'
@@ -262,14 +267,24 @@ async function loadAll() {
       subject: r.subject, status: r.status, creditEarned: r.creditEarned, completionTime: r.completionTime
     }))
     if (isTeacherOrAdmin.value) {
-      await Promise.all([loadSubjects(), loadTeachers(), loadRepCandidates()])
+      await Promise.all([loadSubjects(), loadTeachers()])
     }
   } catch (e) {
     /* 错误已由拦截器提示 */
   }
 }
 
-// 科目与课代表管理（Web 初二学科体系）
+// 教师账号列表 & 课代表候选（教师=候选课代表）
+async function loadTeachers() {
+  try {
+    const r = await listUsers('TEACHER')
+    teachers.value = r.data || r || []
+    // 教师账号同时作为课代表候选
+    repCandidates.value = teachers.value
+  } catch (e) { /* 拦截器已提示 */ }
+}
+
+// 科目列表（含课代表姓名映射）
 async function loadSubjects() {
   try {
     const r = await listSubjects('WEB')
@@ -277,32 +292,23 @@ async function loadSubjects() {
   } catch (e) { /* 拦截器已提示 */ }
 }
 
-// 课代表候选：老师 + 现有课代表 + 学生（可选），供下拉选择
-async function loadRepCandidates() {
-  try {
-    const r = await listUsers()
-    const users = r.data || r || []
-    repCandidates.value = users.filter((u) => ['TEACHER', 'REP', 'STUDENT'].includes(u.role))
-  } catch (e) { /* 拦截器已提示 */ }
+// 打开设置课代表弹窗
+function openRepDialog(row) {
+  repTarget.value = row
+  repSelected.value = [...(row.repUserIds || [])]
+  repDialog.value = true
 }
 
-// 教师账号列表
-async function loadTeachers() {
+// 保存课代表设置
+async function saveReps() {
   try {
-    const r = await listUsers('TEACHER')
-    teachers.value = r.data || r || []
-  } catch (e) { /* 拦截器已提示 */ }
-}
-
-// 设置某科目的课代表（老师/管理员）
-async function onSetReps(row, userIds) {
-  try {
-    await setSubjectReps(row.id, userIds || [])
-    ElMessage.success(`已更新「${row.name}」课代表`)
+    await setSubjectReps(repTarget.value.id, repSelected.value || [])
+    ElMessage.success(`已更新「${repTarget.value.name}」课代表`)
+    repDialog.value = false
     await loadSubjects()
   } catch (e) {
     ElMessage.error(e?.response?.data?.message || '设置课代表失败')
-    await loadSubjects() // 回滚显示
+    await loadSubjects()
   }
 }
 
@@ -454,13 +460,6 @@ async function doExportRoster() {
   } catch (e) { /* downloadBlobApi 已提示 */ }
 }
 
-async function doExportScore() {
-  try {
-    const r = await exportCompletions('csv')
-    ElMessage.success(`成绩已导出（${r.filename}）`)
-  } catch (e) { /* downloadBlobApi 已提示 */ }
-}
-
 // 重置学生密码
 async function doResetPwd(row) {
   try {
@@ -583,19 +582,23 @@ onMounted(loadAll)
 .hidden-file { display: none; }
 .result { border-radius: 12px; }
 .err-list { margin-top: 6px; font-size: 12px; color: #b45309; max-height: 120px; overflow: auto; }
+.tabs-card { background: #fff; border: 1px solid var(--border); border-radius: 12px; }
 .section-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
 .section-title { font-size: 15px; font-weight: 600; }
 .section-sub { font-size: 12px; color: #8a94a6; }
 .batch-bar {
-  margin-left: auto;
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
 }
+.ml-auto { margin-left: auto; }
 .tbl { width: 100%; }
+.muted { color: #b0b6c0; font-size: 13px; }
+.hint-box { margin-top: 12px; font-size: 12px; color: #8a94a6; background: #f7f9fc; border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; line-height: 1.7; }
 .hint { font-size: 13px; color: #5b6573; line-height: 1.9; }
 .hint-title { font-weight: 600; margin-bottom: 4px; color: #2b3242; }
 .hint code { background: #f1f3f7; padding: 1px 6px; border-radius: 5px; color: #2563eb; }
 .tip-inline { font-size: 12px; color: #8a94a6; margin-top: 4px; }
+.rep-tag { margin-right: 6px; }
 </style>

@@ -1,35 +1,6 @@
 <template>
   <div class="settings">
     <el-tabs v-model="activeTab" class="tabs-card">
-      <!-- 课代表任命（管理员/老师） -->
-      <el-tab-pane v-if="canManage" label="课代表任命" name="reps">
-        <el-card shadow="never">
-          <template #header>
-            <span class="h">课代表任命</span>
-            <span class="sub">为每个科目指定课代表；课代表可管理所负责科目的任务、成绩、提醒</span>
-          </template>
-          <el-table :data="subjects" stripe border max-height="520">
-            <el-table-column prop="name" label="科目" width="140" />
-            <el-table-column label="当前课代表" min-width="220">
-              <template #default="{ row }">
-                <template v-if="row.repNames && row.repNames.length">
-                  <el-tag v-for="(n, i) in row.repNames" :key="i" class="rep-tag" type="primary" effect="light">{{ n }}</el-tag>
-                </template>
-                <span v-else class="muted">未设置</span>
-              </template>
-            </el-table-column>
-            <el-table-column label="操作" width="130" fixed="right">
-              <template #default="{ row }">
-                <el-button link type="primary" @click="openRepDialog(row)">设置课代表</el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-          <div class="tip">
-            提示：候选课代表来自「账号管理」中角色为<b>课代表</b>的账号。如需新增，请到「账号管理」把某个学生账号的角色改为课代表。
-          </div>
-        </el-card>
-      </el-tab-pane>
-
       <!-- 账号管理（管理员/老师） -->
       <el-tab-pane v-if="canManage" label="账号管理" name="accounts">
         <el-card shadow="never">
@@ -156,18 +127,6 @@
       </el-tab-pane>
     </el-tabs>
 
-    <!-- 设置课代表弹窗 -->
-    <el-dialog v-model="repDialog" :title="`设置「${repTarget.name}」课代表`" width="420px">
-      <el-select v-model="repSelected" multiple filterable placeholder="选择课代表账号" style="width: 100%">
-        <el-option v-for="u in repCandidates" :key="u.id" :label="`${u.name}（${u.username}）`" :value="u.id" />
-      </el-select>
-      <div class="tip" v-if="!repCandidates.length">暂无课代表账号，请先到「账号管理」将某账号角色设为课代表。</div>
-      <template #footer>
-        <el-button @click="repDialog = false">取消</el-button>
-        <el-button type="primary" @click="saveReps">保存</el-button>
-      </template>
-    </el-dialog>
-
     <!-- 修改角色弹窗 -->
     <el-dialog v-model="roleDialog" :title="`修改「${roleTarget.name}」角色`" width="440px">
       <el-form label-width="90px">
@@ -209,14 +168,14 @@
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { listOperateLogs } from '@/api/operateLog'
-import { listSubjects, setSubjectReps } from '@/api/subject'
+import { listSubjects } from '@/api/subject'
 import { listUsers, resetPassword, setUserRole } from '@/api/user'
 import { fetchStorageUsage } from '@/api/upload'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
 const canManage = computed(() => ['ADMIN', 'TEACHER'].includes(auth.user?.role))
-const activeTab = ref(canManage.value ? 'reps' : 'logs')
+const activeTab = ref(canManage.value ? 'accounts' : 'logs')
 
 // ---- 操作日志 ----
 const q = ref({ operatorName: '', operateType: '', startTime: '', endTime: '' })
@@ -250,11 +209,10 @@ function fmt(d) {
   return `${dt.getFullYear()}-${p(dt.getMonth() + 1)}-${p(dt.getDate())} ${p(dt.getHours())}:${p(dt.getMinutes())}:${p(dt.getSeconds())}`
 }
 
-// ---- 科目 / 课代表 ----
+// ---- 科目 / 用户（账号管理 & 角色修改弹窗用）----
 const subjects = ref([])
 const users = ref([])
 const roleFilter = ref('')
-const repCandidates = computed(() => users.value.filter((u) => u.role === 'REP'))
 
 async function loadSubjects() {
   const r = await listSubjects()
@@ -263,21 +221,6 @@ async function loadSubjects() {
 async function loadUsers() {
   const r = await listUsers(roleFilter.value)
   users.value = r.data ?? r
-}
-
-const repDialog = ref(false)
-const repTarget = ref({})
-const repSelected = ref([])
-function openRepDialog(row) {
-  repTarget.value = row
-  repSelected.value = [...(row.repUserIds || [])]
-  repDialog.value = true
-}
-async function saveReps() {
-  await setSubjectReps(repTarget.value.id, repSelected.value)
-  ElMessage.success('课代表已更新')
-  repDialog.value = false
-  await Promise.all([loadSubjects(), loadUsers()])
 }
 
 // ---- 角色修改 ----
@@ -356,7 +299,6 @@ onMounted(() => {
 .filters { margin-bottom: 12px; }
 .snap { background: #f5f7fa; padding: 10px; border-radius: 6px; font-size: 12px; white-space: pre-wrap; word-break: break-all; margin: 0; }
 .snap.after { background: #f0f9eb; }
-.rep-tag { margin-right: 6px; }
 .muted { color: #b0b6c0; }
 .tip { margin-top: 12px; font-size: 12px; color: #8a94a6; line-height: 1.7; }
 .storage-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 8px; }
