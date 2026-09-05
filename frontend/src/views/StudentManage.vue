@@ -684,7 +684,7 @@ onMounted(loadAll)
   flex-wrap: wrap;
 }
 .section-head .info-group {
-  flex: 1;
+  flex: 0 1 auto;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -700,6 +700,24 @@ onMounted(loadAll)
   margin-left: auto;
   padding-left: 10px;
   border-left: 2px solid #e4e8f0;
+  flex-shrink: 0;
+  min-width: fit-content;
+}
+/* 修复：section-head 内的操作按钮在卡片背景下必须显式着色，避免透明隐形 */
+.section-head .batch-bar.ml-auto .el-button--primary {
+  background-color: var(--el-color-primary, #409eff) !important;
+  border-color: var(--el-color-primary, #409eff) !important;
+  color: #fff !important;
+}
+.section-head .batch-bar.ml-auto .el-button--danger {
+  background-color: var(--el-color-danger, #f56c6c) !important;
+  border-color: var(--el-color-danger, #f56c6c) !important;
+  color: #fff !important;
+}
+.section-head .batch-bar.ml-auto .el-button--warning {
+  background-color: var(--el-color-warning, #e6a23c) !important;
+  border-color: var(--el-color-warning, #e6a23c) !important;
+  color: #fff !important;
 }
 .section-title { font-size: 15px; font-weight: 600; }
 .section-sub { font-size: 12px; color: #8a94a6; }
