@@ -37,3 +37,5 @@
 - 远程：github.com:yifei922/feiyue-credit-system.git
 - 分支：master（用 `GIT_OPTIONAL_LOCKS=0` 绕过 IDE 文件监视器锁）
 - 项目工作目录：C:\Users\20242\WorkBuddy\feiyue-credit
+- ✅ **本机 GitHub 已可达**：实测 SSH:22 OPEN、api.github.com HTTP:200、ghproxy 镜像 HTTP:200，`git push` 走 SSH 正常。2026-09-05 已成功推送网页改造 `dd82c2c`（→ Render 自动重建）。之前"完全不可达"为临时网络策略，现已恢复，勿再按"不可达"处理。
+- **本地可视化验证工作流（Render 不可达时复用）**：①后端连生产库 `DB_HOST=sh-cynosdbmysql-grp-0o7o6uce.sql.tencentcdb.com DB_PORT=21210 DB_USER=root DB_PASSWORD=... DB_NAME=credit node src/index.js`（同源托管 frontend/dist）②`vite build --mode server`（PowerShell 跑）③`playwright-core` 驱动系统 Chrome(`C:/Program Files/Google/Chrome/Application/chrome.exe`, headless+no-sandbox) 截图。截图脚本 `_shots/capture.mjs`、PDF 渲染 `_shots/render_pdf.mjs`、源 HTML `_shots/report_html/*.html` 均在项目内可复用。
