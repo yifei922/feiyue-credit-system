@@ -35,13 +35,15 @@
       <!-- ====== 学生管理 ====== -->
       <el-tab-pane label="学生" name="students">
         <div class="section-head">
-          <span class="section-title">学生账号</span>
-          <span class="section-sub">共 {{ students.length }} 人，可新增学生、批量重置密码、批量删除</span>
-          <div class="batch-bar" v-if="selected.length > 0">
-            <el-tag effect="light" type="info">已选 {{ selected.length }} 人</el-tag>
-            <el-button v-if="isTeacherOrAdmin" size="small" type="warning" @click="batchResetPwd">批量重置密码</el-button>
-            <el-button v-if="isTeacherOrAdmin" size="small" type="danger" @click="batchSoftDelete">批量删除（可恢复）</el-button>
-            <el-button size="small" text @click="selected = []">取消选择</el-button>
+          <div class="info-group">
+            <span class="section-title">学生账号</span>
+            <span class="section-sub">共 {{ students.length }} 人，可新增学生、批量重置密码、批量删除</span>
+            <div class="batch-bar" v-if="selected.length > 0">
+              <el-tag effect="light" type="info">已选 {{ selected.length }} 人</el-tag>
+              <el-button v-if="isTeacherOrAdmin" size="small" type="warning" @click="batchResetPwd">批量重置密码</el-button>
+              <el-button v-if="isTeacherOrAdmin" size="small" type="danger" @click="batchSoftDelete">批量删除（可恢复）</el-button>
+              <el-button size="small" text @click="selected = []">取消选择</el-button>
+            </div>
           </div>
           <div class="batch-bar ml-auto">
             <el-button v-if="isTeacherOrAdmin" size="small" type="primary" @click="addStudentVisible = true"><el-icon><Plus /></el-icon> 新增学生</el-button>
@@ -92,8 +94,10 @@
       <!-- ====== 教师管理 ====== -->
       <el-tab-pane label="教师" name="teachers">
         <div class="section-head">
-          <span class="section-title">教师账号</span>
-          <span class="section-sub">共 {{ teachers.length }} 名教师，可新增老师、批量重置密码、删除账号</span>
+          <div class="info-group">
+            <span class="section-title">教师账号</span>
+            <span class="section-sub">共 {{ teachers.length }} 名教师，可新增老师、批量重置密码、删除账号</span>
+          </div>
           <div class="batch-bar ml-auto">
             <el-button size="small" type="primary" @click="addTeacherVisible = true"><el-icon><Plus /></el-icon> 新增老师</el-button>
             <el-button v-if="isAdmin && teachers.length > 0" size="small" type="danger" @click="onBatchDeleteTeachers">
@@ -121,8 +125,10 @@
       <!-- ====== 课代表管理 ====== -->
       <el-tab-pane label="课代表" name="reps">
         <div class="section-head">
-          <span class="section-title">科目与课代表</span>
-          <span class="section-sub">围绕初二学科体系 · 教师/管理员可为每个科目设置课代表或添加自定义科目</span>
+          <div class="info-group">
+            <span class="section-title">科目与课代表</span>
+            <span class="section-sub">围绕初二学科体系 · 教师/管理员可为每个科目设置课代表或添加自定义科目</span>
+          </div>
           <div class="batch-bar ml-auto">
             <el-button size="small" type="primary" @click="addCustomSubject"><el-icon><Plus /></el-icon> 添加科目</el-button>
           </div>
@@ -178,23 +184,74 @@
       </template>
     </el-dialog>
 
-    <!-- 学分增减弹窗 -->
-    <el-dialog v-model="adjustVisible" :title="`学分增减 · ${adjustForm.name}`" width="420px">
-      <el-form label-width="90px">
-        <el-form-item label="当前学分">
-          <el-tag type="success" effect="light">{{ adjustForm.current }}</el-tag>
-        </el-form-item>
-        <el-form-item label="调整分值">
-          <el-input-number v-model="adjustForm.amount" :step="1" style="width: 100%" />
-          <div class="tip-inline">正数为加分，负数为扣分（不能为 0）</div>
-        </el-form-item>
-        <el-form-item label="原因">
-          <el-input v-model="adjustForm.reason" type="textarea" :rows="2" placeholder="如：课堂表现优秀 / 违纪扣分" />
-        </el-form-item>
-      </el-form>
+    <!-- 学分增减弹窗：Stripe 风格可视化卡片 -->
+    <el-dialog v-model="adjustVisible" :title="`学分增减 · ${adjustForm.name}`" width="460px" class="credit-dialog">
+      <div class="credit-card">
+        <!-- 当前学分展示 -->
+        <div class="credit-display">
+          <span class="credit-label">当前学分</span>
+          <span class="credit-score" :class="adjustForm.current > 0 ? 'positive' : adjustForm.current < 0 ? 'negative' : 'zero'">
+            {{ adjustForm.current ?? 0 }}
+          </span>
+        </div>
+        <!-- 箭头指示 -->
+        <div class="credit-arrow">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M12 5v14M5 12l7 7 7-7" stroke="#8b95a5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <!-- 调整后预览 -->
+        <div class="credit-preview">
+          <span class="credit-label">调整后</span>
+          <span class="credit-score preview" :class="adjustedScore > adjustForm.current ? 'positive' : adjustedScore < adjustForm.current ? 'negative' : 'zero'">
+            {{ adjustedScore }}
+          </span>
+        </div>
+      </div>
+
+      <!-- 分值调节器 -->
+      <div class="adjust-control">
+        <span class="control-label">调整分值</span>
+        <div class="stepper">
+          <button class="stepper-btn minus" @click="adjustForm.amount = Math.max(-99, adjustForm.amount - 1)" :disabled="adjustForm.amount <= -99">−</button>
+          <input
+            class="stepper-input"
+            v-model.number="adjustForm.amount"
+            type="number"
+            min="-99"
+            max="99"
+            @change="adjustForm.amount = Math.max(-99, Math.min(99, adjustForm.amount || 0))"
+          />
+          <button class="stepper-btn plus" @click="adjustForm.amount = Math.min(99, adjustForm.amount + 1)">+</button>
+        </div>
+        <div class="amount-hint" :class="adjustForm.amount > 0 ? 'hint-plus' : adjustForm.amount < 0 ? 'hint-minus' : ''">
+          {{ adjustForm.amount > 0 ? `+${adjustForm.amount} 学分` : adjustForm.amount < 0 ? `${adjustForm.amount} 学分` : '未调整' }}
+        </div>
+      </div>
+
+      <!-- 原因输入区 -->
+      <div class="reason-area">
+        <span class="control-label">调整原因</span>
+        <div class="reason-chips">
+          <span
+            v-for="chip in reasonChips"
+            :key="chip.label"
+            :class="['chip', adjustForm.reason === chip.label && 'active']"
+            @click="adjustForm.reason = adjustForm.reason === chip.label ? '' : chip.label"
+          >{{ chip.label }}</span>
+        </div>
+        <el-input
+          v-model="adjustForm.reason"
+          type="textarea"
+          :rows="2"
+          placeholder="选择上方标签或手动输入原因，如：课堂表现优秀 / 违纪扣分"
+          class="reason-textarea"
+        />
+      </div>
+
       <template #footer>
         <el-button @click="adjustVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitAdjust">确认调整</el-button>
+        <el-button type="primary" @click="submitAdjust" :disabled="!adjustForm.amount || adjustForm.amount === 0">确认调整</el-button>
       </template>
     </el-dialog>
 
@@ -245,6 +302,19 @@ const rosterFile = ref(null)
 const adjustVisible = ref(false)
 const adjustForm = ref({ studentId: null, name: '', current: 0, amount: 1, reason: '' })
 const selected = ref([])
+
+const reasonChips = [
+  { label: '课堂表现优秀' },
+  { label: '作业完成优秀' },
+  { label: '积极回答问题' },
+  { label: '帮助同学' },
+  { label: '违纪扣分' },
+  { label: '作业未交' },
+  { label: '迟到' },
+  { label: '其他' },
+]
+
+const adjustedScore = computed(() => (adjustForm.value.current || 0) + (adjustForm.value.amount || 0))
 const addTeacherVisible = ref(false)
 const savingTeacher = ref(false)
 const teacherForm = ref({ name: '', username: '', password: '' })
@@ -602,7 +672,35 @@ onMounted(loadAll)
 .result { border-radius: 12px; }
 .err-list { margin-top: 6px; font-size: 12px; color: #b45309; max-height: 120px; overflow: auto; }
 .tabs-card { background: #fff; border: 1px solid var(--border); border-radius: 12px; }
-.section-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  background: #f7f9fc;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  flex-wrap: wrap;
+}
+.section-head .info-group {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.section-head .batch-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.section-head .ml-auto {
+  margin-left: auto;
+  padding-left: 10px;
+  border-left: 2px solid #e4e8f0;
+}
 .section-title { font-size: 15px; font-weight: 600; }
 .section-sub { font-size: 12px; color: #8a94a6; }
 .batch-bar {
@@ -620,4 +718,77 @@ onMounted(loadAll)
 .hint code { background: #f1f3f7; padding: 1px 6px; border-radius: 5px; color: #2563eb; }
 .tip-inline { font-size: 12px; color: #8a94a6; margin-top: 4px; }
 .rep-tag { margin-right: 6px; }
+
+/* 学分增减弹窗 Stripe 风格 */
+.credit-card {
+  background: linear-gradient(135deg, #f0f7ff 0%, #e8f2ff 100%);
+  border: 1px solid #d0deff;
+  border-radius: 16px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 12px;
+}
+.credit-display, .credit-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.credit-label { font-size: 11px; color: #8b95a5; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+.credit-score {
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.credit-score.positive { color: #10B981; }
+.credit-score.negative { color: #ef4444; }
+.credit-score.zero, .credit-score.preview.zero { color: #8b95a5; }
+.credit-score.preview { font-size: 32px; opacity: 0.7; }
+.credit-arrow { flex-shrink: 0; }
+.adjust-control {
+  background: #fafbfc;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.control-label { font-size: 13px; color: var(--text-soft); font-weight: 500; min-width: 64px; }
+.stepper { display: flex; align-items: center; gap: 0; border: 1px solid #d1d5db; border-radius: 8px; overflow: hidden; }
+.stepper-btn {
+  width: 36px; height: 36px; border: none; background: #fff; font-size: 18px; cursor: pointer;
+  transition: background 0.15s; display: flex; align-items: center; justify-content: center;
+}
+.stepper-btn:hover:not(:disabled) { background: #f0f7ff; }
+.stepper-btn.plus { color: #2563eb; }
+.stepper-btn.minus { color: #ef4444; }
+.stepper-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.stepper-input {
+  width: 56px; height: 36px; border: none; border-left: 1px solid #d1d5db; border-right: 1px solid #d1d5db;
+  text-align: center; font-size: 15px; font-weight: 700; color: #1d2738;
+  -moz-appearance: textfield;
+}
+.stepper-input::-webkit-inner-spin-button,
+.stepper-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.amount-hint {
+  font-size: 12px; color: #8b95a5; font-weight: 500; min-width: 60px;
+}
+.amount-hint.hint-plus { color: #10B981; }
+.amount-hint.hint-minus { color: #ef4444; }
+.reason-area { display: flex; flex-direction: column; gap: 8px; }
+.reason-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  padding: 4px 12px; border-radius: 20px; font-size: 12px; cursor: pointer;
+  border: 1px solid #d1d5db; background: #fff; color: #4b5563; transition: all 0.15s;
+}
+.chip:hover { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
+.chip.active { border-color: #2563eb; color: #2563eb; background: #eff6ff; font-weight: 600; }
+.reason-textarea { margin-top: 2px; }
 </style>

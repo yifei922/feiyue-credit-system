@@ -160,30 +160,91 @@
       </template>
     </el-dialog>
 
-    <!-- 管理任务弹窗：各科目任务统计 -->
-    <el-dialog v-model="manageVisible" title="管理任务（各科目任务统计）" width="480px">
-      <el-table :data="subjectSummary" stripe>
-        <el-table-column prop="name" label="科目" width="120" />
-        <el-table-column label="全部" width="80" align="center">
-          <template #default="{ row }"><el-tag size="small" type="info" effect="plain">{{ row.total }}</el-tag></template>
-        </el-table-column>
-        <el-table-column label="进行中" width="90" align="center">
-          <template #default="{ row }"><el-tag size="small" type="success" effect="light">{{ row.openCount }}</el-tag></template>
-        </el-table-column>
-        <el-table-column label="已结束" width="90" align="center">
-          <template #default="{ row }"><el-tag size="small" type="info" effect="light">{{ row.closedCount }}</el-tag></template>
-        </el-table-column>
-        <el-table-column label="草稿" width="80" align="center">
-          <template #default="{ row }"><el-tag size="small" type="warning" effect="light">{{ row.draftCount }}</el-tag></template>
-        </el-table-column>
-        <el-table-column label="操作" width="100" align="center">
-          <template #default="{ row }">
-            <el-button size="small" link type="primary" @click="filterSubject = row.id; manageVisible = false; applyFilter()">
-              查看
+    <!-- 管理任务弹窗：左侧科目列表 + 右侧该科目下任务管理 -->
+    <el-dialog v-model="manageVisible" title="管理任务" width="780px">
+      <div class="manage-layout">
+        <!-- 左侧：科目列表 -->
+        <div class="subject-aside">
+          <div class="aside-header">
+            <span class="aside-title">科目</span>
+            <el-button size="small" type="primary" @click="addCustomSubject" style="padding: 4px 10px; font-size: 12px;">
+              <el-icon style="margin-right:2px"><Plus /></el-icon>添加
             </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+          </div>
+          <el-scrollbar>
+            <div
+              v-for="s in subjects"
+              :key="s.id"
+              :class="['subject-item', selectedManageSubject?.id === s.id && 'active']"
+              @click="selectManageSubject(s)"
+            >
+              <span class="subject-name">{{ s.name }}</span>
+              <el-tag size="small" type="info" effect="plain" class="subject-count-tag">
+                {{ subjectTaskCount(s.id) }}
+              </el-tag>
+            </div>
+            <div v-if="!subjects.length" class="empty-aside">暂无科目</div>
+          </el-scrollbar>
+        </div>
+
+        <!-- 右侧：该科目下任务列表 -->
+        <div class="task-main">
+          <div class="main-header" v-if="selectedManageSubject">
+            <span class="main-title">{{ selectedManageSubject.name }} · 任务</span>
+            <div class="main-actions">
+              <el-button size="small" type="primary" @click="openCreateForSubject">
+                <el-icon><Plus /></el-icon> 新增任务
+              </el-button>
+              <el-button size="small" @click="load">
+                <el-icon><Refresh /></el-icon> 刷新
+              </el-button>
+            </div>
+          </div>
+          <div v-if="!selectedManageSubject" class="empty-main">
+            <span>请从左侧选择科目</span>
+          </div>
+          <el-table
+            v-else
+            :data="selectedManageTasks"
+            stripe
+            max-height="380"
+            :empty-text="'该科目下暂无任务，点击右上角「新增任务」添加'"
+          >
+            <el-table-column prop="title" label="任务标题" min-width="160" show-overflow-tooltip />
+            <el-table-column label="类型" width="80">
+              <template #default="{ row }">{{ typeText[row.type] || row.type }}</template>
+            </el-table-column>
+            <el-table-column label="状态" width="88">
+              <template #default="{ row }">
+                <el-tag :type="statusType(row.status)" size="small" effect="light">{{ statusText(row.status) }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="creditValue" label="学分" width="64" align="center" />
+            <el-table-column label="截止时间" min-width="120">
+              <template #default="{ row }">
+                <span :class="{ overdue: row.status !== 'CLOSED' && isOverdue(row.deadline) }">{{ row.deadline || '—' }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="160" align="center">
+              <template #default="{ row }">
+                <el-button link type="primary" @click="openEdit(row); manageVisible = false">
+                  <el-icon><Edit /></el-icon> 编辑
+                </el-button>
+                <el-button link type="danger" @click="onDelete(row); load()">
+                  <el-icon><Delete /></el-icon> 删除
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <!-- 科目统计摘要 -->
+          <div class="subject-stats" v-if="selectedManageSubject">
+            <el-tag size="small" type="info" effect="plain">全部 {{ subjectStats.total }}</el-tag>
+            <el-tag size="small" type="success" effect="light">进行中 {{ subjectStats.open }}</el-tag>
+            <el-tag size="small" type="info" effect="light">已结束 {{ subjectStats.closed }}</el-tag>
+            <el-tag size="small" type="warning" effect="light">草稿 {{ subjectStats.draft }}</el-tag>
+          </div>
+        </div>
+      </div>
     </el-dialog>
   </div>
 </template>
@@ -219,7 +280,41 @@ const compLoading = ref(false)
 const regId = ref(null)
 
 const manageVisible = ref(false)
-const subjectSummary = ref([])
+const selectedManageSubject = ref(null)
+
+const selectedManageTasks = computed(() => {
+  if (!selectedManageSubject.value) return []
+  return tasks.value.filter((t) => t.subjectId === selectedManageSubject.value.id)
+})
+
+function subjectTaskCount(sid) {
+  return tasks.value.filter((t) => t.subjectId === sid).length
+}
+
+const subjectStats = computed(() => {
+  if (!selectedManageSubject.value) return { total: 0, open: 0, closed: 0, draft: 0 }
+  const subs = tasks.value.filter((t) => t.subjectId === selectedManageSubject.value.id)
+  return {
+    total: subs.length,
+    open: subs.filter((t) => t.status === 'OPEN').length,
+    closed: subs.filter((t) => t.status === 'CLOSED').length,
+    draft: subs.filter((t) => t.status === 'DRAFT').length,
+  }
+})
+
+function selectManageSubject(s) {
+  selectedManageSubject.value = s
+}
+
+function openCreateForSubject() {
+  if (!selectedManageSubject.value) return
+  editingId.value = null
+  form.value = {
+    id: null, title: '', subjectId: selectedManageSubject.value.id, type: 'HOMEWORK',
+    status: 'OPEN', creditValue: 3, deadline: '', description: '', customCategory: '',
+  }
+  formVisible.value = true
+}
 
 const isCustomCategory = computed(() => subjects.value.find((s) => s.id === form.value.subjectId)?.name === '其他')
 
@@ -351,14 +446,8 @@ async function loadCompletions() {
 const doneTotal = computed(() => completions.value.filter((x) => isDone(x.status)).length)
 
 async function openManageSubjects() {
-  subjectSummary.value = subjects.value.map((s) => {
-    const subs = tasks.value.filter((t) => t.subjectId === s.id)
-    const openCount = subs.filter((t) => t.status === 'OPEN').length
-    const closedCount = subs.filter((t) => t.status === 'CLOSED').length
-    const draftCount = subs.filter((t) => t.status === 'DRAFT').length
-    return { ...s, total: subs.length, openCount, closedCount, draftCount }
-  })
   manageVisible.value = true
+  selectedManageSubject.value = subjects.value[0] || null
 }
 
 async function quickComplete(item) {
@@ -404,4 +493,70 @@ onMounted(() => {
 .subject-hint { font-size: 12px; color: var(--text-soft); line-height: 1.5; margin-top: 4px; }
 .desc-popover { font-size: 13px; color: #334155; line-height: 1.7; white-space: pre-wrap; }
 .manage-btn { margin-left: 4px; }
+.manage-layout { display: flex; gap: 0; height: 460px; }
+.subject-aside {
+  width: 180px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+.aside-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.aside-title { font-size: 13px; font-weight: 600; color: var(--text); }
+.subject-aside .el-scrollbar { flex: 1; }
+.subject-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.15s;
+  border-bottom: 1px solid #f5f5f5;
+  gap: 6px;
+}
+.subject-item:hover { background: #f0f7ff; }
+.subject-item.active { background: #e8f2ff; color: #2563eb; font-weight: 600; }
+.subject-item .subject-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.subject-count-tag { flex-shrink: 0; }
+.empty-aside { padding: 20px 12px; text-align: center; color: #b0b6c0; font-size: 12px; }
+.task-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+.main-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px 8px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.main-title { font-size: 13px; font-weight: 600; }
+.main-actions { display: flex; gap: 8px; }
+.empty-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  color: #b0b6c0;
+  font-size: 13px;
+}
+.subject-stats {
+  display: flex;
+  gap: 8px;
+  padding: 8px 14px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
 </style>

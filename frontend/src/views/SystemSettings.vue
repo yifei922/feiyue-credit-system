@@ -1,12 +1,12 @@
 <template>
   <div class="settings">
     <el-tabs v-model="activeTab" class="tabs-card">
-      <!-- 账号管理（管理员/老师） -->
-      <el-tab-pane v-if="canManage" label="账号管理" name="accounts">
+      <!-- 系统账号（管理员全局管控） -->
+      <el-tab-pane v-if="isAdmin" label="系统账号" name="accounts">
         <el-card shadow="never">
           <template #header>
-            <span class="h">账号管理</span>
-            <span class="sub">重置任意账号密码；将账号设为课代表 / 学生并绑定科目</span>
+            <span class="h">系统账号全局管控</span>
+            <span class="sub">管理员可重置任意账号密码、修改角色与科目绑定（普通教师请使用「人员管理」页面）</span>
           </template>
           <el-form inline class="filters">
             <el-form-item label="角色筛选">
@@ -174,6 +174,7 @@ import { fetchStorageUsage } from '@/api/upload'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
+const isAdmin = computed(() => auth.role === 'ADMIN')
 const canManage = computed(() => ['ADMIN', 'TEACHER'].includes(auth.user?.role))
 const activeTab = ref(canManage.value ? 'accounts' : 'logs')
 
