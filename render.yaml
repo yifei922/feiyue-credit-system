@@ -34,6 +34,7 @@ services:
       - key: INIT_POINTS
         value: "100"
     # 构建前端 + 安装后端依赖
+    # 2026-09-07 09:25 强制触发 Render rebuild（之前 dist 未自动更新）
     buildCommand: cd frontend && npm install --include=dev && npx vite build --mode server && cd ../server && npm install
     # 启动服务
     startCommand: cd server && node src/index.js
