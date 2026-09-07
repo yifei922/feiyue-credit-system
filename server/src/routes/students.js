@@ -21,10 +21,10 @@ router.get('/', authMiddleware, async (req, res) => {
       .all(req.user.studentId);
   } else {
     total = (await db.prepare(`SELECT COUNT(*) AS c FROM student s WHERE 1=1${deletedFilter}`).get()).c;
-    rows = await db.prepare(`SELECT s.*, c.name AS className FROM student s LEFT JOIN clazz c ON s.class_id=c.id WHERE 1=1${deletedFilter} ORDER BY s.id LIMIT ? OFFSET ?`).all(pageSize, offset);
+    rows = await db.prepare(`SELECT s.id, s.student_no, s.name, s.gender, s.class_id, s.total_credits, s.create_time, c.name AS className FROM student s LEFT JOIN clazz c ON s.class_id=c.id WHERE 1=1${deletedFilter} ORDER BY s.id LIMIT ? OFFSET ?`).all(pageSize, offset);
   }
   const list = await Promise.all(rows.map(async r => ({
-    id: r.id, studentNo: r.student_no, name: r.name, classId: r.class_id,
+    id: r.id, studentNo: r.student_no, name: r.name, gender: r.gender, classId: r.class_id,
     totalCredits: r.total_credits, className: r.className
   })));
   const hasMore = offset + rows.length < total;
@@ -55,51 +55,62 @@ router.get('/export', authMiddleware, requireRole('ADMIN', 'TEACHER', 'REP'), as
 });
 
 // 名单导入（管理员/主理人）：支持 JSON 数组或 CSV 文本
+// 任务 4：username = 真实姓名，初始密码 810810，must_change_pwd=1（首次登录强制改密）
+// 数据格式：students = [{name, gender?}]
 router.post('/import', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (req, res) => {
   const body = req.body || {};
   let list = [];
   if (body.csv) {
     const lines = String(body.csv).split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-    const start = /^(name|姓名|成员|编号|studentno|student_no)/i.test(lines[0] || '') ? 1 : 0;
+    const start = /^(name|姓名|成员|gender|性别)/i.test(lines[0] || '') ? 1 : 0;
     list = lines.slice(start).map(line => {
-      const [name, studentNo] = line.split(/[,\t]/).map(x => x.trim());
-      return { name, studentNo };
+      const parts = line.split(/[,\t]/).map(x => x.trim());
+      return { name: parts[0] || '', gender: parts[1] === '男' || parts[1] === '女' ? parts[1] : null };
     });
   } else if (Array.isArray(body.students)) {
-    list = body.students.map(s => ({ name: String(s.name || '').trim(), studentNo: String(s.studentNo || s.studentNo || '') }));
+    list = body.students.map(s => ({
+      name: String(s.name || '').trim(),
+      gender: s.gender === '男' || s.gender === '女' ? s.gender : null,
+    }));
   }
   list = list.filter(s => s.name);
 
   if (list.length === 0) return fail(res, 400, '没有可导入的成员（请检查数据格式）');
 
   const classId = req.user.class_id || 1;
-  const insStu = await db.prepare('INSERT INTO student(name, student_no, class_id) VALUES(?,?,?)');
-  const insUser = await db.prepare('INSERT INTO sys_user(username, password, name, role, class_id, student_id, must_change_pwd) VALUES(?,?,?,?,?,?,?)');
-  let imported = 0;
+  const DEFAULT_PWD = '810810';
+  const insStu = await db.prepare('INSERT INTO student(name, gender, class_id) VALUES(?,?,?)');
+  const insUser = await db.prepare(
+    'INSERT INTO sys_user(username, password, name, role, class_id, student_id, must_change_pwd) VALUES(?,?,?,?,?,?,?)'
+  );
+  const chkUser = await db.prepare('SELECT id FROM sys_user WHERE username=?');
+  const chkStu = await db.prepare('SELECT id FROM student WHERE name=? AND deleted_at IS NULL');
+
+  let imported = 0, resetPwd = 0;
   const importedRows = [];
   for (const s of list) {
-    // 按编号去重
-    const exist = await db.prepare('SELECT id FROM student WHERE student_no=?').get(s.studentNo);
-    let studentId, isNew = false;
-    if (exist) {
-      studentId = exist.id;
-    } else {
-      const r = await insStu.run(s.name, s.studentNo, classId);
-      studentId = r.lastInsertRowid;
-      isNew = true;
+    const existUser = await chkUser.get(s.name);
+    if (existUser) {
+      // 已存在同名账号：补全 gender + 重置密码为 810810 + must_change_pwd=1
+      const stuRow = await chkStu.get(s.name);
+      if (stuRow && s.gender) {
+        await db.prepare('UPDATE student SET gender=? WHERE id=?').run(s.gender, stuRow.id);
+      }
+      await db.prepare('UPDATE sys_user SET password=?, must_change_pwd=1 WHERE id=?')
+        .run(hashPassword(DEFAULT_PWD), existUser.id);
+      resetPwd++;
+      importedRows.push({ username: s.name, name: s.name, gender: s.gender, status: 'reset' });
+      continue;
     }
-    // 关联账号（若尚无对应 STUDENT 账号）
-    const hasUser = await db.prepare("SELECT id FROM sys_user WHERE role='STUDENT' AND student_id=?").get(studentId);
-    if (!hasUser) {
-      const username = 'stu' + String(studentId).padStart(2, '0');
-      await insUser.run(username, hashPassword(genTempPwd()), s.name, 'STUDENT', classId, studentId, 1);
-    }
-    if (isNew) imported++;
-    importedRows.push({ id: studentId, name: s.name, studentNo: s.studentNo });
+    const r = await insStu.run(s.name, s.gender || null, classId);
+    const studentId = r.lastInsertRowid;
+    await insUser.run(s.name, hashPassword(DEFAULT_PWD), s.name, 'STUDENT', classId, studentId, 1);
+    imported++;
+    importedRows.push({ id: studentId, username: s.name, name: s.name, gender: s.gender, password: DEFAULT_PWD, status: 'new' });
   }
 
-  recordLog(req.user, 'IMPORT', 'student', null, null, { count: imported, sample: importedRows.slice(0, 5) });
-  ok(res, { imported, total: list.length, rows: importedRows });
+  recordLog(req.user, 'IMPORT', 'student', null, null, { count: imported, reset: resetPwd, total: list.length, sample: importedRows.slice(0, 5) });
+  ok(res, { imported, reset: resetPwd, total: list.length, defaultPassword: DEFAULT_PWD, rows: importedRows });
 });
 
 // 重置成员登录密码（管理员/主理人/小组长）；不传 password 则生成随机临时密码
@@ -141,28 +152,30 @@ router.post('/batch-reset-password', authMiddleware, requireRole('ADMIN', 'TEACH
 
 // 新增单个成员（老师/管理员）；可指定登录密码，留空则生成随机临时密码
 router.post('/', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (req, res) => {
-  const { name, studentNo, password } = req.body || {};
+  const { name, studentNo, gender, password } = req.body || {};
   if (!name) return fail(res, 400, '请填写成员姓名');
-  const r = await db.prepare('INSERT INTO student(name, student_no, class_id) VALUES(?,?,?)').run(name, studentNo || '', req.user.class_id || 1);
+  const r = await db.prepare('INSERT INTO student(name, student_no, gender, class_id) VALUES(?,?,?,?)').run(name, studentNo || '', gender || null, req.user.class_id || 1);
   const studentId = r.lastInsertRowid;
   const custom = String(password || '').trim();
-  const newPwd = custom || genTempPwd();
+  const newPwd = custom || '810810'; // 任务 4 默认初始密码
   if (newPwd.length < 6) return fail(res, 400, '密码至少 6 位');
-  const username = 'stu' + String(studentId).padStart(2, '0');
+  const username = name.trim();
+  if (!/^[\w\u4e00-\u9fa5\-]{2,32}$/.test(username)) return fail(res, 400, '用户名仅限中文、字母、数字、下划线、连字符(2-32位)');
+  if (await db.prepare('SELECT id FROM sys_user WHERE username=?').get(username)) return fail(res, 409, '已存在同名账号');
   await db.prepare('INSERT INTO sys_user(username, password, name, role, class_id, student_id, must_change_pwd) VALUES(?,?,?,?,?,?,?)')
     .run(username, hashPassword(newPwd), name, 'STUDENT', req.user.class_id || 1, studentId, 1);
-  recordLog(req.user, 'INSERT', 'student', studentId, null, { name, studentNo, temp: !custom });
-  ok(res, { id: studentId, name, studentNo, username, password: newPwd, temp: !custom });
+  recordLog(req.user, 'INSERT', 'student', studentId, null, { name, studentNo, gender, temp: !custom });
+  ok(res, { id: studentId, name, studentNo, gender, username, password: newPwd, temp: !custom });
 });
 
 // 更新
 router.put('/:id', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (req, res) => {
-  const { name, studentNo } = req.body || {};
+  const { name, studentNo, gender } = req.body || {};
   const before = await db.prepare('SELECT * FROM student WHERE id=?').get(req.params.id);
   if (!before) return fail(res, 404, '成员不存在');
-  await db.prepare('UPDATE student SET name=?, student_no=? WHERE id=?').run(name ?? before.name, studentNo ?? before.student_no, req.params.id);
+  await db.prepare('UPDATE student SET name=?, student_no=?, gender=? WHERE id=?').run(name ?? before.name, studentNo ?? before.student_no, gender ?? before.gender, req.params.id);
   await db.prepare('UPDATE sys_user SET name=? WHERE role=? AND student_id=?').run(name ?? before.name, 'STUDENT', req.params.id);
-  recordLog(req.user, 'UPDATE', 'student', req.params.id, before, { name, studentNo });
+  recordLog(req.user, 'UPDATE', 'student', req.params.id, before, { name, studentNo, gender });
   ok(res, { ok: true });
 });
 

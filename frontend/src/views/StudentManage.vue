@@ -56,6 +56,12 @@
           <el-table-column type="selection" width="48" />
           <el-table-column prop="studentNo" label="学号" width="130" />
           <el-table-column prop="name" label="姓名" width="120" />
+          <el-table-column label="性别" width="60" align="center">
+            <template #default="{ row }">
+              <el-tag v-if="row.gender" :type="row.gender === '男' ? 'primary' : 'danger'" size="small" effect="plain">{{ row.gender }}</el-tag>
+              <span v-else class="muted">—</span>
+            </template>
+          </el-table-column>
           <el-table-column prop="className" label="班级" />
           <el-table-column prop="totalCredits" label="总学分" width="100" align="center">
             <template #default="{ row }">
@@ -172,7 +178,13 @@
     <!-- 新增学生弹窗 -->
     <el-dialog v-model="addStudentVisible" title="新增学生账号" width="440px">
       <el-form label-width="90px">
-        <el-form-item label="姓名"><el-input v-model="studentForm.name" placeholder="学生姓名" /></el-form-item>
+        <el-form-item label="姓名"><el-input v-model="studentForm.name" placeholder="学生姓名（将作为登录用户名）" /></el-form-item>
+        <el-form-item label="性别">
+          <el-radio-group v-model="studentForm.gender">
+            <el-radio value="男">男</el-radio>
+            <el-radio value="女">女</el-radio>
+          </el-radio-group>
+        </el-form-item>
         <el-form-item label="学号"><el-input v-model="studentForm.studentNo" placeholder="留空则系统自动生成" /></el-form-item>
         <el-form-item label="登录密码">
           <el-input v-model="studentForm.password" type="password" show-password placeholder="留空则生成随机临时密码（至少6位）" />
@@ -320,7 +332,7 @@ const savingTeacher = ref(false)
 const teacherForm = ref({ name: '', username: '', password: '' })
 const addStudentVisible = ref(false)
 const savingStudent = ref(false)
-const studentForm = ref({ name: '', studentNo: '', password: '' })
+const studentForm = ref({ name: '', gender: '', studentNo: '', password: '' })
 
 // 新增：Tab 控制 & 课代表弹窗
 const activeTab = ref('students')
@@ -336,7 +348,7 @@ async function loadAll() {
   try {
     const [s, c] = await Promise.all([listStudents(), listCompletions()])
     students.value = (s.data || s || []).map((r) => ({
-      id: r.id, studentNo: r.studentNo, name: r.name, className: r.className, totalCredits: r.totalCredits
+      id: r.id, studentNo: r.studentNo, name: r.name, gender: r.gender, className: r.className, totalCredits: r.totalCredits
     }))
     completions.value = (c.data || c || []).map((r) => ({
       studentNo: r.studentNo, studentName: r.studentName, taskTitle: r.taskTitle,
@@ -451,12 +463,12 @@ async function submitStudent() {
   if (f.password && f.password.length < 6) return ElMessage.warning('密码至少 6 位')
   savingStudent.value = true
   try {
-    const r = await createStudent({ name: f.name.trim(), studentNo: f.studentNo.trim(), password: f.password || undefined })
+    const r = await createStudent({ name: f.name.trim(), gender: f.gender || undefined, studentNo: f.studentNo.trim(), password: f.password || undefined })
     const d = r.data ?? r
     const pwdMsg = d.password ? `，初始密码：${d.password}` : '（已使用随机临时密码）'
     ElMessageBox.alert(`学生「${f.name}」已创建${pwdMsg}\n用户名：${d.username}\n首次登录需修改密码。`, '创建成功', { confirmButtonText: '知道了' })
     addStudentVisible.value = false
-    studentForm.value = { name: '', studentNo: '', password: '' }
+    studentForm.value = { name: '', gender: '', studentNo: '', password: '' }
     await loadAll()
   } catch (e) {
     ElMessage.error(e?.response?.data?.message || '创建学生失败')
@@ -481,8 +493,8 @@ async function resetTeacherPwd(row) {
 
 // 删除老师
 async function removeTeacher(row) {
-  if (row.username === 'teacher01' || row.username === 'superadmin' || row.username === 'admin') {
-    return ElMessage.warning('受保护账号（杨老师/系统管理员）不可删除')
+  if (row.username === '斐越科技' || row.username === '杨进杰老师') {
+    return ElMessage.warning('受保护账号（系统管理员/杨进杰老师）不可删除')
   }
   try {
     await ElMessageBox.confirm(`确定删除老师「${row.name}」？该账号的关联数据将一并清除，不可恢复。`, '删除确认', { type: 'warning' })
@@ -500,7 +512,7 @@ async function removeTeacher(row) {
 // 批量删除教师（保护账号除外）
 async function onBatchDeleteTeachers() {
   if (teachers.value.length === 0) return
-  const protect = ['teacher01', 'superadmin', 'admin']
+  const protect = ['斐越科技', '杨进杰老师']
   const deletable = teachers.value.filter((t) => !protect.includes(t.username))
   if (deletable.length === 0) return ElMessage.warning('没有可删除的教师账号')
   try {
@@ -553,9 +565,9 @@ async function doExportRoster() {
 async function doResetPwd(row) {
   try {
     const { value } = await ElMessageBox.prompt(
-      `将重置「${row.name}」的登录密码。留空则重置为默认密码 123456。`,
+      '将重置「${row.name}」的登录密码。留空则生成随机临时密码，管理员/教师可指定新密码。',
       '重置密码',
-      { confirmButtonText: '确认重置', cancelButtonText: '取消', inputPlaceholder: '新密码（留空=123456）' }
+      { confirmButtonText: '确认重置', cancelButtonText: '取消', inputPlaceholder: '新密码（留空=随机临时密码）' }
     )
     const res = await resetStudentPassword(row.id, value)
     const d = res.data ?? res

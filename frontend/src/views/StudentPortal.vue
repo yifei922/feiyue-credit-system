@@ -113,7 +113,7 @@
             <el-form-item label="作业附件">
               <input ref="fileInput" type="file" multiple accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.txt,.md" style="display:none" @change="onPickFiles" />
               <el-button :icon="Paperclip" @click="$refs.fileInput.click()" :disabled="!submitTaskId">选择附件</el-button>
-              <span class="size-tip">单个文件最大 <b>30 MB</b>，超过将被拒绝</span>
+              <span class="size-tip">单个文件最大 <b>100 MB</b>（视频 >30MB 浏览器自动转码压缩）</span>
             </el-form-item>
             <el-form-item>
               <span class="tip">支持图片 / 视频 / 音频 / Word / PDF / PPT / Excel / 压缩包等任意格式；系统自动压缩体积（图片保清晰度、视频与音频视觉/听感近无损、文档无损），画质不变。大体积视频/音频转码较慢会实时显示进度；若误关页面，重新进入会提示是否继续上传</span>
@@ -198,12 +198,14 @@ import { listTasks } from '@/api/task'
 import { uploadFile, uploadFileWithProgress, deleteAttachment, getPendingUploads, addPendingUpload, removePendingUpload, clearPendingUploads } from '@/api/upload'
 import { listAlerts, resolveAlert } from '@/api/alert'
 import { fetchAttachmentUrl } from '@/api/upload'
-import { compressImage, formatSize } from '@/utils/compress'
+import { compressImage, compressVideo, formatSize } from '@/utils/compress'
 import { flowTypeLabel, statusLabel } from '@/utils/credit'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
-const isStudent = computed(() => auth.user?.role === 'STUDENT')
+// 任务 5：双身份 —— REP（课代表）也是学生身份，可使用学生端能力
+const isStudent = computed(() => auth.user?.role === 'STUDENT' || auth.user?.role === 'REP')
+const isPureStudent = computed(() => auth.user?.role === 'STUDENT')
 
 const students = ref([])
 const studentId = ref(null)
@@ -303,12 +305,12 @@ async function onPickFiles(e) {
   const files = Array.from(e.target.files || [])
   e.target.value = '' // 允许重复选择同一文件
   if (!files.length) return
-  // 前端兜底：单文件 30MB 上限（与服务端 multer 一致）。超限直接拦截并提示，避免走完整上传流程浪费带宽
-  const MAX = 30 * 1024 * 1024
+  // 前端兜底：单文件 100MB 上限（任务 1：原 30MB 太严，提升到 100MB；浏览器端视频自动压缩）
+  const MAX = 100 * 1024 * 1024
   for (const file of files) {
     if (file.size > MAX) {
       const sizeMB = (file.size / 1024 / 1024).toFixed(1)
-      ElMessage.warning(`「${file.name}」${sizeMB}MB 超过 30MB 上限，请用手机自带「压缩视频」或电脑 WinRAR / macOS 归档工具压缩后上传`)
+      ElMessage.warning(`「${file.name}」${sizeMB}MB 超过 100MB 上限，请用手机自带「压缩视频」或电脑剪辑软件压缩后上传`)
       continue
     }
   }
@@ -329,8 +331,27 @@ async function onPickFiles(e) {
     }
     // 记录到本地「未完成上传」清单，意外关闭后可提示续传
     addPendingUpload({ id: item.pendingId, name: file.name, size: file.size, type: file.type, taskId: submitTaskId.value, studentId: auth.user?.studentId, ts: Date.now() })
-    // 浏览器端先压缩（图片）：生成预览并减小实际上传体积
-    const { blob, compressed } = await compressImage(file)
+    // 浏览器端预处理（任务 1 提速）
+    //   - 图片：自动 webp/jpeg 重编码，保清晰度减小体积
+    //   - 视频：>30MB 自动用 MediaRecorder 重新编码为 webm（720p, 1.5Mbps），平均 50-70% 体积降幅
+    let blob = file
+    if (file.type.startsWith('image/')) {
+      const c = await compressImage(file)
+      blob = c.blob
+      if (c.compressed) item.stageText = '图片已压缩，上传中…'
+    } else if (file.type.startsWith('video/')) {
+      item.phase = 'processing'
+      item.stageText = '视频转码中…（首次较慢，请耐心等候）'
+      item.indeterminate = true
+      const c = await compressVideo(file, {
+        videoThreshold: 30,
+        onProgress: (pct) => { item.stageText = `视频转码中… ${pct}%`; item.indeterminate = false; item.progress = pct }
+      })
+      if (c.compressed) item.stageText = '视频已压缩，上传中…'
+      blob = c.blob
+      item.phase = 'uploading'
+      item.progress = 0
+    }
     item.previewUrl = URL.createObjectURL(blob)
     objectUrls.push(item.previewUrl)
     pending.value.push(item)

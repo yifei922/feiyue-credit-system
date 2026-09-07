@@ -44,12 +44,13 @@ router.post('/:id/reset-password', requireRole('ADMIN', 'TEACHER', 'REP'), async
   if (req.user.role === 'REP' && target.role !== 'STUDENT') {
     return fail(res, 403, '小组长只能重置成员的密码');
   }
-  if (target.username === 'superadmin' && req.user.username !== 'superadmin') {
+  if (target.username === '斐越科技' && req.user.username !== '斐越科技') {
     return fail(res, 403, '超级管理员密码只能由本人修改');
   }
-  // 仅超级管理员或教师可自定义密码；其他人一律生成随机临时密码
+  // 管理员（斐越科技、杨进杰老师）或教师可自定义密码；其他人一律生成随机临时密码
   const customPwd = String(req.body?.password || '').trim();
-  const canSetPwd = (customPwd && (req.user.username === 'superadmin' || req.user.role === 'TEACHER'));
+  const isAdminUser = req.user.role === 'ADMIN';
+  const canSetPwd = customPwd && (isAdminUser || req.user.role === 'TEACHER');
   const newPwd = canSetPwd ? customPwd : genTempPwd();
   if (newPwd.length < 8) return fail(res, 400, '密码至少 8 位');
   await db.prepare('UPDATE sys_user SET password=?, must_change_pwd=1 WHERE id=?').run(hashPassword(newPwd), target.id);
@@ -59,16 +60,18 @@ router.post('/:id/reset-password', requireRole('ADMIN', 'TEACHER', 'REP'), async
 });
 
 // 设置角色 + 小组长兴趣分类绑定（仅 ADMIN）
-// 安全加固：主理人拥有大量成员/家长账号时易失控；只允许超级管理员变更角色。
+// 任务 6：管理员（斐越科技、杨进杰老师）均可变更角色，能授予所有角色权限
 router.post('/:id/role', requireRole('ADMIN'), async (req, res) => {
   const target = await db.prepare('SELECT * FROM sys_user WHERE id=?').get(req.params.id);
   if (!target) return fail(res, 404, '账号不存在');
   const { role, subjectIds } = req.body || {};
   const validRoles = ['ADMIN', 'TEACHER', 'REP', 'STUDENT'];
   if (!validRoles.includes(role)) return fail(res, 400, '角色非法');
-  // 仅超级管理员可变更角色（含授予 ADMIN），防止普通 ADMIN 横向提权
-  if (req.user.username !== 'superadmin') return fail(res, 403, '仅超级管理员可变更角色');
-  if (target.username === 'superadmin') return fail(res, 403, '不能修改超级管理员的角色');
+  // 任何 ADMIN（斐越科技、杨进杰老师）均可变更角色（含授予 ADMIN）
+  if (req.user.role !== 'ADMIN') return fail(res, 403, '仅管理员可变更角色');
+  if (target.username === '斐越科技' && req.user.username !== '斐越科技') {
+    return fail(res, 403, '不能修改超级管理员的账号');
+  }
 
   await db.prepare('UPDATE sys_user SET role=? WHERE id=?').run(role, target.id);
   // 维护小组长兴趣分类映射
@@ -84,30 +87,31 @@ router.post('/:id/role', requireRole('ADMIN'), async (req, res) => {
 });
 
 // 创建账号（ADMIN / TEACHER）—— 填补产品空白：此前账号只能靠 db seed 注入，老师/管理员无法在界面新增成员
-// 教师可新增"除杨老师以外"的其他老师（权限相同）；可指定密码。
-// body: { username, name, role, password?, studentNo?, subjectIds?, mustChangePwd? }
+// 管理员（斐越科技、杨进杰老师）和教师均可创建账号；ADMIN 可指定密码。
+// body: { username, name, role, password?, studentNo?, gender?, subjectIds?, mustChangePwd? }
 router.post('/', requireRole('ADMIN', 'TEACHER'), async (req, res) => {
-  const { username, name, role, password, studentNo, subjectIds, mustChangePwd } = req.body || {};
+  const { username, name, role, password, studentNo, gender, subjectIds, mustChangePwd } = req.body || {};
   if (!username || !name || !role) return fail(res, 400, '用户名/姓名/角色必填');
   const validRoles = ['ADMIN', 'TEACHER', 'REP', 'STUDENT'];
   if (!validRoles.includes(role)) return fail(res, 400, '角色非法');
   // 教师只能创建 TEACHER/REP/STUDENT，禁止创建 ADMIN（防横向提权）
   if (req.user.role === 'TEACHER' && role === 'ADMIN') return fail(res, 403, '教师不能创建管理员账号');
   const uname = String(username).trim();
-  if (!/^[A-Za-z0-9_]{3,32}$/.test(uname)) return fail(res, 400, '用户名仅限字母数字下划线(3-32位)');
+  // 允许中文真实姓名（含中英文混合/数字/下划线/连字符，长度 2~32）
+  if (!/^[\w\u4e00-\u9fa5\-]{2,32}$/.test(uname)) return fail(res, 400, '用户名仅限中文、字母、数字、下划线、连字符(2-32位)');
   if (await db.prepare('SELECT id FROM sys_user WHERE username=?').get(uname)) return fail(res, 409, '用户名已存在');
 
-  // 仅超级管理员或教师可指定明文密码；其余一律生成随机临时密码（安全加固）
-  const isSuper = req.user.username === 'superadmin';
+  // 管理员（斐越科技、杨进杰老师）或教师可指定明文密码；其余一律生成随机临时密码（安全加固）
+  const isAdminUser = req.user.role === 'ADMIN';
   const isTeacher = req.user.role === 'TEACHER';
   const customPwd = String(password || '').trim();
-  const newPwd = (customPwd && (isSuper || isTeacher)) ? customPwd : genTempPwd();
+  const newPwd = (customPwd && (isAdminUser || isTeacher)) ? customPwd : genTempPwd();
   if (newPwd.length < 8) return fail(res, 400, '密码至少 8 位');
 
   const CLASS_ID = 1;
   let studentId = null;
   if (role === 'STUDENT') {
-    const r = await db.prepare('INSERT INTO student(name, student_no, class_id) VALUES(?,?,?)').run(name, studentNo || null, CLASS_ID);
+    const r = await db.prepare('INSERT INTO student(name, student_no, gender, class_id) VALUES(?,?,?,?)').run(name, studentNo || null, gender || null, CLASS_ID);
     studentId = r.lastInsertRowid;
   }
   const canSetPwd = customPwd && (isSuper || isTeacher);
@@ -133,13 +137,17 @@ router.post('/', requireRole('ADMIN', 'TEACHER'), async (req, res) => {
 // 删除账号（ADMIN / TEACHER）—— 含受保护账号名单与关联清理（库无外键，按依赖顺序删子表）
 // 教师只能删除学生(STUDENT)账号（符合"学生课代表设置、重置密码、删除等管理只能老师和管理员可以操作"）
 const PROTECTED_USERS = new Set([
-  'superadmin', 'admin', 'teacher01', 'rep01', 'rep02',
-  'student01', 'student02', 'student03', 'student04', 'student05', 'student06',
+  '斐越科技', '杨进杰老师',
 ]);
 router.delete('/:id', requireRole('ADMIN', 'TEACHER'), async (req, res) => {
   const target = await db.prepare('SELECT * FROM sys_user WHERE id=?').get(req.params.id);
   if (!target) return fail(res, 404, '账号不存在');
-  if (target.username === 'superadmin') return fail(res, 403, '不能删除超级管理员');
+  if (target.username === '斐越科技' && req.user.username !== '斐越科技') {
+    return fail(res, 403, '超级管理员账号只能由本人操作');
+  }
+  if (target.username === '杨进杰老师' && req.user.role !== 'ADMIN') {
+    return fail(res, 403, '杨进杰老师账号仅管理员可操作');
+  }
   if (target.id === req.user.id) return fail(res, 403, '不能删除自己');
   if (PROTECTED_USERS.has(target.username)) return fail(res, 403, '受保护账号不可删除');
   // 教师只能删除学生，不能删除老师/管理员/小组长（防越权）

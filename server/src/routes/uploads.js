@@ -38,10 +38,10 @@ function jobEnd(jobId) {
 }
 
 // 内存模式：先收进 buffer，压缩后再落盘（避免先写大文件再压缩的浪费）
-// 限制单文件 30MB：保护免费层 512MB 内存，免遭 20 并发 × 大文件 OOM
+// 单文件 100MB：浏览器端视频先压缩到 ~30MB 再传，绝大多数场景足够；保护免费层 512MB 内存
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 30 * 1024 * 1024 } // 单文件 30MB 上限
+  limits: { fileSize: 100 * 1024 * 1024 } // 单文件 100MB 上限（任务 1：原 30MB 太严）
 });
 
 // multer 在流式接收中检测到 fileSize 超限会通过 next(err) 传递 LIMIT_FILE_SIZE，
@@ -49,7 +49,7 @@ const upload = multer({
 async function uploadSingle(req, res, next) {
   upload.single('file')(req, res, (err) => {
     if (err && err.code === 'LIMIT_FILE_SIZE') {
-      return fail(res, 413, '文件超过 30MB 上限，请压缩后上传');
+      return fail(res, 413, '文件超过 100MB 上限，请用浏览器自带编辑器压缩后再上传（手机端可在「文件管理」中转码）');
     }
     if (err) return next(err);
     next();

@@ -4,7 +4,7 @@ const { db } = require('../db');
 const { verifyPassword, signToken, hashPassword } = require('../auth');
 const { ok, fail } = require('../util');
 const authMiddleware = require('../middleware/auth');
-const { getManagedSubjectIds } = require('../middleware/rbac');
+const { getManagedSubjectIds, fetchEffectiveUser } = require('../middleware/rbac');
 const { recordLog } = require('../services/log');
 const {
   loginAttemptGuard,
@@ -22,6 +22,7 @@ router.post('/login', loginAttemptGuard, async (req, res) => {
   }
   clearLoginAttempts(username, req.ip);
   const managedSubjects = await getManagedSubjectIds({ id: user.id, role: user.role });
+  const effective = await fetchEffectiveUser(user.id);
   const token = signToken({
     id: user.id, username: user.username, role: user.role, name: user.name, studentId: user.student_id
   });
@@ -35,7 +36,10 @@ router.post('/login', loginAttemptGuard, async (req, res) => {
       classId: user.class_id,
       studentId: user.student_id,
       managedSubjects,
-      mustChangePwd: !!user.must_change_pwd
+      mustChangePwd: !!user.must_change_pwd,
+      // 任务 5：双身份 —— REP 自动具备 STUDENT 能力
+      effectiveRoles: effective?.effectiveRoles || [user.role],
+      subjectIds: effective?.subjectIds || [],
     }
   });
 });
@@ -70,17 +74,21 @@ router.post('/forgot-password', async (req, res) => {
 });
 
 router.get('/me', authMiddleware, async (req, res) => {
-  const user = await db.prepare('SELECT id,username,name,role,class_id,student_id FROM sys_user WHERE id=?').get(req.user.id);
-  if (!user) return fail(res, 404, '用户不存在');
-  const managedSubjects = await getManagedSubjectIds({ id: user.id, role: user.role });
+  const effective = await fetchEffectiveUser(req.user.id);
+  if (!effective) return fail(res, 404, '用户不存在');
+  const managedSubjects = await getManagedSubjectIds({ id: effective.id, role: effective.role });
   ok(res, {
-    id: user.id,
-    username: user.username,
-    realName: user.name,
-    role: user.role,
-    classId: user.class_id,
-    studentId: user.student_id,
-    managedSubjects
+    id: effective.id,
+    username: effective.username,
+    realName: effective.name,
+    role: effective.role,
+    classId: effective.classId,
+    studentId: effective.studentId,
+    managedSubjects,
+    // 任务 5：双身份 —— REP 自动具备 STUDENT 能力
+    effectiveRoles: effective.effectiveRoles,
+    subjectIds: effective.subjectIds,
+    mustChangePwd: effective.mustChangePwd,
   });
 });
 

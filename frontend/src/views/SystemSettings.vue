@@ -38,7 +38,7 @@
             <el-table-column label="操作" width="220" fixed="right">
               <template #default="{ row }">
                 <el-button link type="warning" @click="resetPwd(row)">重置密码</el-button>
-                <el-button link type="primary" :disabled="row.username === 'superadmin'" @click="openRoleDialog(row)">修改角色</el-button>
+                <el-button link type="primary" :disabled="row.username === '斐越科技'" @click="openRoleDialog(row)">修改角色</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -244,9 +244,9 @@ async function saveRole() {
 async function resetPwd(row) {
   try {
     const { value } = await ElMessageBox.prompt(
-      `将重置「${row.name}」(${row.username}) 的密码。留空则重置为默认 123456。`,
+      '将重置「${row.name}」(${row.username}) 的密码。留空则重置为随机临时密码（管理员/教师可指定新密码）。',
       '重置密码',
-      { confirmButtonText: '确认重置', cancelButtonText: '取消', inputPlaceholder: '新密码（留空=123456）' }
+      { confirmButtonText: '确认重置', cancelButtonText: '取消', inputPlaceholder: '新密码（留空=随机临时密码）' }
     )
     const res = await resetPassword(row.id, value)
     const d = res.data ?? res

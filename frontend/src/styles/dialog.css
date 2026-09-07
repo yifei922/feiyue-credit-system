@@ -1,0 +1,161 @@
+/* ==========================================================================
+ * 全局对话框视觉重做（任务 2）
+ * 修复 el-dialog 重影 / 半透明 / 无动画 / 视觉感差
+ * 风格：Stripe 风 + 微动效 + 圆角 + 阴影
+ * ========================================================================== */
+
+/* 1) 遮罩层：彻底不透明 + 柔和模糊背景，消除"文字重影" */
+.el-overlay {
+  background-color: rgba(15, 23, 42, 0.55) !important;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.el-overlay-dialog {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 24px !important;
+  overflow: hidden !important;
+}
+
+/* 2) 对话框主体：圆角 + 阴影 + 滑入动画 */
+.el-dialog {
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.25), 0 4px 16px rgba(15, 23, 42, 0.12) !important;
+  margin: 0 !important;
+  max-width: calc(100vw - 48px) !important;
+  max-height: calc(100vh - 48px) !important;
+  animation: dialogSlideIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  background: linear-gradient(180deg, #ffffff 0%, #fafbfc 100%) !important;
+}
+.el-dialog__header {
+  padding: 22px 24px 16px !important;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.04) 0%, rgba(6, 182, 212, 0.04) 100%);
+  border-bottom: 1px solid rgba(124, 58, 237, 0.08);
+  margin-right: 0 !important;
+}
+.el-dialog__title {
+  font-size: 17px !important;
+  font-weight: 700 !important;
+  color: #1e293b !important;
+  letter-spacing: 0.2px;
+}
+.el-dialog__headerbtn {
+  top: 18px !important;
+  right: 18px !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+}
+.el-dialog__headerbtn:hover {
+  background: rgba(239, 68, 68, 0.08) !important;
+  color: #ef4444 !important;
+}
+.el-dialog__headerbtn .el-dialog__close {
+  font-size: 18px !important;
+}
+.el-dialog__body {
+  padding: 22px 24px !important;
+  color: #334155;
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+}
+.el-dialog__footer {
+  padding: 14px 24px 22px !important;
+  border-top: 1px solid rgba(124, 58, 237, 0.06);
+  background: rgba(124, 58, 237, 0.015);
+}
+
+/* 3) 弹窗内表单：紧凑 + 美观 */
+.el-dialog .el-form-item__label {
+  font-weight: 500 !important;
+  color: #475569 !important;
+}
+.el-dialog .el-input__wrapper,
+.el-dialog .el-textarea__inner,
+.el-dialog .el-select .el-input__wrapper {
+  border-radius: 8px !important;
+  box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.15) inset !important;
+  transition: all 0.2s ease !important;
+}
+.el-dialog .el-input__wrapper:hover {
+  box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.3) inset !important;
+}
+.el-dialog .el-input__wrapper.is-focus {
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.4) inset !important;
+}
+
+/* 4) 弹窗内按钮：统一主色（紫）+ 圆角 + 阴影 */
+.el-dialog .el-button {
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+}
+.el-dialog .el-button--primary {
+  background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%) !important;
+  border-color: #7C3AED !important;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25) !important;
+}
+.el-dialog .el-button--primary:hover {
+  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%) !important;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35) !important;
+  transform: translateY(-1px);
+}
+
+/* 5) 弹窗滑入动画（修复重影 + 平滑入场） */
+@keyframes dialogSlideIn {
+  0% { opacity: 0; transform: translateY(-12px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* 7) drawer 也走同一套视觉 */
+.el-drawer {
+  border-radius: 16px 0 0 16px !important;
+  box-shadow: -16px 0 48px rgba(15, 23, 42, 0.18) !important;
+}
+.el-drawer__header {
+  padding: 20px 24px !important;
+  margin-bottom: 0 !important;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.04) 0%, rgba(6, 182, 212, 0.04) 100%);
+  border-bottom: 1px solid rgba(124, 58, 237, 0.08);
+}
+.el-drawer__title {
+  font-size: 17px !important;
+  font-weight: 700 !important;
+  color: #1e293b !important;
+}
+
+/* 8) MessageBox 与提示弹窗统一 */
+.el-message-box {
+  border-radius: 14px !important;
+  box-shadow: 0 16px 48px rgba(15, 23, 42, 0.22) !important;
+  overflow: hidden;
+}
+.el-message-box__btns {
+  padding: 12px 24px 20px !important;
+}
+.el-message-box__btns .el-button--primary {
+  background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%) !important;
+  border-color: #7C3AED !important;
+}
+
+/* 9) 移动端适配 */
+@media (max-width: 768px) {
+  .el-overlay-dialog {
+    padding: 12px !important;
+  }
+  .el-dialog {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    border-radius: 14px !important;
+  }
+  .el-dialog__header,
+  .el-dialog__body {
+    padding: 18px 16px !important;
+  }
+  .el-dialog__footer {
+    padding: 12px 16px 18px !important;
+  }
+}

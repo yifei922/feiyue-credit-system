@@ -368,112 +368,25 @@ async function seed() {
   if (cntRow.c > 0) return;
 
   const CLASS_ID = 1;
-  await db.prepare('INSERT INTO clazz(name) VALUES(?)').run('默认圈子');
+  const hasClass = await db.prepare('SELECT id FROM clazz WHERE id=?').get(CLASS_ID);
+  if (!hasClass) {
+    await db.prepare('INSERT INTO clazz(id, name) VALUES(?,?)').run(CLASS_ID, '洛一高附中八（十）班');
+  }
 
-  // 兴趣分类（合规整改：个人主体小程序禁止 K12 学科类培训，初始兴趣分类改为通用兴趣分类）
-  const insSubj = db.prepare('INSERT INTO subject(name, class_id, teacher_id) VALUES(?,?,?)');
-  await insSubj.run('阅读', CLASS_ID, 2);
-  await insSubj.run('写作', CLASS_ID, 2);
-  await insSubj.run('思维', CLASS_ID, 2);
-
-  // 用户：管理员(ADMIN) / 主理人(TEACHER) / 小组长(REP x2) / 成员(STUDENT)
+  // ── 用户：超级管理员（斐越科技）/ 教师兼管理员（杨进杰老师）──
+  // 学生名单由任务 4 导入「八十班」真实姓名 + 性别生成，不在此 seed
   const insUser = db.prepare(
-    'INSERT INTO sys_user(username, password, name, role, class_id, student_id) VALUES(?,?,?,?,?,?)'
+    'INSERT INTO sys_user(username, password, name, role, class_id, student_id, must_change_pwd) VALUES(?,?,?,?,?,?,?)'
   );
-  await insUser.run('admin', hashPassword('123456'), '管理员', 'ADMIN', CLASS_ID, null);
-  await insUser.run('teacher01', hashPassword('123456'), '杨老师', 'TEACHER', CLASS_ID, null);
-  await insUser.run('rep01', hashPassword('123456'), '李小组长(阅读)', 'REP', CLASS_ID, null);
-  await insUser.run('rep02', hashPassword('123456'), '张小组长(写作)', 'REP', CLASS_ID, null);
+  await insUser.run('斐越科技', hashPassword('18603792929'), '斐越科技', 'ADMIN', CLASS_ID, null, 0);
+  await insUser.run('杨进杰老师', hashPassword('17344694075'), '杨进杰老师', 'ADMIN', CLASS_ID, null, 0);
 
-  // 显式取 id
+  // 显式取 id，供后续 migrate / UI 引用
   const getUid = async (u) => (await db.prepare('SELECT id FROM sys_user WHERE username=?').get(u)).id;
-  const adminId = await getUid('admin');
-  const teacherId = await getUid('teacher01');
-  const r1 = await getUid('rep01');
-  const r2 = await getUid('rep02');
+  await getUid('斐越科技');
+  await getUid('杨进杰老师');
 
-  // 成员档案 + 账号
-  const studentsSeed = [
-    ['张三', 'S1001'], ['李四', 'S1002'], ['王五', 'S1003'],
-    ['赵六', 'S1004'], ['钱七', 'S1005'], ['孙八', 'S1006']
-  ];
-  const insStu = db.prepare('INSERT INTO student(name, student_no, class_id) VALUES(?,?,?)');
-  const insStuUser = db.prepare(
-    'INSERT INTO sys_user(username, password, name, role, class_id, student_id) VALUES(?,?,?,?,?,?)'
-  );
-  for (let i = 0; i < studentsSeed.length; i++) {
-    const [name, no] = studentsSeed[i];
-    const r = await insStu.run(name, no, CLASS_ID);
-    const studentId = r.lastInsertRowid;
-    const username = 'student' + String(i + 1).padStart(2, '0');
-    await insStuUser.run(username, hashPassword('123456'), name, 'STUDENT', CLASS_ID, studentId);
-  }
-
-  // 小组长兴趣分类关联
-  await db.prepare('INSERT IGNORE INTO subject_rep(subject_id, user_id) VALUES(?,?)').run(1, r1);
-  await db.prepare('INSERT IGNORE INTO subject_rep(subject_id, user_id) VALUES(?,?)').run(2, r2);
-
-  // 示例任务（合规整改：内容改为通识/兴趣类，与前端契约一致）
-  const insTask = db.prepare(
-    'INSERT INTO task(title, subject_id, class_id, credit_value, type, status, deadline, description, creator_id) VALUES(?,?,?,?,?,?,?,?,?)'
-  );
-  await insTask.run('一周阅读笔记打卡', 1, CLASS_ID, 3, 'BACKING', 'OPEN', '2026-07-26 23:59', '选一本感兴趣的书，每天记录一段感想', r1);
-  await insTask.run('结构化写作练习', 2, CLASS_ID, 5, 'HOMEWORK', 'OPEN', '2026-07-22 23:59', '用 PREP 模板写一段 200 字自我介绍', r2);
-  await insTask.run('逻辑思维打卡', 3, CLASS_ID, 8, 'EXAM', 'OPEN', '2026-07-20 23:59', '完成 10 道推理选择题', teacherId);
-  await insTask.run('一周错题回顾', 2, CLASS_ID, 4, 'HOMEWORK', 'OPEN', '2026-07-30 23:59', '整理本周错题并写心得', r2);
-
-  // 完成记录 + 流水（与前端 Mock 数据一致，便于对照）
-  const taskMeta = {
-    1: { credit: 3, type: 'BACKING', title: '一周阅读笔记打卡' },
-    2: { credit: 5, type: 'HOMEWORK', title: '结构化写作练习' },
-    3: { credit: 8, type: 'EXAM', title: '逻辑思维打卡' },
-    4: { credit: 4, type: 'HOMEWORK', title: '一周错题回顾' }
-  };
-  const seedComp = [
-    [1, 1, 'DONE_ONTIME'], [1, 2, 'UNFINISHED'], [1, 3, 'DONE_OVERDUE'], [1, 4, 'UNFINISHED'], [1, 5, 'DONE_ONTIME'],
-    [2, 1, 'DONE_ONTIME'], [2, 2, 'DONE_ONTIME'], [2, 3, 'DONE_ONTIME'], [2, 4, 'UNFINISHED'], [2, 5, 'DONE_OVERDUE'],
-    [3, 1, 'UNFINISHED'], [3, 2, 'UNFINISHED'], [3, 3, 'UNFINISHED'], [3, 4, 'FAILED'], [3, 5, 'UNFINISHED'],
-    [4, 1, 'DONE_ONTIME'], [4, 2, 'UNFINISHED'], [4, 3, 'DONE_ONTIME'], [4, 4, 'UNFINISHED'], [4, 5, 'UNFINISHED']
-  ];
-  const insComp = db.prepare(
-    'INSERT INTO completion_record(task_id, student_id, status, completion_time, credit_earned, operator_id) VALUES(?,?,?,?,?,?)'
-  );
-  const insFlow = db.prepare(
-    'INSERT INTO credit_flow(student_id, task_id, change_amount, flow_type, reason) VALUES(?,?,?,?,?)'
-  );
-  for (const [taskId, studentId, status] of seedComp) {
-    const meta = taskMeta[taskId];
-    const { credit, flowType } = calcCredit(meta.credit, meta.type, status);
-    const ctime = (status === 'UNFINISHED' || status === 'FAILED') ? null : '2026-07-19 10:00';
-    await insComp.run(taskId, studentId, status, ctime, credit, teacherId);
-    if (credit > 0) {
-      await insFlow.run(studentId, taskId, credit, flowType, meta.title);
-    }
-  }
-  // 重算各成员总积分（MySQL 不允许在 UPDATE 子查询中引用同一张表，改为按成员汇总后逐条更新）
-  const sums = await db.prepare('SELECT student_id, COALESCE(SUM(change_amount),0) AS s FROM credit_flow GROUP BY student_id').all();
-  const updStuCredit = db.prepare('UPDATE student SET total_credits=? WHERE id=?');
-  for (const { student_id, s } of sums) {
-    await updStuCredit.run(s, student_id);
-  }
-
-  // 预警（文案同步改为中性）
-  await db.prepare("INSERT INTO alert(student_id, type, level, message) VALUES(?,?,?,?)").run(4, 'CONSECUTIVE_MISS', 'DANGER', '连续 3 个任务未完成（错题回顾/逻辑打卡/写作练习）');
-  await db.prepare("INSERT INTO alert(student_id, type, level, message) VALUES(?,?,?,?)").run(2, 'OVERDUE_SOON', 'WARN', '《逻辑思维打卡》将于 2026-07-20 截止且尚未完成');
-
-  // 操作日志
-  await db.prepare("INSERT INTO operate_log(operator_id, operator_name, operate_type, table_name, record_id, before_snapshot, after_snapshot) VALUES(?,?,?,?,?,?,?)")
-    .run(teacherId, '杨老师', 'INSERT', 'task', 3, null, '{"title":"逻辑思维打卡","credit_value":8}');
-  await db.prepare("INSERT INTO operate_log(operator_id, operator_name, operate_type, table_name, record_id, before_snapshot, after_snapshot) VALUES(?,?,?,?,?,?,?)")
-    .run(r1, '李小组长(阅读)', 'UPDATE', 'completion_record', 1, '{"status":"UNFINISHED","credit_change":0}', '{"status":"DONE_ONTIME","credit_change":3}');
-
-  // 任务模板
-  await db.prepare('INSERT INTO task_template(name, subject_id, type, credit_value, description) VALUES(?,?,?,?,?)')
-    .run('一周阅读笔记·模板', 1, 'BACKING', 3, '选一本感兴趣的书，每天记录一段感想');
-  await db.prepare('INSERT INTO task_template(name, subject_id, type, credit_value, description) VALUES(?,?,?,?,?)')
-    .run('结构化写作练习·模板', 2, 'HOMEWORK', 5, '用 PREP 模板写一段 200 字自我介绍');
-
-  // ── 徽章种子（荣誉殿堂）──
+  // ── 徽章种子（荣誉殿堂，保留）──
   const insBadge = db.prepare('INSERT INTO badge (code, name, description, icon, category, threshold, sort_order) VALUES(?,?,?,?,?,?,?)');
   const badgeSeeds = [
     ['first_login',   '初来乍到', '完成首次登录系统', 'User', 'MILESTONE', 1, 1],
@@ -488,27 +401,148 @@ async function seed() {
   ];
   for (const b of badgeSeeds) await insBadge.run(...b);
 
-  console.log('[seed] 初始数据已写入（通用兴趣类 + 徽章）');
+  console.log('[seed] 初始数据已写入（斐越科技 + 杨进杰老师 + 徽章；学生由 import 接口导入）');
+}
+
+// ── 一次性清理重建（用户授权 2026-09-05 全部清空重新建班）──
+// 清除旧的 teacher01/admin/rep01-02/student01-06 等测试账号及示例数据，重新按新账号体系 seed。
+// 通过 _schema_migration 标记确保只执行一次，后续启动不再清库。
+async function clearAndRebuild() {
+  await db.exec(`CREATE TABLE IF NOT EXISTS _schema_migration (
+    id VARCHAR(64) PRIMARY KEY,
+    applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`).catch(() => {});
+  const applied = await db.prepare("SELECT id FROM _schema_migration WHERE id='clear_rebuild_2026_09_05'").get();
+  if (applied) return;
+  console.log('[migrate] clear_rebuild_2026_09_05: 清空旧测试数据并按新账号体系重新建班');
+  // 保留 clazz / subject / badge / user_badge / resource 等基础表
+  // 清空业务表（顺序：先子表 → 再父表）
+  await db.prepare('DELETE FROM attachment').run();
+  await db.prepare('DELETE FROM completion_record').run();
+  await db.prepare('DELETE FROM credit_flow').run();
+  await db.prepare('DELETE FROM alert').run();
+  await db.prepare('DELETE FROM task').run();
+  await db.prepare('DELETE FROM operate_log').run();
+  await db.prepare('DELETE FROM subject_rep').run();
+  await db.prepare('DELETE FROM user_badge').run();
+  await db.prepare('DELETE FROM user_points').run();
+  await db.prepare('DELETE FROM user_daily_view').run();
+  await db.prepare('DELETE FROM ad_view_log').run();
+  await db.prepare('DELETE FROM sys_user').run();
+  await db.prepare('DELETE FROM student').run();
+  // seed() 会按新账号体系创建斐越科技 + 杨进杰老师 + 徽章
+  await seed();
+  await db.prepare("INSERT INTO _schema_migration(id) VALUES('clear_rebuild_2026_09_05')").run();
+  console.log('[migrate] clear_rebuild_2026_09_05: 重建完成');
+}
+
+// ── 一次性导入「洛一高附中八（十）班」学生名单（任务 4，2026-09-05）──
+// 仅名字 + 性别；username=真实姓名；初始密码 810810；must_change_pwd=1 首次登录强制改密
+// 数据来源：用户提供的两张班级花名册截图（八十班1.jpg、八十班2.jpg）
+// 注：图1 第 5 行高亮遮挡无法看清 → 用「李茗」占位，待用户核对修正
+async function importClassRoster() {
+  const applied = await db.prepare("SELECT id FROM _schema_migration WHERE id='import_class_roster_2026_09_05'").get();
+  if (applied) return;
+
+  console.log('[migrate] import_class_roster_2026_09_05: 导入八十班学生名单（54 人）');
+  const CLASS_ID = 1;
+  const DEFAULT_PWD = '810810'; // 任务 4 规定的初始密码
+  // 女 24 人（图1）
+  const FEMALE = [
+    '雷鑫怡', '李尚谦', '李嘉怡', '李佳涵', '李茗',          // 第 5 行高亮遮挡，用「李茗」占位
+    '孙卓熙', '刘思彤', '于佳玮', '沈祺元', '韩可馨',
+    '郑紫月', '孙梓雨', '肖沛宜', '卢一蕊', '张恬宁',
+    '赵恩言', '赵天瑜', '李雨桐', '陈天睿', '范璐瑶',
+    '李婉祯', '孙泽昕', '惠悦琪', '雷沐冉',
+  ];
+  // 男 30 人（图2）
+  const MALE = [
+    '杨易轩', '郭金樑', '邓轩金', '于煜轩', '赵怡阳',
+    '周弋斐', '翟奕杨', '郭子龙', '刘励憬', '崔懿辰',
+    '任勇乾', '王悦泽', '刘嘉航', '郭玛睿', '张宸轩',
+    '韩昊洋', '黄锦程', '王启航', '陈奕安', '秦梓杰',
+    '何欣意', '时英哲', '李定轩', '孙浩博', '王嘉睿',
+    '于文泽', '王天翊', '王新景', '李辰轩', '许九一',
+  ];
+
+  const insStu = db.prepare('INSERT INTO student(name, gender, class_id) VALUES(?,?,?)');
+  const insUser = db.prepare(
+    'INSERT INTO sys_user(username, password, name, role, class_id, student_id, must_change_pwd) VALUES(?,?,?,?,?,?,?)'
+  );
+  const chkUser = db.prepare('SELECT id FROM sys_user WHERE username=?');
+  const updStu = db.prepare('UPDATE student SET gender=? WHERE id=?');
+  const updUser = db.prepare('UPDATE sys_user SET must_change_pwd=1 WHERE id=?');
+
+  let imported = 0, skipped = 0, resetPwd = 0;
+  // 按 男→女 顺序（与花名册一致）
+  const allStudents = [
+    ...MALE.map((n) => ({ name: n, gender: '男' })),
+    ...FEMALE.map((n) => ({ name: n, gender: '女' })),
+  ];
+
+  for (const s of allStudents) {
+    const name = s.name.trim();
+    // 跳过空名
+    if (!name) { skipped++; continue; }
+    // 已存在同名账号：补全 gender / 重置密码为 810810
+    const exist = await chkUser.get(name);
+    if (exist) {
+      const stuRow = await db.prepare('SELECT id, gender FROM student WHERE name=? AND deleted_at IS NULL').get(name);
+      if (stuRow) {
+        if (!stuRow.gender) await updStu.run(s.gender, stuRow.id);
+      }
+      await updUser.run(exist.id);
+      // 同时把密码重置为 810810（首次登录会强制改密）
+      await db.prepare('UPDATE sys_user SET password=?, must_change_pwd=1 WHERE id=?').run(hashPassword(DEFAULT_PWD), exist.id);
+      resetPwd++;
+      continue;
+    }
+    // 新建 student + sys_user
+    const r = await insStu.run(name, s.gender, CLASS_ID);
+    const studentId = r.lastInsertRowid;
+    await insUser.run(name, hashPassword(DEFAULT_PWD), name, 'STUDENT', CLASS_ID, studentId, 1);
+    imported++;
+  }
+
+  await db.prepare("INSERT INTO _schema_migration(id) VALUES('import_class_roster_2026_09_05')").run();
+  console.log(`[migrate] import_class_roster_2026_09_05: 新建 ${imported} 人，重置密码 ${resetPwd} 人，跳过 ${skipped} 人`);
+  if (FEMALE[4] === '李茗') {
+    console.warn('[migrate] ⚠ 图1 第 5 行名字被高亮遮挡，临时用「李茗」占位，请杨老师核对修正！');
+  }
 }
 
 // ── 幂等迁移：每次启动都执行，用于给「已存在的库」补齐新功能所需的数据 ──
 async function migrate() {
   const CLASS_ID = 1;
 
+  // 0) 一次性清理重建（确保旧测试账号清掉，按新体系重建）—— 先执行，否则后续 migrate 可能引用旧字段
+  await clearAndRebuild();
+
+  // 0a) 一次性导入「洛一高附中八（十）班」学生名单（任务 4）
+  await importClassRoster();
+
   // 确保存在圈子（极端情况下空库场景）
   const hasClass = await db.prepare('SELECT id FROM clazz WHERE id=?').get(CLASS_ID);
   if (!hasClass) {
-    await db.prepare('INSERT INTO clazz(id, name) VALUES(?,?)').run(CLASS_ID, '默认圈子');
+    await db.prepare('INSERT INTO clazz(id, name) VALUES(?,?)').run(CLASS_ID, '洛一高附中八（十）班');
   }
 
-  // 1) 超级管理员（单独给管理者本人的最高权限账号）
-  const SUPER_USER = 'superadmin';
+  // 1) 超级管理员账号兜底创建（仅当 clear_rebuild 后仍无账号时）：斐越科技
+  const SUPER_USER = '斐越科技';
   const existSuper = await db.prepare('SELECT id FROM sys_user WHERE username=?').get(SUPER_USER);
   if (!existSuper) {
-    await db.prepare('INSERT INTO sys_user(username, password, name, role, class_id, student_id) VALUES(?,?,?,?,?,?)')
-      .run(SUPER_USER, hashPassword('Feiyue@2026'), '超级管理员', 'ADMIN', CLASS_ID, null);
-    // 仅在 DEBUG 模式下打印账号创建事件，避免生产环境日志泄露账号名
-    if (process.env.DEBUG_MIGRATE === '1') console.log('[migrate] 超级管理员账号已创建: superadmin / (密码已设置，请及时修改)');
+    await db.prepare('INSERT INTO sys_user(username, password, name, role, class_id, student_id, must_change_pwd) VALUES(?,?,?,?,?,?,?)')
+      .run(SUPER_USER, hashPassword('18603792929'), '斐越科技', 'ADMIN', CLASS_ID, null, 0);
+    if (process.env.DEBUG_MIGRATE === '1') console.log('[migrate] 超级管理员账号已创建: 斐越科技 / (密码已设置)');
+  }
+
+  // 1b) 教师兼管理员兜底：杨进杰老师
+  const TEACHER_USER = '杨进杰老师';
+  const existTeacher = await db.prepare('SELECT id FROM sys_user WHERE username=?').get(TEACHER_USER);
+  if (!existTeacher) {
+    await db.prepare('INSERT INTO sys_user(username, password, name, role, class_id, student_id, must_change_pwd) VALUES(?,?,?,?,?,?,?)')
+      .run(TEACHER_USER, hashPassword('17344694075'), '杨进杰老师', 'ADMIN', CLASS_ID, null, 0);
+    if (process.env.DEBUG_MIGRATE === '1') console.log('[migrate] 教师兼管理员账号已创建: 杨进杰老师');
   }
 
   // 2) 平台隔离列：为已存在的库补齐 platform 列（Web=初二学科体系 / MP=中性兴趣科目）
@@ -522,8 +556,11 @@ async function migrate() {
   // 存量科目若无 platform 值，默认归属小程序（中性兴趣科目，避免被误判为 K12 学科）
   await db.prepare("UPDATE subject SET platform='MP' WHERE platform IS NULL OR platform=''").run();
 
-  const teacherRow = await db.prepare("SELECT id FROM sys_user WHERE role='TEACHER' ORDER BY id LIMIT 1").get();
-  const teacherId = teacherRow ? teacherRow.id : null;
+  // 找管理员/教师 id 作为科目创建人（斐越科技优先，回退杨进杰老师，再回退任一 ADMIN）
+  const adminUser = await db.prepare("SELECT id FROM sys_user WHERE username='斐越科技'").get()
+    || await db.prepare("SELECT id FROM sys_user WHERE username='杨进杰老师'").get()
+    || await db.prepare("SELECT id FROM sys_user WHERE role='ADMIN' ORDER BY id LIMIT 1").get();
+  const teacherId = adminUser ? adminUser.id : null;
   const insSubj = db.prepare('INSERT INTO subject(name, class_id, teacher_id, platform) VALUES(?,?,?,?)');
   // 2a) 小程序端：中性兴趣科目（合规整改：个人主体小程序禁止 K12 学科类培训）
   const FULL_SUBJECTS = [
@@ -544,18 +581,17 @@ async function migrate() {
     if (!exist) await insSubj.run(name, CLASS_ID, teacherId, 'WEB');
   }
 
-  // 3) 成员账号用户名规范化：stu01 -> student01（修复 student01 登录失败问题）
-  const stuUsers = await db.prepare("SELECT id, username FROM sys_user WHERE role='STUDENT' AND username LIKE 'stu_%' AND username NOT LIKE 'student%'").all();
-  const updStu = db.prepare('UPDATE sys_user SET username=? WHERE id=?');
-  const chkStu = db.prepare('SELECT id FROM sys_user WHERE username=?');
-  for (const u of stuUsers) {
-    const newName = 'student' + u.username.slice(3); // 'stu01' -> 'student01'
-    if (!(await chkStu.get(newName))) await updStu.run(newName, u.id);
-  }
+  // 3) 学生账号用户名规范：把 stu_xx / student0X 改为真实姓名 username（若已是真实姓名则跳过）
+  //    仅在 student.name 与 sys_user.username 不一致时同步
+  await db.prepare(`
+    UPDATE sys_user u JOIN student s ON u.student_id = s.id
+    SET u.username = s.name
+    WHERE u.role = 'STUDENT' AND u.username <> s.name AND s.name IS NOT NULL AND s.name <> ''
+  `).run().catch((e) => console.warn('[migrate] 学生 username 同步失败（忽略）:', e.message));
 
-  // 4) 修复历史 bug：早期版本曾把「人名(name)」误改为角色名「主理人」，
-  //    导致教师登录后界面显示「主理人」。此处把所有被误改的教师账号恢复为真实姓名（幂等）。
-  await db.prepare("UPDATE sys_user SET name='杨老师' WHERE role='TEACHER' AND name='主理人'").run();
+  // 4) 历史 bug 修复：早期版本曾把「人名(name)」误改为角色名「主理人」，
+  //    导致教师登录后界面显示「主理人」。此处把所有被误改的教师账号恢复为真实姓名（幂等）
+  await db.prepare("UPDATE sys_user SET name='杨进杰老师' WHERE username='杨进杰老师' AND name<>'杨进杰老师'").run();
 
   // 5) 附件存储编码列（raw/gzip）：用于视频/PDF/文档的无损存储压缩，下载时按此透明解压
   const [attCols] = await pool.query(
@@ -581,8 +617,19 @@ async function migrate() {
   if (!userCols.some((c) => c.name === 'must_change_pwd')) {
     await db.prepare("ALTER TABLE sys_user ADD COLUMN must_change_pwd TINYINT DEFAULT 1").run();
   }
-  // 超级管理员使用强密码，无需强制改密；其余默认账号(123456)首次登录必须改密
-  await db.prepare("UPDATE sys_user SET must_change_pwd=0 WHERE username='superadmin'").run();
+  // 管理员账号使用固定强密码，无需强制改密
+  await db.prepare("UPDATE sys_user SET must_change_pwd=0 WHERE username IN ('斐越科技','杨进杰老师')").run();
+  // 学生默认密码 810810，标记需要首次登录强制改密（如需）
+  await db.prepare("UPDATE sys_user SET must_change_pwd=1 WHERE role='STUDENT' AND must_change_pwd IS NULL").run();
+
+  // 6b) student 表加性别字段（任务 4 导入用）
+  const [stuCols] = await pool.query(
+    "SELECT COLUMN_NAME AS name FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=? AND TABLE_NAME='student'",
+    [DB_NAME]
+  );
+  if (!stuCols.some((c) => c.name === 'gender')) {
+    await db.prepare("ALTER TABLE student ADD COLUMN gender VARCHAR(8) DEFAULT NULL COMMENT '性别：男/女'").run();
+  }
 
   // 7) 初始积分赠送：给所有尚无 user_points 的用户赠送 INIT_POINTS（前期活动，默认 100）
   const INIT_POINTS = Number(process.env.INIT_POINTS) || 100;

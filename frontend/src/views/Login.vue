@@ -31,7 +31,7 @@
         </el-button>
       </el-form>
 
-      <p class="hint">默认账号：teacher01(教师) / rep01(课代表) / student01(学生) / admin　·　密码均为 123456</p>
+      <p class="hint">使用真实姓名登录（如「杨进杰老师」），密码请向管理员索取</p>
 
       <el-alert
         v-if="coldStartTip"

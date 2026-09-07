@@ -88,15 +88,16 @@ onUnmounted(() => window.removeEventListener('resize', onResize))
 const ALL_MENUS = [
   { index: '/dashboard', label: '数据看板', icon: 'DataLine', roles: ['TEACHER', 'REP', 'ADMIN', 'STUDENT'] },
   { index: '/tasks', label: '任务管理', icon: 'Files', roles: ['TEACHER', 'REP', 'ADMIN'] },
+  { index: '/rep', label: '课代表工作台', icon: 'Medal', roles: ['REP', 'TEACHER', 'ADMIN'] },
   { index: '/completion', label: '完成登记', icon: 'EditPen', roles: ['TEACHER', 'REP', 'ADMIN'] },
   { index: '/students', label: '学生端', icon: 'User', roles: ['TEACHER', 'REP', 'ADMIN', 'STUDENT'] },
-  { index: '/manage', label: '人员管理', icon: 'UserFilled', roles: ['TEACHER', 'REP', 'ADMIN'] },
+  { index: '/manage', label: '人员管理', icon: 'UserFilled', roles: ['TEACHER', 'ADMIN'] },
   { index: '/badges', label: '荣誉殿堂', icon: 'Trophy', roles: ['TEACHER', 'REP', 'ADMIN', 'STUDENT'] },
   { index: '/recycle', label: '回收站', icon: 'Delete', roles: ['TEACHER', 'ADMIN'] },
   { index: '/alerts', label: '预警中心', icon: 'Bell', roles: ['TEACHER', 'REP', 'ADMIN'] },
-  { index: '/settings', label: '系统设置', icon: 'Setting', roles: ['TEACHER', 'REP', 'ADMIN'] }
+  { index: '/settings', label: '系统设置', icon: 'Setting', roles: ['TEACHER', 'ADMIN'] }
 ]
-const ICONS = { DataLine, Files, EditPen, User, UserFilled, Bell, Setting, Trophy, Delete }
+const ICONS = { DataLine, Files, EditPen, User, UserFilled, Bell, Setting, Trophy, Delete, Medal }
 
 const menus = computed(() => {
   const role = auth.user?.role || 'TEACHER'

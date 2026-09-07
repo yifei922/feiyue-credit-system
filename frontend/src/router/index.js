@@ -40,6 +40,12 @@ const routes = [
         meta: { title: '任务管理', roles: ['TEACHER', 'REP', 'ADMIN'] }
       },
       {
+        path: 'rep',
+        name: 'rep-portal',
+        component: () => import('@/views/RepPortal.vue'),
+        meta: { title: '课代表工作台', roles: ['REP', 'TEACHER', 'ADMIN'] }
+      },
+      {
         path: 'completion',
         name: 'completion',
         component: () => import('@/views/CompletionRegister.vue'),
