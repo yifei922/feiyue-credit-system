@@ -1,1 +1,0 @@
-import{r as t}from"./request-VjM2SbmZ.js";function s(){return t.get("/api/alerts")}function i(r){return t.put(`/api/alerts/${r}/resolve`)}function a(){return t.post("/api/alerts/scan")}function o(){return t.post("/api/alerts/remind-unfinished")}function u(r,n){return t.post("/api/alerts/notify",{studentId:r,message:n})}export{i as a,s as l,u as n,o as r,a as s};

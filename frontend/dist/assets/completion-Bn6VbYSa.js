@@ -1,1 +1,0 @@
-import{r as t}from"./request-VjM2SbmZ.js";import{d as n}from"./download-BVC-cmW4.js";function p(o){return t.post("/api/completion/register",o)}function a(o){return t.get("/api/completion",{params:o})}function m(o="csv",e={}){const r=new URLSearchParams({format:o,...e}).toString();return n(`/api/completion/export?${r}`,`completions_${Date.now()}.csv`)}export{m as e,a as l,p as r};

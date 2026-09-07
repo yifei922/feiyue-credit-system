@@ -33,9 +33,9 @@ services:
       # ── 积分规则 ──
       - key: INIT_POINTS
         value: "100"
-    # 2026-09-07 应急改造：Render 自动 build 经常失败/不触发，改为直接 install 后端依赖，
-    # 前端 dist 直接入仓（见 .gitignore）。Server 启动时读 frontend/dist 静态文件。
-    buildCommand: cd server && npm install --omit=dev --prefer-offline
+    # 2026-09-07 回滚：dist 入仓但 render buildCommand 改了导致 Render 一直 starting。
+    # 改回原始 buildCommand（前端由 Render 自己构建，避免 npm install --omit=dev 失败）
+    buildCommand: cd frontend && npm install --include=dev && npx vite build --mode server && cd ../server && npm install
     # 启动服务
     startCommand: cd server && node src/index.js
     # 健康检查：Express 在监听端口后立即响应，加速 Render 判定"已就绪"

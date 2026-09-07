@@ -1,1 +1,0 @@
-import{r as t}from"./request-VjM2SbmZ.js";import"./element-plus-Co6NReMO.js";import"./vue-tVp6Ajk2.js";function n(r){return t.post("/api/auth/login",r)}function p(){return t.get("/api/auth/me")}export{p as getMe,n as login};

@@ -1,1 +1,0 @@
-async function o(t){const a=localStorage.getItem("token")||"";return(await fetch("/api/ai/chat",{method:"POST",headers:{"Content-Type":"application/json",Authorization:a?`Bearer ${a}`:""},body:JSON.stringify(t)})).json()}async function e(){return(await fetch("/api/ai/status")).json()}export{o as aiChat,e as aiStatus};
