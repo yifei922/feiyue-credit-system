@@ -387,7 +387,9 @@ async function seed() {
   await getUid('杨进杰老师');
 
   // ── 徽章种子（荣誉殿堂，保留）──
-  const insBadge = db.prepare('INSERT INTO badge (code, name, description, icon, category, threshold, sort_order) VALUES(?,?,?,?,?,?,?)');
+  // 用 INSERT IGNORE：clearAndRebuild 不清 badge 表，重跑 seed 时徽章已存在，
+  // 普通 INSERT 会因 code 唯一键冲突抛错，导致迁移标记写不进去、每次重启都重复清库。
+  const insBadge = db.prepare('INSERT IGNORE INTO badge (code, name, description, icon, category, threshold, sort_order) VALUES(?,?,?,?,?,?,?)');
   const badgeSeeds = [
     ['first_login',   '初来乍到', '完成首次登录系统', 'User', 'MILESTONE', 1, 1],
     ['week_streak',   '坚持一周', '连续7天完成任务打卡', 'Calendar', 'STREAK', 7, 2],
@@ -431,7 +433,14 @@ async function clearAndRebuild() {
   await db.prepare('DELETE FROM sys_user').run();
   await db.prepare('DELETE FROM student').run();
   // seed() 会按新账号体系创建斐越科技 + 杨进杰老师 + 徽章
-  await seed();
+  // 必须吞掉异常并写标记：否则 seed 一旦失败（徽章唯一键冲突等）标记就写不进去，
+  // 导致每次重启都重复执行「DELETE FROM sys_user」清空全库（灾难级）。
+  // 账号本身在 migrate 后续步骤有兜底创建，seed 失败不影响服务可用。
+  try {
+    await seed();
+  } catch (e) {
+    console.error('[migrate] clear_rebuild seed 异常（账号由后续兜底逻辑创建，不影响启动）:', e.message);
+  }
   await db.prepare("INSERT INTO _schema_migration(id) VALUES('clear_rebuild_2026_09_05')").run();
   console.log('[migrate] clear_rebuild_2026_09_05: 重建完成');
 }
@@ -515,11 +524,30 @@ async function importClassRoster() {
 async function migrate() {
   const CLASS_ID = 1;
 
+  // 0-pre) 补齐 student.gender 列 —— 必须在 importClassRoster 之前！
+  // 该列原本定义在 migrate 靠后位置（6b），而 importClassRoster 在最前面调用，
+  // 首次运行会因「Unknown column 'gender'」中断整个 migrate，导致学生名单永远导不进去。
+  {
+    const [stuCols] = await pool.query(
+      "SELECT COLUMN_NAME AS name FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=? AND TABLE_NAME='student'",
+      [DB_NAME]
+    );
+    if (!stuCols.some((c) => c.name === 'gender')) {
+      await db.prepare("ALTER TABLE student ADD COLUMN gender VARCHAR(8) DEFAULT NULL COMMENT '性别：男/女'").run();
+      console.log('[migrate] student 表已补充 gender 列');
+    }
+  }
+
   // 0) 一次性清理重建（确保旧测试账号清掉，按新体系重建）—— 先执行，否则后续 migrate 可能引用旧字段
   await clearAndRebuild();
 
   // 0a) 一次性导入「洛一高附中八（十）班」学生名单（任务 4）
-  await importClassRoster();
+  // 失败不阻断后续 migrate（否则服务起不来），标记未写入时下次启动会重试。
+  try {
+    await importClassRoster();
+  } catch (e) {
+    console.error('[migrate] import_class_roster 失败（下次启动自动重试）:', e.message);
+  }
 
   // 确保存在圈子（极端情况下空库场景）
   const hasClass = await db.prepare('SELECT id FROM clazz WHERE id=?').get(CLASS_ID);
@@ -622,14 +650,7 @@ async function migrate() {
   // 学生默认密码 810810，标记需要首次登录强制改密（如需）
   await db.prepare("UPDATE sys_user SET must_change_pwd=1 WHERE role='STUDENT' AND must_change_pwd IS NULL").run();
 
-  // 6b) student 表加性别字段（任务 4 导入用）
-  const [stuCols] = await pool.query(
-    "SELECT COLUMN_NAME AS name FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=? AND TABLE_NAME='student'",
-    [DB_NAME]
-  );
-  if (!stuCols.some((c) => c.name === 'gender')) {
-    await db.prepare("ALTER TABLE student ADD COLUMN gender VARCHAR(8) DEFAULT NULL COMMENT '性别：男/女'").run();
-  }
+  // 注：student.gender 列已在 migrate 第 0-pre 步补齐（必须早于 importClassRoster），此处不再重复
 
   // 7) 初始积分赠送：给所有尚无 user_points 的用户赠送 INIT_POINTS（前期活动，默认 100）
   const INIT_POINTS = Number(process.env.INIT_POINTS) || 100;
