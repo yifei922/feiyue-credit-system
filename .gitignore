@@ -86,3 +86,6 @@ _selftest*.*
 _st*.py
 _st*.bat
 _pdf_tmp/
+
+# 损坏的 .git 备份（2026-09-07 本地对象损坏，已用干净克隆替换）
+.git.corrupt.bak/
