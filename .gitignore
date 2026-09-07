@@ -1,8 +1,8 @@
 # 依赖
 node_modules/
 
-# 前端构建产物（部署时由 CI 重新构建）
-frontend/dist/
+# 前端构建产物（2026-09-07：Render 自动构建不稳定，dist 直接入仓让 Render 跳过构建）
+!frontend/dist/
 
 # 部署产物（云托管代码包，由 tools/package_server.py 生成，勿入库）
 /dist/

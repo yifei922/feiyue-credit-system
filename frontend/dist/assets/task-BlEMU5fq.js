@@ -1,0 +1,1 @@
+import{r as s}from"./request-VjM2SbmZ.js";function r(t){return s.get("/api/tasks",{params:t})}function n(t){return s.post("/api/tasks",t)}function u(t,a){return s.put(`/api/tasks/${t}`,a)}function i(t){return s.delete(`/api/tasks/${t}`)}export{n as c,i as d,r as l,u};

@@ -1,0 +1,1 @@
+import{r as t}from"./request-VjM2SbmZ.js";function r(e="WEB"){return t.get("/api/subjects",{params:{platform:e}})}function c(e,s){return t.post(`/api/subjects/${e}/reps`,{userIds:s})}function a(e){return t.post("/api/subjects",e)}function n(e){return t.delete(`/api/subjects/${e}`)}export{a as c,n as d,r as l,c as s};
