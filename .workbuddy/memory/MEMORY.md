@@ -35,6 +35,9 @@
 - **streak / 按日期聚合的端点**：MySQL `CURDATE()`/`DATE(completion_time)` 返回服务端时区字符串，JS 端格式化日期**必须用本地年月日分量拼接，禁止 `toISOString().slice(0,10)`**（非 UTC 时区会把日期整体偏移，导致 `daySet` 不匹配、streak 算成 0）。
 - **「主理人」陷阱（已根治）**：界面显示"主理人"不是角色标签问题，而是 `db.js` 把**人名(name)字段**污染了——①seed 把 `teacher01` 的 name 写死"主理人"；②`migrate()` 曾每重启执行 `UPDATE sys_user SET name='主理人' WHERE name LIKE '%老师'`，把所有"X老师"账号改名成角色名。前端顶栏显示的是 `auth.user.realName`(=name)。**禁止再写此类把人名改成角色名的 migrate**；角色术语统一在前端 `ROLE_LABELS`(MainLayout) 与服务端 `ROLE_LABEL`(constants.js) 维护。线上数据已由 migrate 幂等修复（`role='TEACHER' AND name='主理人'` → '杨老师'）。
 - 浏览器 localStorage 缓存了旧 `user`(含旧 realName)：部署后用户**必须退出重新登录**才能拿到新姓名/角色，否则仍显示旧值。
+- ⚠️ **Element Plus 图标未导入 = 整个布局渲染崩溃**（2026-09-07 教训）：`MainLayout.vue` 引用了 `Medal` 图标但忘了 import icons-vue → Vue 运行时报 `ReferenceError: Medal is not defined` → `<script setup>` 整段报错 → 整个 MainLayout 不渲染 → 表现为「教师 Tab 找不到按钮」「所有按钮消失」「页面空白」。**新增图标前先用 `node -e "const i=require('@element-plus/icons-vue'); console.log(Object.keys(i).filter(k=>/xxx/i).join(','))"` 确认存在并加入 import 列表**。
+- ⚠️ **Element Plus 嵌套 Dialog 必须加 `append-to-body`**（2026-09-07）：弹窗里再弹窗时，内层 dialog 遮罩透明会盖不住外层 → 视觉上像「文字重影」。**所有嵌套场景的 `<el-dialog>` 必加 `:append-to-body="true"`**（典型场景：管理任务里新建任务、学分增减弹窗里再弹表单等）。
+- **课代表双身份机制**（2026-09-07）：后端 `rbac.js` 第 82 行实现 `REP→effectiveRoles=['REP','STUDENT']`，login/me token 已含此字段；前端 `StudentPortal.vue` 用 `effectiveRoles?.includes('STUDENT')` 判断可提交作业。`POST /api/users/:id/role` 接口对 ADMIN 放开任何角色，对普通 TEACHER 仅允许 STUDENT↔REP 互转（防提权）。**前端入口**：人员管理→学生 Tab 行末「设为课代表 / ✓ 课代表(取消)」按钮（`toggleRep`）。
 
 ## 邮箱/推送/Git
 - 远程：github.com:yifei922/feiyue-credit-system.git
