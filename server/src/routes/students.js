@@ -21,11 +21,12 @@ router.get('/', authMiddleware, async (req, res) => {
       .all(req.user.studentId);
   } else {
     total = (await db.prepare(`SELECT COUNT(*) AS c FROM student s WHERE 1=1${deletedFilter}`).get()).c;
-    rows = await db.prepare(`SELECT s.id, s.student_no, s.name, s.gender, s.class_id, s.total_credits, s.create_time, c.name AS className FROM student s LEFT JOIN clazz c ON s.class_id=c.id WHERE 1=1${deletedFilter} ORDER BY s.id LIMIT ? OFFSET ?`).all(pageSize, offset);
+    rows = await db.prepare(`SELECT s.id, s.student_no, s.name, s.gender, s.class_id, s.total_credits, s.create_time, c.name AS className, u.role AS userRole FROM student s LEFT JOIN clazz c ON s.class_id=c.id LEFT JOIN sys_user u ON u.student_id=s.id AND u.role IN ('STUDENT','REP') WHERE 1=1${deletedFilter} ORDER BY s.id LIMIT ? OFFSET ?`).all(pageSize, offset);
   }
   const list = await Promise.all(rows.map(async r => ({
     id: r.id, studentNo: r.student_no, name: r.name, gender: r.gender, classId: r.class_id,
-    totalCredits: r.total_credits, className: r.className
+    totalCredits: r.total_credits, className: r.className,
+    role: r.userRole || 'STUDENT'
   })));
   const hasMore = offset + rows.length < total;
   setPageHeaders(res, { total, page, pageSize, hasMore });

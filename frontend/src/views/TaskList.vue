@@ -81,8 +81,8 @@
       </div>
     </el-card>
 
-    <!-- 新建 / 编辑任务 -->
-    <el-dialog v-model="formVisible" :title="editingId ? '编辑任务' : '新建任务'" width="520px" class="mobile-fit">
+    <!-- 新建 / 编辑任务（会从「管理任务」弹窗内打开，必须 append-to-body，否则内层遮罩盖不住外层弹窗 → 文字重影） -->
+    <el-dialog v-model="formVisible" :title="editingId ? '编辑任务' : '新建任务'" width="520px" class="mobile-fit" append-to-body destroy-on-close>
       <el-form :model="form" label-width="84px">
         <el-form-item label="标题"><el-input v-model="form.title" placeholder="如：黑板报设计、卫生值日、班级活动等" /></el-form-item>
         <el-form-item label="科目">
@@ -124,8 +124,8 @@
       </template>
     </el-dialog>
 
-    <!-- 查看完成情况 -->
-    <el-dialog v-model="compVisible" title="完成情况" width="560px" class="mobile-fit">
+    <!-- 查看完成情况（同上：可能嵌套打开） -->
+    <el-dialog v-model="compVisible" title="完成情况" width="560px" class="mobile-fit" append-to-body>
       <div class="comp-summary" v-if="currentTask">
         <span class="comp-title">{{ currentTask.title }}</span>
         <el-tag size="small" effect="plain">已交/登记 {{ completions.length }} 人</el-tag>

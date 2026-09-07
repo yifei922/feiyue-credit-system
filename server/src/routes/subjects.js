@@ -42,17 +42,57 @@ router.post('/', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (req, re
   ok(res, { id: r.lastInsertRowid, name, platform: plat });
 });
 
-// 设置小组长（管理员/主理人）
+// 设置课代表（管理员/教师）—— 双身份自动转换（任务 3 核验整改，2026-09-07）
+// 规则：
+//   1) 新选中的「学生」账号 → role 自动升级为 REP（课代表），student_id 保留 → 登录后自动获得
+//      「课代表 + 学生」双身份（rbac 角色继承 REP ⊃ STUDENT，可布置任务也可提交作业）
+//   2) 被移除的课代表：若 role=REP 且不再担任任何科目课代表 → 自动恢复为 STUDENT（有学生档案时）
+//      或 TEACHER（无学生档案时，即原教师账号兼任课代表的情形）
+//   3) 教师兼任课代表不改变其 TEACHER 角色
 router.post('/:id/reps', authMiddleware, requireRole('ADMIN', 'TEACHER'), async (req, res) => {
   const subjectId = req.params.id;
+  const subject = await db.prepare('SELECT * FROM subject WHERE id=?').get(subjectId);
+  if (!subject) return fail(res, 404, '科目不存在');
   const userIds = Array.isArray(req.body?.userIds) ? req.body.userIds.map(Number) : [];
+
+  // 变更前的课代表列表（用于差集计算）
+  const beforeRows = await db.prepare('SELECT user_id FROM subject_rep WHERE subject_id=?').all(subjectId);
+  const beforeIds = beforeRows.map((r) => r.user_id);
+  const addedIds = userIds.filter((id) => !beforeIds.includes(id));
+  const removedIds = beforeIds.filter((id) => !userIds.includes(id));
+
   await db.prepare('DELETE FROM subject_rep WHERE subject_id=?').run(subjectId);
   const ins = await db.prepare('INSERT IGNORE INTO subject_rep(subject_id, user_id) VALUES(?,?)');
   for (const uid of userIds) {
     await ins.run(subjectId, uid);
   }
-  recordLog(req.user, 'UPDATE', 'subject_rep', subjectId, null, { userIds });
-  ok(res, { ok: true, repCount: userIds.length });
+
+  // ── 角色同步：新晋课代表（学生 → REP）──
+  const promoted = [];
+  for (const uid of addedIds) {
+    const u = await db.prepare('SELECT id, role, student_id FROM sys_user WHERE id=?').get(uid);
+    if (!u) continue;
+    if (u.role === 'STUDENT') {
+      await db.prepare("UPDATE sys_user SET role='REP' WHERE id=?").run(uid);
+      promoted.push(u.id);
+    }
+  }
+
+  // ── 角色同步：被移除的课代表（不再担任任何科目 → 恢复原身份）──
+  const demoted = [];
+  for (const uid of removedIds) {
+    const u = await db.prepare('SELECT id, role, student_id FROM sys_user WHERE id=?').get(uid);
+    if (!u || u.role !== 'REP') continue;
+    const still = await db.prepare('SELECT COUNT(*) AS c FROM subject_rep WHERE user_id=?').get(uid);
+    if (still.c === 0) {
+      const backRole = u.student_id ? 'STUDENT' : 'TEACHER';
+      await db.prepare('UPDATE sys_user SET role=? WHERE id=?').run(backRole, uid);
+      demoted.push({ id: uid, backRole });
+    }
+  }
+
+  recordLog(req.user, 'UPDATE', 'subject_rep', subjectId, { userIds: beforeIds }, { userIds, promoted, demoted });
+  ok(res, { ok: true, repCount: userIds.length, promoted, demoted });
 });
 
 // 更新

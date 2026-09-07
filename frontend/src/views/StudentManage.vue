@@ -63,14 +63,23 @@
             </template>
           </el-table-column>
           <el-table-column prop="className" label="班级" />
+          <el-table-column label="身份" width="100" align="center">
+            <template #default="{ row }">
+              <el-tag v-if="row.role === 'REP'" type="success" effect="light" size="small">课代表</el-tag>
+              <el-tag v-else type="info" effect="plain" size="small">学生</el-tag>
+            </template>
+          </el-table-column>
           <el-table-column prop="totalCredits" label="总学分" width="100" align="center">
             <template #default="{ row }">
               <el-tag :type="row.totalCredits > 0 ? 'success' : 'info'" effect="light">{{ row.totalCredits || 0 }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="260" fixed="right">
+          <el-table-column label="操作" width="320" fixed="right">
             <template #default="{ row }">
               <el-button link type="primary" @click="openAdjust(row)">学分增减</el-button>
+              <el-button v-if="isTeacherOrAdmin" :type="row.role === 'REP' ? 'success' : 'info'" link @click="toggleRep(row)">
+                {{ row.role === 'REP' ? '✓ 课代表(取消)' : '设为课代表' }}
+              </el-button>
               <el-button v-if="isTeacherOrAdmin" link type="warning" @click="doResetPwd(row)">重置密码</el-button>
               <el-button v-if="isTeacherOrAdmin" link type="danger" @click="doDelete(row)">删除</el-button>
             </template>
@@ -155,7 +164,7 @@
           </el-table-column>
         </el-table>
         <div class="hint-box">
-          提示：候选课代表来自「教师」列表中的账号。如需新增课代表，请先到「教师」标签页新增教师身份账号。
+          提示：可在「学生」标签页直接将某同学设为课代表（保留学生身份，获得课代表权限）。如需新增教师账号，请到「教师」标签页。
         </div>
       </el-tab-pane>
     </el-tabs>
@@ -272,7 +281,7 @@
       <el-select v-model="repSelected" multiple filterable placeholder="选择课代表账号（可多选）" style="width: 100%">
         <el-option v-for="u in repCandidates" :key="u.id" :label="`${u.name}（${u.username}）`" :value="u.id" />
       </el-select>
-      <div class="tip-inline" v-if="!repCandidates.length">暂无教师账号，请先在「教师」标签页新增教师。</div>
+      <div class="tip-inline" v-if="!repCandidates.length">暂无教师或课代表账号，请先在「教师」标签页新增教师，或在「学生」标签页把同学设为课代表。</div>
       <template #footer>
         <el-button @click="repDialog = false">取消</el-button>
         <el-button type="primary" @click="saveReps">保存</el-button>
@@ -298,7 +307,7 @@ import { listCompletions, exportCompletions } from '@/api/completion'
 import { adjustCredit } from '@/api/creditFlow'
 import { statusLabel } from '@/utils/credit'
 import { listSubjects, setSubjectReps, createSubject, deleteSubject } from '@/api/subject'
-import { listUsers, createUser, deleteUser, resetPassword } from '@/api/user'
+import { listUsers, createUser, deleteUser, resetPassword, setUserRole } from '@/api/user'
 
 const auth = useAuthStore()
 const isTeacherOrAdmin = computed(() => ['TEACHER', 'ADMIN'].includes(auth.role))
@@ -348,7 +357,8 @@ async function loadAll() {
   try {
     const [s, c] = await Promise.all([listStudents(), listCompletions()])
     students.value = (s.data || s || []).map((r) => ({
-      id: r.id, studentNo: r.studentNo, name: r.name, gender: r.gender, className: r.className, totalCredits: r.totalCredits
+      id: r.id, studentNo: r.studentNo, name: r.name, gender: r.gender, className: r.className, totalCredits: r.totalCredits,
+      role: r.role || 'STUDENT'
     }))
     completions.value = (c.data || c || []).map((r) => ({
       studentNo: r.studentNo, studentName: r.studentName, taskTitle: r.taskTitle,
@@ -362,13 +372,18 @@ async function loadAll() {
   }
 }
 
-// 教师账号列表 & 课代表候选（教师=候选课代表）
+// 教师账号列表 & 课代表候选（教师 + 已成为课代表的同学）
 async function loadTeachers() {
   try {
     const r = await listUsers('TEACHER')
     teachers.value = r.data || r || []
-    // 教师账号同时作为课代表候选
-    repCandidates.value = teachers.value
+    // 课代表候选 = 当前所有 TEACHER 账号 + 已成为 REP 的同学（双身份）
+    let reps = []
+    try {
+      const rr = await listUsers('REP')
+      reps = rr.data || rr || []
+    } catch (_) { /* 失败则只用教师 */ }
+    repCandidates.value = [...teachers.value, ...reps]
   } catch (e) { /* 拦截器已提示 */ }
 }
 
@@ -573,6 +588,26 @@ async function doResetPwd(row) {
     const d = res.data ?? res
     ElMessageBox.alert(`账号：${d.username}\n新密码：${d.password}`, '重置成功', { confirmButtonText: '知道了' })
   } catch (e) { /* 取消或拦截器已提示 */ }
+}
+
+// 切换课代表身份（STUDENT ↔ REP，保留学生档案 → 双身份）
+async function toggleRep(row) {
+  const isRep = row.role === 'REP'
+  const next = isRep ? 'STUDENT' : 'REP'
+  try {
+    await ElMessageBox.confirm(
+      isRep
+        ? `确认取消「${row.name}」的课代表身份？取消后将恢复为普通学生（仍可提交作业、参与活动）。`
+        : `将「${row.name}」设为课代表后，该同学登录时将自动获得课代表权限（可布置任务/查看本组完成情况），同时保留学生身份（可继续提交作业）。`,
+      isRep ? '取消课代表' : '设为课代表',
+      { type: isRep ? 'warning' : 'info', confirmButtonText: '确认', cancelButtonText: '取消' }
+    )
+  } catch (_) { return }
+  try {
+    await setUserRole(row.id, next)
+    ElMessage.success(isRep ? `「${row.name}」已恢复为学生` : `「${row.name}」已成为课代表（双身份：课代表 + 学生）`)
+    await loadAll()
+  } catch (e) { /* 拦截器已提示 */ }
 }
 
 // 单条删除（软删除，可从回收站恢复）

@@ -59,18 +59,25 @@ router.post('/:id/reset-password', requireRole('ADMIN', 'TEACHER', 'REP'), async
   ok(res, { ok: true, username: target.username, password: newPwd, mustChangePwd: true });
 });
 
-// 设置角色 + 小组长兴趣分类绑定（仅 ADMIN）
-// 任务 6：管理员（斐越科技、杨进杰老师）均可变更角色，能授予所有角色权限
-router.post('/:id/role', requireRole('ADMIN'), async (req, res) => {
+// 设置角色 + 小组长兴趣分类绑定（管理员 / 教师 / 杨进杰老师）
+// 任务 6：管理员（斐越科技、杨进杰老师）可变更角色；教师可设置/取消课代表（STUDENT↔REP 互转）。
+// 安全：教师只能做 STUDENT↔REP 互转，不可升 ADMIN/TEACHER，不可降级 ADMIN/TEACHER。
+router.post('/:id/role', requireRole('ADMIN', 'TEACHER'), async (req, res) => {
   const target = await db.prepare('SELECT * FROM sys_user WHERE id=?').get(req.params.id);
   if (!target) return fail(res, 404, '账号不存在');
   const { role, subjectIds } = req.body || {};
   const validRoles = ['ADMIN', 'TEACHER', 'REP', 'STUDENT'];
   if (!validRoles.includes(role)) return fail(res, 400, '角色非法');
-  // 任何 ADMIN（斐越科技、杨进杰老师）均可变更角色（含授予 ADMIN）
-  if (req.user.role !== 'ADMIN') return fail(res, 403, '仅管理员可变更角色');
   if (target.username === '斐越科技' && req.user.username !== '斐越科技') {
     return fail(res, 403, '不能修改超级管理员的账号');
+  }
+  if (req.user.username === target.username) return fail(res, 403, '不能修改自己的角色');
+
+  // 教师仅能做 STUDENT↔REP 互转（设置/取消课代表）
+  if (req.user.role === 'TEACHER') {
+    const isSwap = (target.role === 'STUDENT' && role === 'REP') || (target.role === 'REP' && role === 'STUDENT');
+    if (!isSwap) return fail(res, 403, '教师只能设置/取消课代表（STUDENT↔REP）');
+    if (target.student_id == null) return fail(res, 400, '该账号未关联学生档案，无法设为课代表');
   }
 
   await db.prepare('UPDATE sys_user SET role=? WHERE id=?').run(role, target.id);
@@ -114,7 +121,7 @@ router.post('/', requireRole('ADMIN', 'TEACHER'), async (req, res) => {
     const r = await db.prepare('INSERT INTO student(name, student_no, gender, class_id) VALUES(?,?,?,?)').run(name, studentNo || null, gender || null, CLASS_ID);
     studentId = r.lastInsertRowid;
   }
-  const canSetPwd = customPwd && (isSuper || isTeacher);
+  const canSetPwd = customPwd && (isAdminUser || isTeacher);
   const ins = await db.prepare(
     'INSERT INTO sys_user(username, password, name, role, class_id, student_id, must_change_pwd) VALUES(?,?,?,?,?,?,?)'
   ).run(uname, hashPassword(newPwd), name, role, CLASS_ID, studentId, canSetPwd ? 0 : 1);

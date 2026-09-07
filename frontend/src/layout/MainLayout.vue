@@ -67,7 +67,7 @@ import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { ElMessage } from 'element-plus'
-import { DataLine, ArrowDown, Files, EditPen, User, UserFilled, Bell, Setting, Menu, Search, Sunny, Moon, MagicStick, Trophy, Delete } from '@element-plus/icons-vue'
+import { DataLine, ArrowDown, Files, EditPen, User, UserFilled, Bell, Setting, Menu, Search, Sunny, Moon, MagicStick, Trophy, Delete, Medal } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
