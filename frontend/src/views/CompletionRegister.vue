@@ -86,7 +86,7 @@ async function submit() {
 }
 
 onMounted(async () => {
-  const t = await listTasks()
+  const t = await listTasks({ pageSize: 200 })
   tasks.value = t.data ?? t
   await loadStudents()
   window.addEventListener('app:save', onSubmit)

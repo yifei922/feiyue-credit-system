@@ -581,7 +581,7 @@ async function openBatch() {
   } else {
     loadingStudents.value = true
     try {
-      const res = await listUsers({ role: 'STUDENT' })
+      const res = await listUsers('STUDENT', { pageSize: 200 })
       studentList.value = res.data || res || []
     } catch (_) {}
     loadingStudents.value = false

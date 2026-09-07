@@ -348,7 +348,7 @@ function compStatusText(s) { return isDone(s) ? '已完成' : '未完成' }
 function compStatusType(s) { return isDone(s) ? 'success' : 'warning' }
 
 async function load() {
-  const r = await listTasks()
+  const r = await listTasks({ pageSize: 200 })
   tasks.value = (r.data ?? r)
 }
 function onSubjectChange() { if (!isCustomCategory.value) form.value.customCategory = '' }

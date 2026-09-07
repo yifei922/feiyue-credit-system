@@ -259,7 +259,7 @@ async function subjectIdByName(name) {
 onMounted(async () => {
   const o = await dashboardOverview()
   overview.value = o.data ?? o
-  const subj = await listSubjects()
+  const subj = await listSubjects('WEB', { pageSize: 200 })
   subjects.value = subj.data ?? subj
   const s = await listStudents({ pageSize: 200 })
   students.value = s.data ?? s

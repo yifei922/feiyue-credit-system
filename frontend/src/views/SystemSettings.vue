@@ -220,7 +220,7 @@ async function loadSubjects() {
   subjects.value = r.data ?? r
 }
 async function loadUsers() {
-  const r = await listUsers(roleFilter.value)
+  const r = await listUsers(roleFilter.value, { pageSize: 200 })
   users.value = r.data ?? r
 }
 

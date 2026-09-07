@@ -1,8 +1,8 @@
 import request from './request'
 
-// 账号列表（管理员/老师）；可按 role 过滤
-export function listUsers(role) {
-  return request.get('/api/users', { params: role ? { role } : {} })
+// 账号列表（管理员/老师）；可按 role 过滤，extra 可传 { pageSize: 200 }
+export function listUsers(role, extra = {}) {
+  return request.get('/api/users', { params: { ...(role ? { role } : {}), ...extra } })
 }
 
 // 重置/设定密码（不传 password 则重置为 123456）

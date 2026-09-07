@@ -466,7 +466,7 @@ onMounted(async () => {
   students.value = s.data ?? s
   if (students.value.length) {
     studentId.value = isStudent.value ? (auth.user?.studentId ?? students.value[0].id) : students.value[0].id
-    const t = await listTasks()
+    const t = await listTasks({ pageSize: 200 })
     allTasks.value = t.data ?? t
     await loadAll()
   }
