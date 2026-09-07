@@ -216,7 +216,7 @@ const users = ref([])
 const roleFilter = ref('')
 
 async function loadSubjects() {
-  const r = await listSubjects()
+  const r = await listSubjects({ pageSize: 200 })
   subjects.value = r.data ?? r
 }
 async function loadUsers() {

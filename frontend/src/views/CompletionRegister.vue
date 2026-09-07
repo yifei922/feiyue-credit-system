@@ -69,7 +69,7 @@ const selectedIds = computed(() => selected.value.map((s) => s.id))
 
 async function loadStudents() {
   selected.value = []
-  const r = await listStudents()
+  const r = await listStudents({ pageSize: 200 })
   allStudents.value = r.data ?? r
   available.value = [...allStudents.value]
 }

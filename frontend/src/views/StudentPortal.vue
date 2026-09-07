@@ -462,7 +462,7 @@ async function exportMine() {
 }
 
 onMounted(async () => {
-  const s = await listStudents()
+  const s = await listStudents({ pageSize: 200 })
   students.value = s.data ?? s
   if (students.value.length) {
     studentId.value = isStudent.value ? (auth.user?.studentId ?? students.value[0].id) : students.value[0].id

@@ -1,8 +1,10 @@
 import request from './request'
 
 // 科目列表（含课代表信息）。platform: WEB=初二学科体系 / MP=中性兴趣科目（默认 WEB）
-export function listSubjects(platform = 'WEB') {
-  return request.get('/api/subjects', { params: { platform } })
+// 第二参数可选传 { pageSize } 覆盖后端默认分页（默认20）
+export function listSubjects(platform = 'WEB', extra = {}) {
+  const p = typeof platform === 'string' ? platform : 'WEB'
+  return request.get('/api/subjects', { params: { platform: p, ...extra } })
 }
 
 // 设置某科目的课代表

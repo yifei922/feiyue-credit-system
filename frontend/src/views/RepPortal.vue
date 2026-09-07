@@ -179,7 +179,7 @@ function isOverdue(d) { if (!d) return false; const t = new Date(d.replace(/-/g,
 function selectSubject(id) { selectedSubjectId.value = selectedSubjectId.value === id ? null : id }
 
 async function loadAll() {
-  const [t, s] = await Promise.all([listTasks(), listSubjects('WEB')])
+  const [t, s] = await Promise.all([listTasks({ pageSize: 200 }), listSubjects('WEB', { pageSize: 200 })])
   tasks.value = t.data ?? t
   subjects.value = s.data ?? s
   // 自动选中第一个负责学科

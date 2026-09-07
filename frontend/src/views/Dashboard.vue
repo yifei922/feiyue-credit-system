@@ -261,7 +261,7 @@ onMounted(async () => {
   overview.value = o.data ?? o
   const subj = await listSubjects()
   subjects.value = subj.data ?? subj
-  const s = await listStudents()
+  const s = await listStudents({ pageSize: 200 })
   students.value = s.data ?? s
   if (students.value.length) trendStudent.value = students.value[0].id
   await loadTrend()

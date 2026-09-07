@@ -39,6 +39,14 @@
 - ⚠️ **Element Plus 嵌套 Dialog 必须加 `append-to-body`**（2026-09-07）：弹窗里再弹窗时，内层 dialog 遮罩透明会盖不住外层 → 视觉上像「文字重影」。**所有嵌套场景的 `<el-dialog>` 必加 `:append-to-body="true"`**（典型场景：管理任务里新建任务、学分增减弹窗里再弹表单等）。
 - **课代表双身份机制**（2026-09-07）：后端 `rbac.js` 第 82 行实现 `REP→effectiveRoles=['REP','STUDENT']`，login/me token 已含此字段；前端 `StudentPortal.vue` 用 `effectiveRoles?.includes('STUDENT')` 判断可提交作业。`POST /api/users/:id/role` 接口对 ADMIN 放开任何角色，对普通 TEACHER 仅允许 STUDENT↔REP 互转（防提权）。**前端入口**：人员管理→学生 Tab 行末「设为课代表 / ✓ 课代表(取消)」按钮（`toggleRep`）。
 
+## 登录凭据与账户别名（生产端，2026-09-07 用户确认）
+- **admin / 教师兼管理员**：`杨进杰老师 / 17344694075`（sys_user.id=118, role=ADMIN）
+- **超管**：`斐越科技 / 18603792929`（sys_user.id=117, role=ADMIN）
+- **学生**（54 人）：`真实姓名 / 810810` 首次登录强制改密（`must_change_pwd=1`）
+- **用户原话**（2026-09-07）：`杨进杰`和`杨进杰老师`两个账户名"均可登录、密码一样"——但生产库 `sys_user.username='杨进杰'`**不存在**，仅存`杨进杰老师`。猜测是浏览器自动补全（之前输入过"杨进杰老师"被浏览器记住）把输入框补全为完整名导致用户感知"两个都能登录"。
+- **未来若用户真的反映「我输入『杨进杰』进不去」**：先去 `_shots/diag_yjj_login.mjs` 或类似 Playwright 脚本复现；如果确认严格匹配 401，再考虑给 `routes/auth.js` 加 `username` 找不到时回退一次 `WHERE name=?`（不推荐默认开，等用户明确要求再做）。
+- **登录限流**：`loginAttemptGuard` (`server/src/middleware/loginAttempt.js`)：连续失败会触发 429「登录失败次数过多，请 12 分钟后重试」——curl/Playwright 测 401 失败多次后再次尝试会被 429 拦截（不是密码问题）。
+
 ## 邮箱/推送/Git
 - 远程：github.com:yifei922/feiyue-credit-system.git
 - 分支：master（用 `GIT_OPTIONAL_LOCKS=0` 绕过 IDE 文件监视器锁）

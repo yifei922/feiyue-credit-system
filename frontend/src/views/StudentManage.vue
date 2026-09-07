@@ -355,7 +355,7 @@ function statusTag(status) {
 
 async function loadAll() {
   try {
-    const [s, c] = await Promise.all([listStudents(), listCompletions()])
+    const [s, c] = await Promise.all([listStudents({ pageSize: 200 }), listCompletions({ pageSize: 200 })])
     students.value = (s.data || s || []).map((r) => ({
       id: r.id, studentNo: r.studentNo, name: r.name, gender: r.gender, className: r.className, totalCredits: r.totalCredits,
       role: r.role || 'STUDENT'
