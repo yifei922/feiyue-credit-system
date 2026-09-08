@@ -275,7 +275,7 @@ onMounted(async () => {
 .stat-sub { color: var(--text-soft); font-size: 12px; }
 .charts { margin-top: 16px; }
 .chart-card { margin-bottom: 16px; }
-.card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
 .card-title { font-weight: 600; }
 .card-tip { color: var(--text-soft); font-size: 12px; }
 .summary-card { margin-bottom: 16px; }
@@ -290,4 +290,13 @@ onMounted(async () => {
 .sub-head { font-weight: 600; margin: 16px 0 8px; font-size: 14px; }
 .sub-tip { font-weight: 400; font-size: 12px; color: var(--text-soft); }
 .slash { margin: 0 4px; color: var(--text-soft); }
+
+/* 手机端：统计卡数值与小节标题收紧，避免 375px 屏挤压 */
+@media (max-width: 768px) {
+  .stat-value { font-size: 24px; margin: 4px 0; }
+  .stat-title { font-size: 12px; }
+  .card-head { align-items: flex-start; }
+  .sub-head { font-size: 13px; }
+  .summary-card { margin-bottom: 12px; }
+}
 </style>

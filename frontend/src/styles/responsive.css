@@ -30,6 +30,14 @@
     overflow: visible !important;
     display: block;
   }
+  /* EP 内部 scrollbar 容器也要解除，否则卡片仍被包在横向滚动区里 */
+  .el-table__body-wrapper .el-scrollbar,
+  .el-table__body-wrapper .el-scrollbar__wrap,
+  .el-table__body-wrapper .el-scrollbar__view {
+    overflow: visible !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
   .el-table__body {
     display: block;
     width: 100% !important;
@@ -42,7 +50,7 @@
   .el-table__body tr {
     display: block !important;
     margin-bottom: 12px;
-    background: var(--card, #fff);
+    background: var(--surface); /* 深色模式下为 #1c2128，不可用写死 #fff */
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 6px 0;
@@ -74,13 +82,23 @@
     opacity: 0.85;
     max-width: 40%;
   }
+  /* 单元格内容容器：flex 换行 —— 让操作列的多个按钮自动折行，不再挤成一行 */
   .el-table__body td.el-table__cell .cell {
     padding: 0 !important;
-    text-align: right;
+    display: flex !important;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
     flex: 1;
     min-width: 0;
     word-break: break-word;
     line-height: 1.5;
+  }
+  /* 单元格内的按钮去掉外边距，避免折行后间距不均 */
+  .el-table__body td.el-table__cell .cell > .el-button,
+  .el-table__body td.el-table__cell .cell > .el-button-group {
+    margin: 0 !important;
   }
   /* 无 data-label 的单元格（如操作列）不显示伪元素 */
   .el-table__body td.el-table__cell:not([data-label])::before,

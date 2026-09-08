@@ -812,7 +812,7 @@ onBeforeUnmount(() => {
 .grant-option span { font-size: 11px; text-align: center; line-height: 1.3; }
 
 /* ── 徽章库 ── */
-.lib-toolbar { margin-bottom: 12px; display: flex; justify-content: flex-end; }
+.lib-toolbar { margin-bottom: 12px; display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
 
 /* ── 学生徽章快捷管理 ── */
 .stu-mgr-tip { font-size: 12px; color: var(--text-soft); margin: 0 0 12px; }
