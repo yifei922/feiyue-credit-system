@@ -8,6 +8,7 @@ import router from './router'
 import './styles/main.css'
 import './styles/responsive.css'
 import './styles/dialog.css'
+import { installTableCard } from './utils/tableCard'
 
 const app = createApp(App)
 
@@ -33,6 +34,12 @@ const startMark = (typeof performance !== 'undefined' ? performance.now() : Date
 
 try {
   app.mount('#app')
+  // 手机端表格卡片化：把表头文字注入 td 的 data-label（失败不能影响挂载）
+  try {
+    installTableCard()
+  } catch (e) {
+    console.warn('[app] installTableCard failed:', e)
+  }
   // 挂载成功：等下一拍确认 DOM 已渲染，再排程淡出
   nextTick(scheduleSplashHide)
 } catch (e) {

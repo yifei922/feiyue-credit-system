@@ -6,6 +6,14 @@
         <img src="/logo.jpg" alt="洛一高附中" class="logo-img" />
         <span class="logo-text">洛一高附中八（十）班</span>
       </div>
+      <!-- 手机端：顶部栏隐藏掉的「当前用户 + 角色」在此展示 -->
+      <div class="aside-user">
+        <el-avatar :size="38" class="avatar">{{ userInitial }}</el-avatar>
+        <div class="aside-user-info">
+          <div class="aside-user-name">{{ auth.user?.realName || auth.user?.username }}</div>
+          <el-tag v-if="roleLabel" :type="roleTagType" size="small" effect="plain">{{ roleLabel }}</el-tag>
+        </div>
+      </div>
       <el-menu :default-active="activeMenu" router class="menu" @select="onMenuSelect">
         <el-menu-item v-for="m in menus" :key="m.index" :index="m.index">
           <el-icon><component :is="m.icon" /></el-icon>
@@ -206,6 +214,10 @@ watch(() => route.path, () => { menuOpen.value = false })
   border-radius: 10px;
   transform: translateY(1px);
 }
+/* 抽屉内的用户信息：桌面端隐藏，手机端才显示（顶部栏瘦身后信息迁移到这里） */
+.aside-user {
+  display: none;
+}
 .main {
   background: var(--bg);
   padding: 24px;
@@ -272,6 +284,38 @@ watch(() => route.path, () => { menuOpen.value = false })
   }
   .crumb {
     display: none;
+  }
+  /* 抽屉内用户信息：手机端显示（顶部栏瘦身后迁移到这里） */
+  .aside-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    padding-top: calc(12px + env(safe-area-inset-top));
+    border-bottom: 1px solid var(--border);
+  }
+  .aside-user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    min-width: 0;
+  }
+  .aside-user-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* 顶部栏瘦身：隐藏用户名文字 / 角色标签 / 搜索 / AI，避免 375px 屏拥挤 */
+  .username,
+  .role-tag,
+  .cmd-k-trigger,
+  .ai-trigger {
+    display: none !important;
   }
 }
 

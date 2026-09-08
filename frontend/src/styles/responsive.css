@@ -1,16 +1,108 @@
 /* ============================================================
-   响应式适配：手机 / iPad / 不同系统（iOS 刘海安全区）
-   仅在小屏（≤768px）生效，桌面端保持原布局不变
+   响应式适配：手机 / iPad（≤768px）
+   桌面端完全不受影响；手机端做卡片化 / 触摸友好 / 安全区适配
    ============================================================ */
 @media (max-width: 768px) {
-  /* 栅格自动堆叠为单列 */
+  /* ---------- 1. 栅格自动堆叠为单列 ---------- */
   .el-col {
     width: 100% !important;
     max-width: 100% !important;
     flex: 0 0 100% !important;
   }
 
-  /* 内联筛选表单换行并占满宽度 */
+  /* ---------- 2. 表格 → 卡片列表（核心） ----------
+     data-label 由 utils/tableCard.js 从表头自动注入，
+     用于在每个单元格左侧显示字段名。 */
+  .el-table {
+    background: transparent !important;
+  }
+  .el-table__inner-wrapper {
+    display: block;
+  }
+
+  /* 隐藏表头（字段名改由 data-label 内联显示） */
+  .el-table__header-wrapper {
+    display: none !important;
+  }
+
+  /* 解除横向滚动容器限制 */
+  .el-table__body-wrapper {
+    overflow: visible !important;
+    display: block;
+  }
+  .el-table__body {
+    display: block;
+    width: 100% !important;
+  }
+  .el-table__body tbody {
+    display: block;
+  }
+
+  /* 每行 = 一张卡片 */
+  .el-table__body tr {
+    display: block !important;
+    margin-bottom: 12px;
+    background: var(--card, #fff);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 6px 0;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+    overflow: hidden;
+  }
+  .el-table__body tr:hover > td.el-table__cell {
+    background: transparent !important;
+  }
+
+  /* 每个单元格 = 一行「字段名 ......... 值」 */
+  .el-table__body td.el-table__cell {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border-bottom: none !important;
+    padding: 7px 14px !important;
+    /* 解除 fixed 列的 sticky，避免在卡片布局里错位 */
+    position: static !important;
+    min-height: 38px;
+  }
+  .el-table__body td.el-table__cell::before {
+    content: attr(data-label);
+    flex: 0 0 auto;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-soft);
+    opacity: 0.85;
+    max-width: 40%;
+  }
+  .el-table__body td.el-table__cell .cell {
+    padding: 0 !important;
+    text-align: right;
+    flex: 1;
+    min-width: 0;
+    word-break: break-word;
+    line-height: 1.5;
+  }
+  /* 无 data-label 的单元格（如操作列）不显示伪元素 */
+  .el-table__body td.el-table__cell:not([data-label])::before,
+  .el-table__body td.el-table__cell[data-label='']::before {
+    display: none;
+  }
+
+  /* 操作列：按钮自动换行，不再挤在一行 */
+  .el-table__body td.el-table__cell.op-col > .cell {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: flex-end;
+  }
+
+  /* 空数据提示块 */
+  .el-table__empty-block {
+    min-width: 100% !important;
+    width: 100% !important;
+  }
+
+  /* ---------- 3. 内联筛选表单换行并占满宽度 ---------- */
   .el-form--inline .el-form-item {
     display: flex;
     width: 100%;
@@ -26,59 +118,158 @@
     width: 100% !important;
   }
 
-  /* 下拉 / 日期选择器满宽 */
+  /* ---------- 4. 表单控件：满宽 + 字号 ≥16px 防 iOS 聚焦缩放 ---------- */
   .el-select {
     width: 100% !important;
   }
   .el-date-editor {
     width: 100% !important;
   }
+  .el-input__inner,
+  .el-textarea__inner,
+  .el-select__placeholder {
+    font-size: 16px !important; /* <16px 时 iOS Safari 聚焦会自动放大整页 */
+  }
+  .el-form-item__label {
+    font-size: 14px;
+    line-height: 1.4;
+  }
 
-  /* 弹窗 / 确认框满屏留边（!important 覆盖组件内联宽度） */
+  /* ---------- 5. 触摸目标 ≥44px（Apple HIG） ---------- */
+  .el-button--small {
+    min-height: 34px;
+    padding: 8px 14px;
+  }
+  .el-button:not(.el-button--small):not(.el-button--large) {
+    min-height: 40px;
+    padding: 9px 16px;
+  }
+  /* 表格内小按钮在手机上加大点击区 */
+  .el-table .el-button--small,
+  .cell .el-button--small {
+    min-height: 32px;
+    padding: 7px 10px;
+    margin: 2px 0;
+  }
+  .el-radio,
+  .el-checkbox {
+    min-height: 32px;
+    align-items: center;
+  }
+  .el-tag {
+    padding: 4px 8px;
+  }
+
+  /* ---------- 6. 按钮组换行，不挤成一排 ---------- */
+  .el-button-group {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .action-bar,
+  .toolbar,
+  .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+  }
+  .action-bar .el-button,
+  .toolbar .el-button,
+  .filter-bar .el-button {
+    margin-left: 0 !important;
+    margin-bottom: 0;
+  }
+
+  /* ---------- 7. 弹窗 / 确认框满屏留边 ---------- */
   .el-dialog {
     width: 92vw !important;
     max-height: 88vh !important;
     display: flex;
     flex-direction: column;
+    margin: 5vh auto !important;
   }
   .el-dialog__body {
     padding: 16px !important;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .el-dialog__header {
     padding: 16px 16px 10px !important;
     flex-shrink: 0;
   }
   .el-dialog__footer {
-    padding: 10px 16px 16px !important;
+    padding: 10px 16px calc(16px + env(safe-area-inset-bottom)) !important;
     flex-shrink: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+  .el-dialog__footer .el-button {
+    margin-left: 0 !important;
   }
   .el-message-box {
     width: 92vw !important;
     max-width: 92vw !important;
   }
 
-  /* 表格字号与内边距收紧，便于手机阅读 */
-  .el-table {
-    font-size: 13px;
-  }
-  .el-table .cell {
-    padding-left: 8px !important;
-    padding-right: 8px !important;
-  }
-
-  /* 卡片内边距收紧 */
+  /* ---------- 8. 卡片 / 容器 ---------- */
   .el-card__body {
     padding: 14px !important;
   }
 
-  /* Tabs 可横向滚动，避免挤出 */
+  /* ---------- 9. Tabs / 描述列表横向滚动 ---------- */
   .el-tabs__nav-wrap {
     overflow-x: auto;
   }
-
-  /* 描述列表横向滚动 */
   .el-descriptions {
     overflow-x: auto;
+  }
+  .el-descriptions__body {
+    font-size: 13px;
+  }
+
+  /* ---------- 10. 分页器居中换行 ---------- */
+  .el-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+    font-size: 13px;
+  }
+  .el-pagination .el-pagination__sizes,
+  .el-pagination .el-pagination__jump {
+    display: none; /* 手机上隐藏每页条数与跳页，节省空间 */
+  }
+
+  /* ---------- 11. 底部安全区（iPhone 圆角home条） ---------- */
+  .main {
+    padding-bottom: calc(24px + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+/* ============================================================
+   超小屏（≤480px，如 iPhone SE）进一步收紧
+   ============================================================ */
+@media (max-width: 480px) {
+  .el-table__body td.el-table__cell {
+    padding: 6px 12px !important;
+    gap: 8px;
+  }
+  .el-table__body td.el-table__cell::before {
+    font-size: 11px;
+    max-width: 38%;
+  }
+  .el-dialog {
+    width: 96vw !important;
+  }
+}
+
+/* ============================================================
+   平板横屏 / 大屏手机（769–1024px）：侧栏收窄，布局不变
+   ============================================================ */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .el-table {
+    font-size: 13px;
   }
 }
